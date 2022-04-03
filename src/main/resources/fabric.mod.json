@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "bati-guilib",
   "version": "${version}",
 
   "name": "Example Mod",
@@ -19,11 +19,14 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
-    ]
+      "net.bati.guilib.CommonInitializer"
+    ],
+    "client": [
+	"net.bati.guilib.ClientInitializer"
+]
   },
   "mixins": [
-    "modid.mixins.json"
+    "bati-guilib.mixins.json"
   ],
 
   "depends": {
