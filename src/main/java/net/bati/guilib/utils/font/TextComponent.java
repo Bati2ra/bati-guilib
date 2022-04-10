@@ -1,6 +1,6 @@
-package net.bati.guilib.utils;
+package net.bati.guilib.utils.font;
 
-import net.minecraft.util.Identifier;
+import net.bati.guilib.utils.Vec2;
 
 public class TextComponent {
     private String text = "";
@@ -11,7 +11,7 @@ public class TextComponent {
     private boolean shadow;
     private boolean centered = true;
     private Vec2 offsetPosition;
-    private Identifier style;
+    private Font style;
 
     public TextComponent() {
     }
@@ -77,33 +77,16 @@ public class TextComponent {
         return centered;
     }
 
-    public class Vec2 {
-        private int x;
-        private int y;
 
-        public Vec2(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public Vec2 getVec(int x, int y) {
-            return new Vec2(x,y);
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-    }
-
-    public void setFont(Identifier style) {
+    public TextComponent font(Font style) {
         this.style = style;
+        return this;
     }
 
-    public Identifier getStyle() {
+    public boolean hasStyle() {
+        return getStyle() != null;
+    }
+    public Font getStyle() {
         return style;
     }
 }

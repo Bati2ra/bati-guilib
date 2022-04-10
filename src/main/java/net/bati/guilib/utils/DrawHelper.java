@@ -3,8 +3,11 @@ package net.bati.guilib.utils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3d;
+import org.lwjgl.opengl.GL11;
 
 public class DrawHelper {
     public static void drawRectangle(Identifier texture, double x, double y, int u, int v, int width, int height, double scale, int imageWidth, int imageHeight) {
@@ -56,5 +59,37 @@ public class DrawHelper {
         BufferRenderer.draw(bufferBuilder);
 
         RenderSystem.disableBlend();
+    }
+
+    public static void fillGradient(MatrixStack matrices, float startX, float startY, float endX, float endY, int colorStart, float a, int z) {
+        RenderSystem.disableTexture();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        fillGradient(matrices.peek().getPositionMatrix(), bufferBuilder, startX, startY, endX, endY, z, colorStart, a);
+        tessellator.draw();
+        RenderSystem.disableBlend();
+        RenderSystem.enableTexture();
+    }
+
+    public static void fillGradient(Matrix4f matrix, BufferBuilder builder, float startX, float startY, float endX, float endY, int z, int colorStart, float a) {
+        Vec3d color = Vec3d.unpackRgb(colorStart);
+        builder.vertex(matrix, (float)endX, (float)startY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
+        builder.vertex(matrix, (float)startX, (float)startY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
+        builder.vertex(matrix, (float)startX, (float)endY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
+        builder.vertex(matrix, (float)endX, (float)endY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
+    }
+
+
+
+    public static void hexColor(int pColor, float alpha) {
+        float h2 = (pColor >> 16 & 0xFF) / 255.0F;
+        float h3 = (pColor >> 8 & 0xFF) / 255.0F;
+        float h4 = (pColor & 0xFF) / 255.0F;
+        float h1 = 1.0F;
+        RenderSystem.setShaderColor(h1 * h2, h1 * h3, h1 * h4, alpha);
     }
 }

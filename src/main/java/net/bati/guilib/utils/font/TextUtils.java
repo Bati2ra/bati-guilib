@@ -1,4 +1,4 @@
-package net.bati.guilib.utils;
+package net.bati.guilib.utils.font;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
@@ -21,6 +21,7 @@ public class TextUtils {
     }
     public static void drawTextOutline(Identifier font, Text text, float x, float y, float size, int baseColor, int lineColor, boolean centered, MatrixStack matrix) {
         drawTextOutline(((MutableText)text).setStyle(text.getStyle().withFont(font)), x, y, size, baseColor, lineColor, centered, matrix);
+
     }
     public static void drawTextOutline(String text, float x, float y, float size, int baseColor, int lineColor, boolean centered, MatrixStack matrix) {
         drawTextOutline(new LiteralText(text), x, y, size, baseColor, lineColor, centered, matrix);

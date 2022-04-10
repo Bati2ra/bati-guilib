@@ -2,6 +2,7 @@ package net.bati.guilib.gui.screen;
 
 import net.bati.guilib.CommonInitializer;
 import net.bati.guilib.gui.components.Button;
+import net.bati.guilib.gui.components.IWidgetsStorage;
 import net.bati.guilib.gui.components.Widget;
 import net.bati.guilib.utils.Mouse;
 import net.minecraft.client.MinecraftClient;
@@ -11,11 +12,11 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+
 
 public abstract class AdvancedScreen extends Screen {
-    public HashMap<String, Widget> widgets = new HashMap<>();
+    protected HashMap<String, Widget> widgets = new HashMap<>();
     private Screen parent;
     private Mouse mouse = new Mouse();
     private float partialTicks;
@@ -25,9 +26,10 @@ public abstract class AdvancedScreen extends Screen {
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);
+        build();
     }
 
-    public abstract void init();
+    public abstract void build();
 
     public abstract void update();
 
@@ -39,24 +41,28 @@ public abstract class AdvancedScreen extends Screen {
         matrix = matrices;
         update();
 
-        List<Widget> result = new ArrayList<>();
+        //List<Widget> result = new ArrayList<>();
+        //widgets.forEach((key, value)-> {
+        //    value.setFocused(false);
+        //    if(value.isVisible() && value.isEnabled() && value.isHovered(mouseX, mouseY))
+        //        result.add(value);
+        //});
 
-        widgets.forEach((key, value)-> {
-            value.setFocused(false);
-            if(value.isVisible() && value.isEnabled() && value.isHovered(mouseX, mouseY))
-                result.add(value);
-        });
+        //Widget widget = (result.size() > 1) ? Collections.max(result, Comparator.comparingInt(current -> current.getZOffset())) : (result.size() == 1) ? result.get(0) : null;
+        //if(widget != null)
+        //    widget.setFocused(true);
 
-        Widget widget = (result.size() > 1) ? Collections.max(result, Comparator.comparingInt(current -> current.getZOffset())) : (result.size() == 1) ? result.get(0) : null;
-        if(widget != null)
-            widget.setFocused(true);
+        //widgets.forEach((key, value) -> {
+        //    value.render(matrices, mouseX, mouseY, delta);
+        //});
 
 
-        widgets.forEach((key, value) -> {
-            value.render(matrices, mouseX, mouseY, delta);
-        });
+        //  Widget widget = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(mouseX,mouseY)).max(Comparator.comparingInt(current -> current.getValue().getZOffset())).get().getValue();
+
+        ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
 
     }
+
 
     public void openGui(@Nullable Screen gui) {
         MinecraftClient.getInstance().setScreen(gui);
@@ -97,6 +103,38 @@ public abstract class AdvancedScreen extends Screen {
         return shouldGuiCloseOnEsc();
     }
 
+    public void clear() {
+        widgets.clear();
+        CommonInitializer.LOGGER.info("[{}] Widgets map cleared.", this);
+    }
+    @Override
+    public void close() {
+        clear();
+        openGui(parent);
+
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        widgets.forEach((key, value) ->  {
+            if(value.isVisible() && value.isFocused((int)mouseX, (int)mouseY))
+                value.mouseClicked(mouseX, mouseY, mouseButton);
+
+        });
+
+        return true;
+    }
+
+
+    public HashMap<String, Widget> getWidgets() {
+        return widgets;
+    }
+
+    @Nullable
+    public Widget getWidget(String key) {
+        return widgets.get(key);
+    }
+
     public void addWidget(Widget widget) {
         if(widgets.containsKey(widget.getIdentifier())) {
             CommonInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
@@ -114,31 +152,5 @@ public abstract class AdvancedScreen extends Screen {
         if(!widgets.containsKey(widgetIdentifier)) return;
         widgets.remove(widgetIdentifier);
     }
-
-    public Widget getWidget(String widgetIdentifier) {
-        return (widgets.containsKey(widgetIdentifier)) ? widgets.get(widgetIdentifier) : emptyWidget;
-    }
-
-    public void clear() {
-        widgets.clear();
-        CommonInitializer.LOGGER.info("[{}] Widgets map cleared.", this);
-    }
-
-    public void close() {
-        openGui(parent);
-        clear();
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        widgets.forEach((key, value) ->  {
-            if(value.isVisible() && value.isFocused((int)mouseX, (int)mouseY))
-                value.mouseClicked(mouseX, mouseY, mouseButton);
-
-        });
-
-        return true;
-    }
-
 
 }
