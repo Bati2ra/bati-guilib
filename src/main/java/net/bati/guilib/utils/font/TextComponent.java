@@ -2,12 +2,14 @@ package net.bati.guilib.utils.font;
 
 import net.bati.guilib.utils.Vec2;
 
+import java.awt.*;
+
 public class TextComponent {
     private String text = "";
     private int color = 16777215;
     private float size = 1.0F;
     private boolean outlined;
-    private int lineColor;
+    private int lineColor = 16777215;
     private boolean shadow;
     private boolean centered = true;
     private Vec2 offsetPosition;

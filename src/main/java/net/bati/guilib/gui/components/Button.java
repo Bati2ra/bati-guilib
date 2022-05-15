@@ -12,6 +12,9 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3f;
+
+import java.awt.*;
 
 public class Button extends Widget {
     protected static final Identifier WIDGETS_LOCATION = new Identifier("textures/gui/widgets.png");
@@ -96,20 +99,24 @@ public class Button extends Widget {
         if (strWidth > boxWidth*size - 20 && strWidth > ellipsisWidth)
             buttonText = MinecraftClient.getInstance().textRenderer.trimToWidth(buttonText, (int) (strWidth + boxWidth*size - 20 - ellipsisWidth)).trim() + "...";
 
+        int color = ColorUtils.toHex(textComponent.getColor(), getOpacity());
+
         if(textComponent.isOutlined()) {
+            int lineColor = ColorUtils.toHex(textComponent.getLineColor(), getOpacity());
+
             matrices.push();
             matrices.translate(0,0,1);
             if(textComponent.getStyle() == null)
-                TextUtils.drawTextOutline(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),textComponent.getColor(),textComponent.getLineColor(),textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
             else
-                TextUtils.drawTextOutline(textComponent.getStyle().getId(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),textComponent.getColor(),textComponent.getLineColor(),textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(textComponent.getStyle().getId(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
             matrices.translate(0,0,-1);
             matrices.pop();
         } else {
             if(textComponent.getStyle() == null)
-                TextUtils.drawText(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), textComponent.getColor(), textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
             else
-                TextUtils.drawText(textComponent.getStyle().getId(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), textComponent.getColor(), textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(textComponent.getStyle().getId(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
         }
     }
 
@@ -123,7 +130,7 @@ public class Button extends Widget {
 
         int i = getYImage(isFocused(mouseX, mouseY));
         matrices.translate(0,0,getZOffset());
-        RenderSystem.setShaderColor(1,1,1,opacity);
+        RenderSystem.setShaderColor(1,1,1,getOpacity());
 
 
         float offsetX = pivot.getX(getBoxWidth());
@@ -131,61 +138,33 @@ public class Button extends Widget {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-        float expand = size /**  g*/;
+        float expand = getSize() /**  g*/;
 
+        matrices.push();
+        if(parent != null) {
 
+        //    matrices.translate(x, y, 0);
+        }
         matrices.push();
         matrices.translate(-offsetX, -offsetY, 0);
         matrices.push();
         matrices.translate(getX() + offsetX, getY() + offsetY, 0);
         matrices.translate(0,0,50);
-        DrawHelper.fillGradient(matrices, -4, -4, 4, 4, 50000, 1, 0);
+        //DrawHelper.fillGradient(matrices, -4, -4, 4, 4, 50000, 1, 0);
         matrices.translate(0,0,-50);
-        //if(isHovered(mouseX, mouseY) && isEnabled())
-        //    GL11.glRotated(25* FunctionHelper.colorLerpInteger(mc.player, -0.1f, 0.1f, 20), 0, 0, 1);
 
+        //matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion((float) BatiLib.lerpTo(MinecraftClient.getInstance().player, 360)));
         matrices.scale(expand, expand, expand);
         matrices.translate(-offsetX, -offsetY, 0);
 
-        RenderSystem.setShaderColor(1,1,1,0.5f);
         DrawHelper.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
         DrawHelper.drawRectangle(textureComponent.getResource(), getBoxWidth()/2, 0, Math.round((textureComponent.getU()+this.getBoxWidth()/2)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
 
         drawText(matrices);
         matrices.pop();
         matrices.pop();
+        matrices.pop();
 
-        //if(pivot.equals(PIVOT.LEFT)) {
-         /*   matrices.push();
-            matrices.scale(size, size, size);
-            float originalSize = (float)Math.pow(size, -1);
-            DrawHelper.drawRectangle(textureComponent.getResource(), (getX()/size), Math.round(getY()/size), textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), this.boxWidth/2, this.boxHeight, 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
-            DrawHelper.drawRectangle(textureComponent.getResource(), (((getX()+this.boxWidth/(2)*size))/size), Math.round(getY()/size), Math.round((textureComponent.getU()+this.getBoxWidth()/2)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), this.boxWidth/2, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
-         //   matrices.translate(getX(), getY(), 0);
-            drawText(matrices);
-
-            matrices.scale(originalSize, originalSize, originalSize);
-            matrices.pop();*/
-      //  } else {
-            /*
-            middle top = width/2, 0
-            middle = width/2 height/2
-            middle bot = width/2, height
-
-            left top = 0 , 0
-            left middle = 0, height/2
-            left bot = 0 , height
-
-            right top = width , 0
-            right middle = width , height/2
-            right bot = width, height
-
-
-
-             */
-
-
-       // }
         matrices.translate(0,0, -getZOffset());
 
 

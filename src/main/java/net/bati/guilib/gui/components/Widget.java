@@ -10,20 +10,42 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 
 public abstract class Widget extends DrawableHelper implements Drawable, Element {
+    // An identifier, must be unique, if it's repeated with other widget, it will be skipped/ignored.
     private String identifier;
+
+
+    // I should move this to other element :/
     protected final TextRenderer font;
+
+    // Both variables determine the size of the "box", can be used to check if mouse is over the widget or to draw the element itself
     protected int boxWidth;
     protected int boxHeight;
+
+    // The raw position of the widget, it's not the final position, it's more like an indicator to specify the "offset"
     protected int x;
     protected int y;
+
+    // Alpha channels for the widget
     protected float opacity = 1F;
+
+    // Size transformation, for increasing or decreasing the widget and their children if they have.
     protected float size = 1F;
+
+
+    // Just handle the visual part, if you want to hide and disable the widget, you must combine this one with "enable"
     protected boolean visible = true;
+
+    // This one is used to disable or enable the widget, if disabled then all the events (click, drag, key, etc) will be canceled.
     protected boolean enabled = true;
+
+
     protected boolean isFocused = false;
+
+    // Just for development proposes
     protected boolean showArea = false;
     protected int randomColor = -1;
     protected PIVOT pivot = PIVOT.LEFT_TOP;
@@ -34,7 +56,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     protected Widget parent;
 
     protected int zOffset;
-    protected int offsetX,offsetY;
+    protected float offsetX,offsetY;
     public Widget() {
         this.font = MinecraftClient.getInstance().textRenderer;
     }
@@ -68,11 +90,11 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         toggleEnabled(s);
     }
     public int getOffsetX() {
-        return offsetX;
+        return (int) offsetX;
     }
 
     public int getOffsetY() {
-        return offsetY;
+        return (int) offsetY;
     }
 
     public void setX(int x) {
@@ -80,7 +102,13 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public int getX() {
-        return x + ((hasParent()) ? parent.getX() - parent.getOffsetX() : (int)attach.getX(MinecraftClient.getInstance().getWindow().getScaledWidth()));
+        return (int) (x + ((hasParent()) ? 0 : (int)attach.getX(MinecraftClient.getInstance().getWindow().getScaledWidth())));
+    }
+    public float getPivotX() {
+        return (hasParent()) ? parent.getPivotX() + getRelativeX() * parent.getRelativeSize() : getRelativeX();
+    }
+    public float getPivotY() {
+        return (hasParent()) ? parent.getPivotY() + getRelativeY() * parent.getRelativeSize() : getRelativeY();
     }
 
     public void setY(int y) {
@@ -88,15 +116,15 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public int getY() {
-        return y + ((hasParent()) ? parent.getY() - parent.getOffsetY(): (int)attach.getY(MinecraftClient.getInstance().getWindow().getScaledHeight()));
+        return (int) (y + ((hasParent()) ? 0: (int)attach.getY(MinecraftClient.getInstance().getWindow().getScaledHeight())));
     }
 
     public float getRelativeX() {
-        return getX() - pivot.getX(getBoxWidth()*getSize());
+        return getX() - pivot.getX(getBoxWidth() * getSize());
     }
 
     public float getRelativeY() {
-        return getY() - pivot.getY(getBoxHeight()*getSize());
+        return getY() - pivot.getY(getBoxHeight() * getSize());
     }
 
     public float getRelativeBoxWidth() {
@@ -117,7 +145,10 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public float getSize() {
-        return size * ((hasParent()) ? parent.getSize() : 1);
+        return size;
+    }
+    public float getRelativeSize() {
+        return (hasParent() ? parent.getRelativeSize() : 1) * getSize();
     }
 
     public Widget setParent(Widget parent) {
@@ -137,7 +168,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public float getOpacity() {
-        return opacity;
+        return (hasParent() ? parent.getOpacity() : 1) * opacity;
     }
 
     public void setBoxWidth(int s) {
@@ -178,7 +209,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public boolean isHovered(int mouseX, int mouseY) {
-        return mouseX >= getRelativeX() && mouseY >= getRelativeY() && mouseX <= getRelativeX() + getRelativeBoxWidth() && mouseY <= getRelativeY() + getRelativeBoxHeight();
+        return mouseX >= (getPivotX()) && mouseY >= (getPivotY()) && mouseX <= ((getPivotX() + getBoxWidth()* getRelativeSize())) && mouseY <= ((getPivotY() + getBoxHeight()*getRelativeSize()));
     }
 
     public void setFocused(boolean focused) {
@@ -192,14 +223,16 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if(!visible) return;
 
+        tickAnimation();
+        renderArea(matrices);
 
+    }
+    public void tickAnimation() {
         if(playAnimation) {
             if(animationProgress == 0L)
                 this.animationProgress = Util.getMeasuringTimeMs();
 
         }
-
-        renderArea(matrices);
     }
 
     public Widget showArea() {
@@ -216,7 +249,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     public void renderArea(MatrixStack matrices) {
         if(!showArea) return;
         DrawHelper.fillGradient(matrices, getRelativeX(), getRelativeY(), getRelativeX() + getRelativeBoxWidth(),getRelativeY() + getRelativeBoxHeight(), randomColor, 0.5f, getZOffset());
-
     }
     public void setPivot(PIVOT pivot) {
         this.pivot = pivot;

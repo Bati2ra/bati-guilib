@@ -1,20 +1,37 @@
 package net.bati.guilib.gui.components;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.bati.guilib.gui.screen.ScreenUtils;
 import net.bati.guilib.utils.DrawHelper;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Util;
+import org.lwjgl.opengl.GL11;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 public class Container extends Widget implements IWidgetsStorage {
     protected HashMap<String, Widget> widgets;
     private int contentX, contentY;
 
+    protected boolean ignoreContainerHitbox = true;
+
 
     public Container() {
         widgets = new HashMap<>();
     }
+
+    public Container shouldIgnoreContainerHitbox(boolean ignore) {
+        this.ignoreContainerHitbox = ignore;
+        return this;
+    }
+
+    @Override
+    public boolean isHovered(int mouseX, int mouseY) {
+        return /*ignoreContainerHitbox || */super.isHovered(mouseX, mouseY);
+    }
+
     @Override
     public void mouseClick(double mouseX, double mouseY, int mouseButton) {
         if(!isEnabled()) return;
@@ -52,59 +69,104 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public int getBoxWidth() {
-        return boxWidth + contentX;
+        return boxWidth ;
     }
 
     @Override
     public int getBoxHeight() {
-        return boxHeight + contentY;
+        return boxHeight;
     }
 
     @Override
-    public int getX() {
-        return x + getOffsetX();
+    public float getRelativeX() {
+        return super.getRelativeX();
     }
 
-
     @Override
-    public int getY() {
-        return y + getOffsetY();
+    public float getRelativeY() {
+        return super.getRelativeY();
     }
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.render(matrices, mouseX, mouseY, delta);
+        if(!visible) return;
+
+        tickAnimation();
+
+        matrices.push();
+        if(!ignoreContainerHitbox)
+            RenderSystem.enableScissor((int)(getPivotX()), (int)(MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (getPivotY() + getBoxHeight()*getRelativeSize())), (int)(getBoxWidth() * getRelativeSize()), (int)(getBoxHeight()*getRelativeSize()));
+
+        matrices.push();
+        float offsetX = pivot.getX(getBoxWidth());
+        float offsetY = pivot.getY(getBoxHeight());
+
+        matrices.push();
+        matrices.translate(-offsetX, -offsetY, 0);
+        matrices.push();
+        matrices.translate(getX() + offsetX, getY() + offsetY, 0);
+        matrices.translate(0,0,50);
+        matrices.translate(0,0,-50);
+
+        matrices.scale(getSize(), getSize(), 1);
+        matrices.translate(-offsetX, -offsetY, 0);
+
+        renderArea(matrices);
+
+        matrices.translate(0,0, getZOffset());
+        RenderSystem.setShaderColor(1,1,1, getOpacity());
 
         ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
+
+        matrices.translate(0,0, -getZOffset());
+        RenderSystem.setShaderColor(1,1,1, 1);
+
+
+        matrices.pop();
+        matrices.pop();
+
+        matrices.pop();
+        if(!ignoreContainerHitbox)
+            RenderSystem.disableScissor();
+        matrices.pop();
+
     }
 
+    @Override
+    public void renderArea(MatrixStack matrices) {
+        if(!showArea) return;
+        DrawHelper.fillGradient(matrices, 0, 0, 0 + getBoxWidth(),0 + getBoxHeight(), randomColor, getOpacity(), getZOffset());
+    }
+
+    @Deprecated
     public void fit() {
-        ArrayList<Integer> list = new ArrayList<>();
-        ArrayList<Integer> list1 = new ArrayList<>();
+        /*
+        ArrayList<Float> list = new ArrayList<>();
+        ArrayList<Float> list1 = new ArrayList<>();
+        ArrayList<Float> width = new ArrayList<>();
         for(Map.Entry<String, Widget> entry : widgets.entrySet()) {
             Widget value = entry.getValue();
-            list.add(value.getY());
-            list1.add((value.getX()));
+            list.add(value.getRelativeY() - this.getY());
+            list1.add((value.getRelativeX() - this.getRelativeX()));
+            width.add(value.getRelativeX() + value.getRelativeBoxWidth());
         }
         Collections.sort(list);
         Collections.sort(list1);
+        Collections.sort(width);
         offsetY = list.get(0);
         offsetX = list1.get(0);
-
+       // contentX = (int) (width.get(width.size()-1).intValue() - x - offsetX);
+      //  contentY = 100;
+        System.out.println(width);
         widgets.forEach((key, widget) -> {
+              if((widget.getRelativeX() - getX() - getOffsetX() + widget.getRelativeBoxWidth()) > contentX)
+                  contentX = (int)(widget.getRelativeX() - getX() - getOffsetX() + widget.getRelativeBoxWidth());
 
-            if(widget.getX() + widget.getBoxWidth() > contentX)
-                contentX = widget.getX() - offsetX + widget.getBoxWidth();
-
-
-
-            if(widget.getY() + widget.getBoxHeight() > contentY)
-                contentY = widget.getY() - offsetY + widget.getBoxHeight();
-
-
+            if((widget.getRelativeY() - getY() - getOffsetY() + widget.getRelativeBoxHeight()) > contentY)
+                contentY = (int)(widget.getRelativeY() - getY() - getOffsetY() + widget.getRelativeBoxHeight());
 
         });
-
+        */
     }
 
     @Override
