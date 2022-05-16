@@ -1,5 +1,6 @@
 package net.bati.guilib.gui.components;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bati.guilib.gui.screen.ScreenUtils;
 import net.bati.guilib.utils.DrawHelper;
@@ -22,6 +23,7 @@ public class Container extends Widget implements IWidgetsStorage {
         widgets = new HashMap<>();
     }
 
+    @Deprecated
     public Container shouldIgnoreContainerHitbox(boolean ignore) {
         this.ignoreContainerHitbox = ignore;
         return this;
@@ -94,8 +96,8 @@ public class Container extends Widget implements IWidgetsStorage {
         tickAnimation();
 
         matrices.push();
-        if(!ignoreContainerHitbox)
-            RenderSystem.enableScissor((int)(getPivotX()), (int)(MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (getPivotY() + getBoxHeight()*getRelativeSize())), (int)(getBoxWidth() * getRelativeSize()), (int)(getBoxHeight()*getRelativeSize()));
+        double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor();
+
 
         matrices.push();
         float offsetX = pivot.getX(getBoxWidth());
@@ -111,8 +113,20 @@ public class Container extends Widget implements IWidgetsStorage {
         matrices.scale(getSize(), getSize(), 1);
         matrices.translate(-offsetX, -offsetY, 0);
 
-        renderArea(matrices);
+        /*if(!ignoreContainerHitbox) {
+            if(hasParent()) {
+                RenderSystem.enableScissor((int) (parent.getPivotX() * scaleFactor), (int) (MinecraftClient.getInstance().getWindow().getFramebufferHeight() - ((parent.getPivotY() + parent.getBoxHeight() * parent.getRelativeSize()) * scaleFactor)), (int) (parent.getBoxWidth() * parent.getRelativeSize() * scaleFactor), (int) (parent.getBoxHeight() * parent.getRelativeSize() * scaleFactor));
 
+            } else {
+                RenderSystem.enableScissor((int) (getPivotX() * scaleFactor), (int) (MinecraftClient.getInstance().getWindow().getFramebufferHeight() - ((getPivotY() + getBoxHeight() * getRelativeSize()) * scaleFactor)), (int) (getBoxWidth() * getRelativeSize() * scaleFactor), (int) (getBoxHeight() * getRelativeSize() * scaleFactor));
+
+            }
+
+        }*/
+        renderArea(matrices);
+        /*if(!ignoreContainerHitbox) {
+            RenderSystem.disableScissor();
+        }*/
         matrices.translate(0,0, getZOffset());
         RenderSystem.setShaderColor(1,1,1, getOpacity());
 
@@ -126,8 +140,7 @@ public class Container extends Widget implements IWidgetsStorage {
         matrices.pop();
 
         matrices.pop();
-        if(!ignoreContainerHitbox)
-            RenderSystem.disableScissor();
+
         matrices.pop();
 
     }

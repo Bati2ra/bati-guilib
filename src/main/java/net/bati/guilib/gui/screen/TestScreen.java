@@ -23,9 +23,9 @@ public class TestScreen extends AdvancedScreen{
 
     @Override
     public void build() {
-        Button button2 = new Button(0,0).textComponent(new TextComponent().setText("+").setSize(0.5f).setColor(5000));
+        Button button2 = new Button(-60,-60).textComponent(new TextComponent().setText("+").setSize(0.5f).setColor(5000));
         button2.setIdentifier("boton+");
-        button2.setZOffset(20);
+        button2.setZOffset(100);
         button2.setSize(1f);
         button2.setBoxWidth(20);
         button2.setBoxHeight(20);
@@ -53,7 +53,7 @@ public class TestScreen extends AdvancedScreen{
         });
         addWidget(button2);
 
-        Container container = (Container) new Container().shouldIgnoreContainerHitbox(true).showArea().attach(PIVOT.MIDDLE);
+        Container container = (Container) new Container().shouldIgnoreContainerHitbox(false).showArea().attach(PIVOT.MIDDLE);
         container.setPivot(PIVOT.MIDDLE);
         container.setIdentifier("container");
         container.setPosition(0, 0);
@@ -64,7 +64,8 @@ public class TestScreen extends AdvancedScreen{
 
         container.setZOffset(10);
 
-        Container container2 = (Container) new Container().shouldIgnoreContainerHitbox(true).showArea();
+
+        Container container2 = (Container) new Container().shouldIgnoreContainerHitbox(false).showArea();
         container2.setIdentifier("container2");
         container2.setPivot(PIVOT.MIDDLE);
         container2.setPosition(20,20);
@@ -74,6 +75,16 @@ public class TestScreen extends AdvancedScreen{
         container2.setSize(0.5F);
 
 
+        Container container3 = (Container) new Container().shouldIgnoreContainerHitbox(false).showArea().attach(PIVOT.MIDDLE);
+        container3.setPivot(PIVOT.MIDDLE);
+        container3.setIdentifier("container3");
+        container3.setPosition(90, 90);
+        container3.setBoxWidth(150);
+        container3.setBoxHeight(150);
+        container3.setSize(0.5f);
+        container3.setOpacity(0.4F);
+
+        container3.setZOffset(30);
 
         Button button = new Button(99,80).textComponent(new TextComponent().setText("Boton 1").setSize(0.5f).setColor(5000));
         button.setIdentifier("boton1");
@@ -103,6 +114,7 @@ public class TestScreen extends AdvancedScreen{
             System.out.println("SOY EL BOTON 2");
         });
         container2.addWidget(button);
+        container2.addWidget(container3);
         container2.fit();
 
         container.addWidget(container2);

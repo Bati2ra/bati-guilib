@@ -141,11 +141,18 @@ public class Button extends Widget {
         float expand = getSize() /**  g*/;
 
         matrices.push();
-        if(parent != null) {
-
-        //    matrices.translate(x, y, 0);
-        }
         matrices.push();
+        /*if(hasParent()) {
+            double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor();
+            int scissorX = (int) (Math.max(parent.getPivotX(), parent.parent.getPivotX()));
+            int scissorY = (int) (Math.max(parent.getPivotY(), parent.parent.getPivotY()));
+            int scissorWidth = (int) (Math.min(parent.getBoxWidth()*parent.getRelativeSize(), parent.parent.getBoxWidth()*parent.parent.getRelativeSize()));
+            scissorWidth = (int) (scissorWidth - (parent.getPivotX() > parent.parent.getPivotX() ? 0 : -(parent.getX() - parent.pivot.getX(parent.getBoxWidth())*parent.getRelativeSize())));
+            int scissorHeight = (int) (Math.min(parent.getBoxHeight()*parent.getRelativeSize(), parent.parent.getBoxHeight()*parent.parent.getRelativeSize()));
+            RenderSystem.enableScissor((int) (scissorX * scaleFactor), (int) (MinecraftClient.getInstance().getWindow().getFramebufferHeight() - ((scissorY + scissorHeight) * scaleFactor)), (int) (parent.getBoxWidth()*parent.getRelativeSize() * scaleFactor), (int) (scissorHeight * scaleFactor));
+
+        }*/
+
         matrices.translate(-offsetX, -offsetY, 0);
         matrices.push();
         matrices.translate(getX() + offsetX, getY() + offsetY, 0);
@@ -163,6 +170,9 @@ public class Button extends Widget {
         drawText(matrices);
         matrices.pop();
         matrices.pop();
+        /*if(hasParent()) {
+            RenderSystem.disableScissor();
+        }*/
         matrices.pop();
 
         matrices.translate(0,0, -getZOffset());
