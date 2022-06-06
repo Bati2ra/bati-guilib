@@ -28,12 +28,31 @@ processResources {
 	inputs.property "version", project.version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.version,
+		'mod_id': project.mod_id,
+		'mod_name': project.mod_name,
+		'mod_author': project.mod_author,
+		'mod_description': project.mod_description
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 17
+}
+
+task devJar(type: Jar) {
+	classifier = 'dev'
+	from sourceSets.main.output
+}
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+artifacts {
+	archives devJar
+	archives sourcesJar
 }
 
 java {
@@ -45,6 +64,7 @@ jar {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
 }
+
 
 publishing {
 	publications {

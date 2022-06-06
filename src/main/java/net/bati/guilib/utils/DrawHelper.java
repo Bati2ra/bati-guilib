@@ -1,7 +1,6 @@
 package net.bati.guilib.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
@@ -9,13 +8,14 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
+
 public class DrawHelper {
-    public static void drawRectangle(Identifier texture, double x, double y, int u, int v, int width, int height, double scale, int imageWidth, int imageHeight) {
+    public static void drawRectangle(Identifier texture, double x, double y, int u, int v, double width, double height, double scale, int imageWidth, int imageHeight) {
         drawRectangle(texture,x, y, u, v, width, height,scale,imageWidth, imageHeight, null);
     }
 
 
-    public static void drawRectangle(Identifier texture,double x, double y, int u, int v, int width, int height,double scale, int imageWidth, int imageHeight, Matrix4f matrix)
+    public static void drawRectangle(Identifier texture,double x, double y, int u, int v, double width, double height,double scale, int imageWidth, int imageHeight, Matrix4f matrix)
     {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, texture);
@@ -37,7 +37,7 @@ public class DrawHelper {
 
         RenderSystem.disableBlend();
     }
-    public static void drawRectangle(Identifier texture,double x, double y, int u, int v, int width, int height,double scalex, double scaley, int imageWidth, int imageHeight, Matrix4f matrix)
+    public static void drawRectangle(Identifier texture,double x, double y, int u, int v, double width, double height,double scalex, double scaley, int imageWidth, int imageHeight, Matrix4f matrix)
     {
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -81,6 +81,7 @@ public class DrawHelper {
         builder.vertex(matrix, (float)startX, (float)startY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
         builder.vertex(matrix, (float)startX, (float)endY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
         builder.vertex(matrix, (float)endX, (float)endY, (float)z).color((float)color.x, (float)color.y, (float)color.z, a).next();
+
     }
 
 
@@ -91,5 +92,25 @@ public class DrawHelper {
         float h4 = (pColor & 0xFF) / 255.0F;
         float h1 = 1.0F;
         RenderSystem.setShaderColor(h1 * h2, h1 * h3, h1 * h4, alpha);
+    }
+
+    public static void drawFilledArc(int xCenter, int yCenter, int radius, double startDegrees, double finishDegrees, int color, float opacity, MatrixStack matrices) {
+        matrices.push();
+        RenderSystem.disableTexture();
+        RenderSystem.enableBlend();
+        hexColor(color, opacity);
+        GL11.glBegin(6);
+        GL11.glVertex2d(xCenter, yCenter);
+        double i;
+        for (i = startDegrees; i <= finishDegrees; i += 0.05D) {
+            double theta = Math.PI*2 * i / 360.0D;
+            double dotX = xCenter + Math.sin(theta) * radius;
+            double dotY = yCenter + Math.cos(theta) * radius;
+            GL11.glVertex2d(dotX , dotY);
+        }
+        GL11.glEnd();
+        RenderSystem.enableTexture();
+        RenderSystem.disableBlend();
+        matrices.pop();
     }
 }

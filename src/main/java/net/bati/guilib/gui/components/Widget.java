@@ -1,5 +1,9 @@
 package net.bati.guilib.gui.components;
 
+import net.bati.guilib.gui.interfaces.DrawableCallback;
+import net.bati.guilib.gui.interfaces.HoverCallback;
+import net.bati.guilib.gui.interfaces.MouseCallback;
+import net.bati.guilib.gui.interfaces.PressableCallback;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.PIVOT;
 import net.minecraft.client.MinecraftClient;
@@ -10,7 +14,6 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 
 
 public abstract class Widget extends DrawableHelper implements Drawable, Element {
@@ -48,18 +51,32 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     // Just for development proposes
     protected boolean showArea = false;
     protected int randomColor = -1;
+
     protected PIVOT pivot = PIVOT.LEFT_TOP;
     protected PIVOT attach = PIVOT.LEFT_TOP;
 
     protected long animationProgress;
     protected boolean playAnimation;
+
+
     protected Widget parent;
 
     protected int zOffset;
-    protected float offsetX,offsetY;
+
+    //Events
+    private DrawableCallback preDrawCallback, postDrawCallback, drawCallback;
+    private boolean shouldOverrideDraw;
+    private MouseCallback clickCallback, releaseClickCallback;
+
+    private PressableCallback keyPressedCallback, keyReleasedCallback;
+    private HoverCallback hoverCallback;
+
+
+
     public Widget() {
         this.font = MinecraftClient.getInstance().textRenderer;
     }
+
 
     public void  setIdentifier(String name) {
         this.identifier = name;
@@ -68,6 +85,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     public String getIdentifier() {
         return identifier;
     }
+
 
     public void toggleVisible(boolean v) {
         this.visible = v;
@@ -88,13 +106,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     public void toggleWidget(boolean s) {
         toggleVisible(s);
         toggleEnabled(s);
-    }
-    public int getOffsetX() {
-        return (int) offsetX;
-    }
-
-    public int getOffsetY() {
-        return (int) offsetY;
     }
 
     public void setX(int x) {
@@ -209,7 +220,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public boolean isHovered(int mouseX, int mouseY) {
-        return mouseX >= (getPivotX()) && mouseY >= (getPivotY()) && mouseX <= ((getPivotX() + getBoxWidth()* getRelativeSize())) && mouseY <= ((getPivotY() + getBoxHeight()*getRelativeSize()));
+        return (hoverCallback == null) ? mouseX >= (getPivotX()) && mouseY >= (getPivotY()) && mouseX <= ((getPivotX() + getBoxWidth()* getRelativeSize())) && mouseY <= ((getPivotY() + getBoxHeight()*getRelativeSize())) : hoverCallback.isHover(mouseX, mouseY);
     }
 
     public void setFocused(boolean focused) {
@@ -219,12 +230,40 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     public boolean isFocused(int mouseX, int mouseY) {
         return isFocused && isHovered(mouseX, mouseY);
     }
+
+    public void drawCallBack(DrawableCallback drawable) {
+        this.drawCallback = drawable;
+        this.shouldOverrideDraw = true;
+    }
+    public void preDrawCallBack(DrawableCallback drawable) {
+        this.preDrawCallback = drawable;
+    }
+    public void postDrawCallBack(DrawableCallback drawable) {
+        this.postDrawCallback = drawable;
+    }
+
+    // Used to render visual content for the widget, use this instead of render (which is used to handle all draw events)
+    public void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        tickAnimation();
+        renderArea(matrices);
+    }
+
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if(!visible) return;
 
-        tickAnimation();
-        renderArea(matrices);
+        if(preDrawCallback != null)
+            preDrawCallback.draw(matrices, mouseX, mouseY, delta);
+
+        if(shouldOverrideDraw)
+            drawCallback.draw(matrices, mouseX, mouseY, delta);
+        else
+            draw(matrices, mouseX, mouseY, delta);
+
+        if(postDrawCallback != null)
+            postDrawCallback.draw(matrices, mouseX, mouseY, delta);
+
+
 
     }
     public void tickAnimation() {
@@ -234,6 +273,8 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
         }
     }
+
+    // <-- This is used only for development proposes
 
     public Widget showArea() {
         this.showArea = true;
@@ -250,6 +291,10 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         if(!showArea) return;
         DrawHelper.fillGradient(matrices, getRelativeX(), getRelativeY(), getRelativeX() + getRelativeBoxWidth(),getRelativeY() + getRelativeBoxHeight(), randomColor, 0.5f, getZOffset());
     }
+
+    // -->
+
+
     public void setPivot(PIVOT pivot) {
         this.pivot = pivot;
     }
