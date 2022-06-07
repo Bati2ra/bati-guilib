@@ -29,11 +29,9 @@ public class Button extends Widget {
     protected TextComponent textComponent = new TextComponent();
     private boolean isPressed;
 
-    public Button(int x, int y) {
+    public Button() {
         boxWidth = 200;
         boxHeight = 20;
-        this.x = x;
-        this.y = y;
     }
 
     public Button(int x, int y, int width, int height, TextComponent textComponent, TextureComponent textureComponent, PIVOT pivot) {

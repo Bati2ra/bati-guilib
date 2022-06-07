@@ -1,15 +1,18 @@
 package net.bati.guilib.utils.font;
 
+import net.bati.guilib.utils.ColorUtils;
 import net.bati.guilib.utils.Vec2;
-
-import java.awt.*;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
 
 public class TextComponent {
     private String text = "";
     private int color = 16777215;
     private float size = 1.0F;
+
     private boolean outlined;
     private int lineColor = 16777215;
+
     private boolean shadow;
     private boolean centered = true;
     private Vec2 offsetPosition;
@@ -18,7 +21,7 @@ public class TextComponent {
     public TextComponent() {
     }
 
-    public TextComponent setText(String text) {
+    public TextComponent text(String text) {
         this.text = text;
         return this;
     }
@@ -27,7 +30,7 @@ public class TextComponent {
         return text;
     }
 
-    public TextComponent setColor(int color) {
+    public TextComponent color(int color) {
         this.color = color;
         return this;
     }
@@ -35,7 +38,7 @@ public class TextComponent {
         return color;
     }
 
-    public TextComponent setLineColor(int color) {
+    public TextComponent outlineColor(int color) {
         this.outlined = true;
         this.lineColor = color;
         return this;
@@ -48,8 +51,8 @@ public class TextComponent {
         return outlined;
     }
 
-    public TextComponent setShadow(boolean s) {
-        this.shadow = s;
+    public TextComponent shadow() {
+        this.shadow = true;
         return this;
     }
 
@@ -57,7 +60,7 @@ public class TextComponent {
         return shadow;
     }
 
-    public TextComponent setSize(float s) {
+    public TextComponent size(float s) {
         this.size = s;
         return this;
     }
@@ -66,7 +69,7 @@ public class TextComponent {
         return size;
     }
 
-    public TextComponent setOffsetPosition(Vec2 vec) {
+    public TextComponent offset(Vec2 vec) {
         this.centered = false;
         this.offsetPosition = vec;
         return this;
@@ -91,4 +94,7 @@ public class TextComponent {
     public Font getStyle() {
         return style;
     }
+
+
+
 }

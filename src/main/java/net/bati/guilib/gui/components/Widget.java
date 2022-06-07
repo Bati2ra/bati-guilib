@@ -1,18 +1,15 @@
 package net.bati.guilib.gui.components;
 
-import net.bati.guilib.gui.interfaces.DrawableCallback;
-import net.bati.guilib.gui.interfaces.HoverCallback;
-import net.bati.guilib.gui.interfaces.MouseCallback;
-import net.bati.guilib.gui.interfaces.PressableCallback;
+import net.bati.guilib.gui.interfaces.*;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.PIVOT;
+import net.bati.guilib.utils.Vec2;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
 
@@ -70,22 +67,153 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
     private PressableCallback keyPressedCallback, keyReleasedCallback;
     private HoverCallback hoverCallback;
-
+    private ScreenPositionCallback positionCallback;
 
 
     public Widget() {
         this.font = MinecraftClient.getInstance().textRenderer;
     }
 
-
-    public void  setIdentifier(String name) {
-        this.identifier = name;
-    }
-
     public String getIdentifier() {
         return identifier;
     }
+    public void setIdentifier(String name) {
+        this.identifier = name;
+    }
+    public Widget identifier(String name) {
+        setIdentifier(name);
+        return this;
+    }
 
+    // <-- X axis getter/setter/builder section
+    public int getX() {
+        return  x + (hasParent() ? 0 : (int)attach.getX(MinecraftClient.getInstance().getWindow().getScaledWidth()));
+    }
+
+    public float getPivotX() {
+        return hasParent() ? parent.getPivotX() + getRelativeX() * parent.getRelativeSize() : getRelativeX();
+    }
+
+    public float getRelativeX() {
+        return getX() - pivot.getX(getBoxWidth() * getSize());
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    // end section -->
+
+    // <-- Y axis getter/setter/builder section
+    public int getY() {
+        return y + (hasParent() ? 0: (int)attach.getY(MinecraftClient.getInstance().getWindow().getScaledHeight()));
+    }
+
+    public float getPivotY() {
+        return hasParent() ? parent.getPivotY() + getRelativeY() * parent.getRelativeSize() : getRelativeY();
+    }
+
+    public float getRelativeY() {
+        return getY() - pivot.getY(getBoxHeight() * getSize());
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    // end section -->
+
+    public Widget pos(int x, int y) {
+        setX(x);
+        setY(y);
+        return this;
+    }
+
+    public Widget pos(ScreenPositionCallback callback) {
+        positionCallback = callback;
+        return this;
+    }
+
+    public int getBoxWidth() {
+        return boxWidth;
+    }
+    public void setBoxWidth(int s) {
+        this.boxWidth = s;
+    }
+
+    public int getBoxHeight() {
+        return boxHeight;
+    }
+
+    public void setBoxHeight(int s) {
+        this.boxHeight = s;
+    }
+
+    public float getRelativeBoxWidth() {
+        return getBoxWidth() * getSize();
+    }
+
+    public float getRelativeBoxHeight() {
+        return getBoxHeight() * getSize();
+    }
+
+    public Widget box(int width, int height) {
+        setBoxWidth(width);
+        setBoxHeight(height);
+        return this;
+    }
+
+    public float getSize() {
+        return size;
+    }
+
+    public float getRelativeSize() {
+        return (hasParent() ? parent.getRelativeSize() : 1) * getSize();
+    }
+
+    public void setSize(float s) {
+        this.size = s;
+    }
+
+    public Widget size(float s) {
+        setSize(s);
+        return this;
+    }
+
+    public boolean hasParent() {
+        return parent != null;
+    }
+
+    public Widget getParent() {
+        return parent;
+    }
+
+    public void setParent(Widget parent) {
+        this.parent = parent;
+    }
+
+    public float getOpacity() {
+        return (hasParent() ? parent.getOpacity() : 1) * opacity;
+    }
+
+    public void setOpacity(float s) {
+        this.opacity = MathHelper.clamp(s, 0, 1);
+    }
+
+    public Widget opacity(float s) {
+        setOpacity(s);
+        return this;
+    }
+
+    @Override
+    public void setZOffset(int zOffset) {
+        this.zOffset = zOffset;
+    }
+
+    @Override
+    public int getZOffset() {
+        return (hasParent()) ? ((zOffset < 0) ? parent.getZOffset() + 1 : zOffset + parent.getZOffset()) : zOffset;
+    }
 
     public void toggleVisible(boolean v) {
         this.visible = v;
@@ -108,108 +236,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         toggleEnabled(s);
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getX() {
-        return (int) (x + ((hasParent()) ? 0 : (int)attach.getX(MinecraftClient.getInstance().getWindow().getScaledWidth())));
-    }
-    public float getPivotX() {
-        return (hasParent()) ? parent.getPivotX() + getRelativeX() * parent.getRelativeSize() : getRelativeX();
-    }
-    public float getPivotY() {
-        return (hasParent()) ? parent.getPivotY() + getRelativeY() * parent.getRelativeSize() : getRelativeY();
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public int getY() {
-        return (int) (y + ((hasParent()) ? 0: (int)attach.getY(MinecraftClient.getInstance().getWindow().getScaledHeight())));
-    }
-
-    public float getRelativeX() {
-        return getX() - pivot.getX(getBoxWidth() * getSize());
-    }
-
-    public float getRelativeY() {
-        return getY() - pivot.getY(getBoxHeight() * getSize());
-    }
-
-    public float getRelativeBoxWidth() {
-        return getBoxWidth() * getSize();
-    }
-
-    public float getRelativeBoxHeight() {
-        return getBoxHeight() * getSize();
-    }
-
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void setSize(float s) {
-        this.size = s;
-    }
-
-    public float getSize() {
-        return size;
-    }
-    public float getRelativeSize() {
-        return (hasParent() ? parent.getRelativeSize() : 1) * getSize();
-    }
-
-    public Widget setParent(Widget parent) {
-        this.parent = parent;
-        return this;
-    }
-    public boolean hasParent() {
-        return parent != null;
-    }
-
-    public Widget getParent() {
-        return parent;
-    }
-
-    public void setOpacity(float s) {
-        this.opacity = s;
-    }
-
-    public float getOpacity() {
-        return (hasParent() ? parent.getOpacity() : 1) * opacity;
-    }
-
-    public void setBoxWidth(int s) {
-        this.boxWidth = s;
-    }
-
-    public int getBoxWidth() {
-        return boxWidth;
-    }
-
-    public void setBoxHeight(int s) {
-        this.boxHeight = s;
-    }
-
-    public int getBoxHeight() {
-        return boxHeight;
-    }
-
-    public void fireAnimation(String animationName) {
-        this.playAnimation = true;
-        this.animationProgress = 0L;
-    }
-
-    public boolean isPlayingAnimation() {
-        return this.playAnimation && this.animationProgress != 0L;
-    }
-
-    public float getAnimationProgress() {
-        return MathHelper.clamp((float) ((Util.getMeasuringTimeMs() - this.animationProgress) / 1000.0F * 6), 0, 1);
-    }
     public Widget attach(PIVOT pivot) {
         this.attach = pivot;
         return this;
@@ -219,17 +245,27 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         return attach;
     }
 
+    public void setPivot(PIVOT pivot) {
+        this.pivot = pivot;
+    }
+
     public boolean isHovered(int mouseX, int mouseY) {
         return (hoverCallback == null) ? mouseX >= (getPivotX()) && mouseY >= (getPivotY()) && mouseX <= ((getPivotX() + getBoxWidth()* getRelativeSize())) && mouseY <= ((getPivotY() + getBoxHeight()*getRelativeSize())) : hoverCallback.isHover(mouseX, mouseY);
+    }
+
+    public Widget hover(HoverCallback callback) {
+        this.hoverCallback = callback;
+        return this;
+    }
+
+    public boolean isFocused(int mouseX, int mouseY) {
+        return isFocused && isHovered(mouseX, mouseY);
     }
 
     public void setFocused(boolean focused) {
         this.isFocused = focused;
     }
 
-    public boolean isFocused(int mouseX, int mouseY) {
-        return isFocused && isHovered(mouseX, mouseY);
-    }
 
     public void drawCallBack(DrawableCallback drawable) {
         this.drawCallback = drawable;
@@ -243,14 +279,20 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     // Used to render visual content for the widget, use this instead of render (which is used to handle all draw events)
-    public void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        tickAnimation();
+    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderArea(matrices);
     }
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if(!visible) return;
+
+        if(positionCallback != null) {
+            Vec2 positionVector = positionCallback.get(MinecraftClient.getInstance().getWindow());
+            setX(positionVector.getX());
+            setY(positionVector.getY());
+        }
+
 
         if(preDrawCallback != null)
             preDrawCallback.draw(matrices, mouseX, mouseY, delta);
@@ -266,13 +308,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
 
     }
-    public void tickAnimation() {
-        if(playAnimation) {
-            if(animationProgress == 0L)
-                this.animationProgress = Util.getMeasuringTimeMs();
-
-        }
-    }
 
     // <-- This is used only for development proposes
 
@@ -281,23 +316,14 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         this.randomColor = (int) (Math.random()*16777215);
         return this;
     }
-
-    public Widget hiddeArea() {
-        this.showArea = false;
-        return this;
-    }
-
     public void renderArea(MatrixStack matrices) {
         if(!showArea) return;
         DrawHelper.fillGradient(matrices, getRelativeX(), getRelativeY(), getRelativeX() + getRelativeBoxWidth(),getRelativeY() + getRelativeBoxHeight(), randomColor, 0.5f, getZOffset());
     }
 
-    // -->
+    // end section -->
 
 
-    public void setPivot(PIVOT pivot) {
-        this.pivot = pivot;
-    }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
@@ -305,7 +331,12 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         return true;
     }
 
-    public abstract void mouseClick(double mouseX, double mouseY, int mouseButton);
+    public void mouseClick(double mouseX, double mouseY, int mouseButton) {
+        if(clickCallback == null)
+            return;
+
+        clickCallback.call(mouseX, mouseY, mouseButton);
+    };
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int state) {
@@ -313,17 +344,40 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         return true;
     }
 
-    public abstract void mouseRelease(double mouseX, double mouseY, int state);
+    public void mouseRelease(double mouseX, double mouseY, int state) {
+        if(releaseClickCallback == null)
+            return;
 
-    public abstract boolean charTyped(char typedChar, int keyCode);
+        releaseClickCallback.call(mouseX, mouseY, state);
+    };
 
     @Override
-    public void setZOffset(int zOffset) {
-        this.zOffset = zOffset;
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        this.keyPress(keyCode, scanCode, modifiers);
+        return true;
+    }
+
+
+    public void keyPress(int keyCode, int scanCode, int modifiers) {
+        if(keyPressedCallback == null)
+            return;
+
+        keyPressedCallback.call(keyCode, scanCode, modifiers);
     }
 
     @Override
-    public int getZOffset() {
-        return (hasParent()) ? ((zOffset < 0) ? parent.getZOffset() + 1 : zOffset + parent.getZOffset()) : zOffset;
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        this.keyRelease(keyCode, scanCode, modifiers);
+        return true;
     }
+
+    public void keyRelease(int keyCode, int scanCode, int modifiers) {
+        if(keyReleasedCallback == null)
+            return;
+
+        keyReleasedCallback.call(keyCode, scanCode, modifiers);
+    }
+
+
+   
 }

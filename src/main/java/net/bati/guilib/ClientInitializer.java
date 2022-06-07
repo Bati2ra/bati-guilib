@@ -10,8 +10,8 @@ public class ClientInitializer implements ClientModInitializer {
     public void onInitializeClient() {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            //if(MinecraftClient.getInstance().options.sprintKey.isPressed())
-            //    MinecraftClient.getInstance().setScreen(new TestScreen(null));
+            if(MinecraftClient.getInstance().options.sprintKey.isPressed())
+                MinecraftClient.getInstance().setScreen(new TestScreen(null));
         });
 
     }

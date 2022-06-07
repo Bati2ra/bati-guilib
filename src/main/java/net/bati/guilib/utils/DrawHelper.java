@@ -85,32 +85,4 @@ public class DrawHelper {
     }
 
 
-
-    public static void hexColor(int pColor, float alpha) {
-        float h2 = (pColor >> 16 & 0xFF) / 255.0F;
-        float h3 = (pColor >> 8 & 0xFF) / 255.0F;
-        float h4 = (pColor & 0xFF) / 255.0F;
-        float h1 = 1.0F;
-        RenderSystem.setShaderColor(h1 * h2, h1 * h3, h1 * h4, alpha);
-    }
-
-    public static void drawFilledArc(int xCenter, int yCenter, int radius, double startDegrees, double finishDegrees, int color, float opacity, MatrixStack matrices) {
-        matrices.push();
-        RenderSystem.disableTexture();
-        RenderSystem.enableBlend();
-        hexColor(color, opacity);
-        GL11.glBegin(6);
-        GL11.glVertex2d(xCenter, yCenter);
-        double i;
-        for (i = startDegrees; i <= finishDegrees; i += 0.05D) {
-            double theta = Math.PI*2 * i / 360.0D;
-            double dotX = xCenter + Math.sin(theta) * radius;
-            double dotY = yCenter + Math.cos(theta) * radius;
-            GL11.glVertex2d(dotX , dotY);
-        }
-        GL11.glEnd();
-        RenderSystem.enableTexture();
-        RenderSystem.disableBlend();
-        matrices.pop();
-    }
 }

@@ -3,6 +3,7 @@ package net.bati.guilib.gui.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bati.guilib.gui.components.Button;
 import net.bati.guilib.gui.components.Container;
+import net.bati.guilib.gui.components.Widget;
 import net.bati.guilib.utils.BatiLib;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.PIVOT;
@@ -23,103 +24,36 @@ public class TestScreen extends AdvancedScreen{
 
     @Override
     public void build() {
-        Button button2 = new Button(-60,-60).textComponent(new TextComponent().setText("+").setSize(0.5f).setColor(5000));
+        Button button2 = new Button(100,100).textComponent(new TextComponent().text("Buenas tardes señorita").size(0.5f).color(5000));
         button2.setIdentifier("boton+");
         button2.setZOffset(100);
         button2.setSize(1f);
-        button2.setBoxWidth(20);
+        button2.setBoxWidth(200);
         button2.setBoxHeight(20);
         button2.registerLeftClickListener(() -> {
+
             getWidget("container").setSize(getWidget("container").getSize() + 0.1F);
         });
         button2.registerRightClickListener(() -> {
             getWidget("container").setSize(getWidget("container").getSize() - 0.1F);
         });
-        addWidget(button2);
 
-        button2 = new Button(0,40).textComponent(new TextComponent().setText("+2").setSize(0.5f).setColor(5000));
-        button2.setIdentifier("boton+2");
-        button2.setZOffset(20);
-        button2.setSize(1f);
-        button2.setBoxWidth(20);
-        button2.setBoxHeight(20);
+        button2.drawCallBack((matrices, x, y, delta) -> {
+            DrawHelper.fillGradient(matrices, 50, 50, 150, 150, 16777215, 0.5f, 1);
 
-        button2.registerLeftClickListener(() -> {
-            ((Container)getWidget("container")).getWidget("container2").setSize(((Container)getWidget("container")).getWidget("container2").getSize() + 0.1F);
-        });
-        button2.registerRightClickListener(() -> {
-            ((Container)getWidget("container")).getWidget("container2").setSize(((Container)getWidget("container")).getWidget("container2").getSize() - 0.1F);
 
         });
         addWidget(button2);
 
-        Container container = (Container) new Container().shouldIgnoreContainerHitbox(false).showArea().attach(PIVOT.MIDDLE);
-        container.setPivot(PIVOT.MIDDLE);
-        container.setIdentifier("container");
-        container.setPosition(0, 0);
-        container.setBoxWidth(150);
-        container.setBoxHeight(150);
-        container.setSize(1f);
-        container.setOpacity(0.4F);
+        Button button = (Button) new Button()
+                .pos((window) -> new Vec2(window.getScaledWidth()/2, 10))
+                .box(10,10)
+                .size(1);
 
-        container.setZOffset(10);
+        button.drawCallBack((matrices, x, y, delta) -> {
 
-
-        Container container2 = (Container) new Container().shouldIgnoreContainerHitbox(false).showArea();
-        container2.setIdentifier("container2");
-        container2.setPivot(PIVOT.MIDDLE);
-        container2.setPosition(20,20);
-        container2.setBoxWidth(90);
-        container2.setBoxHeight(90);
-        container2.setZOffset(11);
-        container2.setSize(0.5F);
-
-
-        Container container3 = (Container) new Container().shouldIgnoreContainerHitbox(false).showArea().attach(PIVOT.MIDDLE);
-        container3.setPivot(PIVOT.MIDDLE);
-        container3.setIdentifier("container3");
-        container3.setPosition(90, 90);
-        container3.setBoxWidth(150);
-        container3.setBoxHeight(150);
-        container3.setSize(0.5f);
-        container3.setOpacity(0.4F);
-
-        container3.setZOffset(30);
-
-        Button button = new Button(99,80).textComponent(new TextComponent().setText("Boton 1").setSize(0.5f).setColor(5000));
-        button.setIdentifier("boton1");
-        button.setPivot(PIVOT.RIGHT_MIDDLE);
-        button.setZOffset(20);
-        button.setSize(1f);
-
-        button.registerLeftClickListener(() -> {
-            System.out.println("SOY EL BOTON 1!");
         });
-        container2.addWidget(button);
 
-        button = new Button(250, 45).textComponent(new TextComponent().setText("Boton 3").setSize(1f).setLineColor(1).setColor(10000).font(FontStyle.ARCADEX));
-        button.setPivot(PIVOT.MIDDLE);
-        button.setIdentifier("boton3");
-        button.setBoxWidth(70);
-        button.setSize(1f);
-        button.setZOffset(-10);
-        container2.addWidget(button);
-
-        button = new Button(-20, 10).textComponent(new TextComponent().setText("Boton 2").setSize(1f).setLineColor(1).font(FontStyle.TEN));
-        button.setIdentifier("boton2");
-        button.setPivot(PIVOT.MIDDLE);
-        button.setSize(1f);
-        button.setZOffset(4);
-        button.registerLeftClickListener(() -> {
-            System.out.println("SOY EL BOTON 2");
-        });
-        container2.addWidget(button);
-        container2.addWidget(container3);
-        container2.fit();
-
-        container.addWidget(container2);
-        container.fit();
-        addWidget(container);
 
     }
 
