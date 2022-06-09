@@ -22,7 +22,7 @@ public abstract class AdvancedScreen extends Screen {
     private float partialTicks;
     private MatrixStack matrix;
 
-    private Widget emptyWidget = new Button(0, 0);
+    private final Widget emptyWidget = new Button();
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);

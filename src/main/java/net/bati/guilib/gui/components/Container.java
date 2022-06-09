@@ -93,7 +93,6 @@ public class Container extends Widget implements IWidgetsStorage {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if(!visible) return;
 
-        tickAnimation();
 
         matrices.push();
         double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor();

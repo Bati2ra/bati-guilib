@@ -69,7 +69,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     private HoverCallback hoverCallback;
     private ScreenPositionCallback positionCallback;
 
-
+    private float pivotX, pivotY;
     public Widget() {
         this.font = MinecraftClient.getInstance().textRenderer;
     }
@@ -80,10 +80,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     public void setIdentifier(String name) {
         this.identifier = name;
     }
-    public Widget identifier(String name) {
-        setIdentifier(name);
-        return this;
-    }
 
     // <-- X axis getter/setter/builder section
     public int getX() {
@@ -91,7 +87,11 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public float getPivotX() {
-        return hasParent() ? parent.getPivotX() + getRelativeX() * parent.getRelativeSize() : getRelativeX();
+        return pivotX;
+    }
+    
+    private void calculatePivots() {
+        pivotX = hasParent() ? parent.getPivotX() + getRelativeX() * parent.getRelativeSize() : getRelativeX();
     }
 
     public float getRelativeX() {
@@ -123,15 +123,8 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
     // end section -->
 
-    public Widget pos(int x, int y) {
-        setX(x);
-        setY(y);
-        return this;
-    }
-
-    public Widget pos(ScreenPositionCallback callback) {
-        positionCallback = callback;
-        return this;
+    public void setPositionCallback(ScreenPositionCallback callback) {
+        this.positionCallback = callback;
     }
 
     public int getBoxWidth() {
@@ -157,12 +150,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         return getBoxHeight() * getSize();
     }
 
-    public Widget box(int width, int height) {
-        setBoxWidth(width);
-        setBoxHeight(height);
-        return this;
-    }
-
     public float getSize() {
         return size;
     }
@@ -173,11 +160,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
     public void setSize(float s) {
         this.size = s;
-    }
-
-    public Widget size(float s) {
-        setSize(s);
-        return this;
     }
 
     public boolean hasParent() {
@@ -198,11 +180,6 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
     public void setOpacity(float s) {
         this.opacity = MathHelper.clamp(s, 0, 1);
-    }
-
-    public Widget opacity(float s) {
-        setOpacity(s);
-        return this;
     }
 
     @Override
@@ -236,13 +213,12 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         toggleEnabled(s);
     }
 
-    public Widget attach(PIVOT pivot) {
-        this.attach = pivot;
-        return this;
-    }
-
     public PIVOT getAttached() {
         return attach;
+    }
+
+    public void setAttachedTo(PIVOT attach) {
+        this.attach = attach;
     }
 
     public void setPivot(PIVOT pivot) {
@@ -253,9 +229,8 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         return (hoverCallback == null) ? mouseX >= (getPivotX()) && mouseY >= (getPivotY()) && mouseX <= ((getPivotX() + getBoxWidth()* getRelativeSize())) && mouseY <= ((getPivotY() + getBoxHeight()*getRelativeSize())) : hoverCallback.isHover(mouseX, mouseY);
     }
 
-    public Widget hover(HoverCallback callback) {
+    public void setHoverCallback(HoverCallback callback) {
         this.hoverCallback = callback;
-        return this;
     }
 
     public boolean isFocused(int mouseX, int mouseY) {
@@ -266,17 +241,35 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
         this.isFocused = focused;
     }
 
-
-    public void drawCallBack(DrawableCallback drawable) {
+    public void setDrawCallback(DrawableCallback drawable) {
         this.drawCallback = drawable;
         this.shouldOverrideDraw = true;
     }
-    public void preDrawCallBack(DrawableCallback drawable) {
+
+    public void setPreDrawCallback(DrawableCallback drawable) {
         this.preDrawCallback = drawable;
     }
-    public void postDrawCallBack(DrawableCallback drawable) {
+
+    public void setPostDrawCallback(DrawableCallback drawable) {
         this.postDrawCallback = drawable;
     }
+
+    public void setClickCallback(MouseCallback callback) {
+        this.clickCallback = callback;
+    }
+
+    public void setReleaseClickCallback(MouseCallback callback) {
+        this.releaseClickCallback = callback;
+    }
+
+    public void setKeyPressedCallback(PressableCallback callback) {
+        this.keyPressedCallback = callback;
+    }
+
+    public void setKeyReleasedCallback(PressableCallback callback) {
+        this.keyReleasedCallback = callback;
+    }
+
 
     // Used to render visual content for the widget, use this instead of render (which is used to handle all draw events)
     protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
@@ -379,5 +372,5 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
 
-   
+
 }
