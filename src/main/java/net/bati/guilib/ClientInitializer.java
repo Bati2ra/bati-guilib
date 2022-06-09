@@ -1,5 +1,6 @@
 package net.bati.guilib;
 
+import net.bati.guilib.gui.components.KotlinTest;
 import net.bati.guilib.gui.screen.TestScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -13,6 +14,7 @@ public class ClientInitializer implements ClientModInitializer {
             if(MinecraftClient.getInstance().options.sprintKey.isPressed())
                 MinecraftClient.getInstance().setScreen(new TestScreen(null));
         });
-
+        KotlinTest test = new KotlinTest();
+        test.test();
     }
 }

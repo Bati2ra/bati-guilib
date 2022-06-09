@@ -99,6 +99,12 @@ public class WidgetBuilder<T extends Widget> {
         return this;
     }
 
+
+    public WidgetBuilder<T> hide() {
+        widget.setHide(false);
+        return this;
+    }
+
     // <-- TextLabel Builder methods
     public WidgetBuilder<TextLabel> text(TextCallback callback) {
         ((TextLabel)widget).setTextCallback(callback);

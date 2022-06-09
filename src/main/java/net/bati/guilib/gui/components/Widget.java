@@ -181,8 +181,8 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
      * @param s
      */
     public void setHide(boolean s) {
-        setVisible(s);
-        setEnabled(s);
+        setVisible(!s);
+        setEnabled(!s);
     }
 
     public boolean isHovered(int mouseX, int mouseY) {
