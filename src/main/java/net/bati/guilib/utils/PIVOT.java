@@ -26,7 +26,7 @@ public enum PIVOT {
 
     private float x;
     private float y;
-    private PIVOT(float x, float y) {
+    PIVOT(float x, float y) {
         this.x = x;
         this.y = y;
     }

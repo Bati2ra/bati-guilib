@@ -24,3 +24,4 @@ public class Mouse {
         return y;
     }
 }
+

@@ -14,6 +14,7 @@ public class TextLabel extends Widget{
 
     }
 
+
     public TextComponent getTextComponent() {
         return textComponent;
     }
@@ -28,6 +29,7 @@ public class TextLabel extends Widget{
     protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if(textComponent == null)
             return;
+
 
         TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), matrices, getX(), getY(), getZOffset(), getOpacity());
     }

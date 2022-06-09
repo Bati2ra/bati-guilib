@@ -20,7 +20,7 @@ public class TestScreen extends AdvancedScreen{
     public void build() {
         TextLabel textLabel = new WidgetBuilder<>(new TextLabel())
                 .identifier("name")
-                .pos(100,10)
+                .position(100,10)
                 .component(new TextComponent())
                 .text(() -> "HOLA")
                 .build();
@@ -28,12 +28,13 @@ public class TestScreen extends AdvancedScreen{
 
         Button button = new WidgetBuilder<>(new Button())
                 .identifier("boton")
-                .pos(50, 50)
+                .position(50, 50)
                 .box(200, 20)
                 .onClick((s, a, c) -> System.out.println("CLICK! "))
                 .build();
 
         addWidgets(button, textLabel);
+
 
     }
 

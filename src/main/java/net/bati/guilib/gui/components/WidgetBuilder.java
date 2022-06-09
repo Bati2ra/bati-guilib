@@ -30,7 +30,7 @@ public class WidgetBuilder<T extends Widget> {
     }
 
     public WidgetBuilder<T> size(float s) {
-        widget.setSize(s);
+        widget.setTransformSize(s);
         return this;
     }
 
@@ -40,7 +40,7 @@ public class WidgetBuilder<T extends Widget> {
     }
 
     public WidgetBuilder<T> attachTo(PIVOT pivot) {
-        widget.setAttachedTo(pivot);
+        widget.setAttach(pivot);
         return this;
     }
 
@@ -94,6 +94,11 @@ public class WidgetBuilder<T extends Widget> {
         return this;
     }
 
+    public WidgetBuilder<T> showArea(boolean s) {
+        widget.setShowArea(s);
+        return this;
+    }
+
     // <-- TextLabel Builder methods
     public WidgetBuilder<TextLabel> text(TextCallback callback) {
         ((TextLabel)widget).setTextCallback(callback);
@@ -104,6 +109,7 @@ public class WidgetBuilder<T extends Widget> {
         ((TextLabel)widget).setTextComponent(component);
         return (WidgetBuilder<TextLabel>) this;
     }
+
     // -->
 
     public T build() {

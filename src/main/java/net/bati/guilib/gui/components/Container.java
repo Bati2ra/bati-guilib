@@ -1,13 +1,10 @@
 package net.bati.guilib.gui.components;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bati.guilib.gui.screen.ScreenUtils;
 import net.bati.guilib.utils.DrawHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Util;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 
@@ -35,7 +32,12 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    public void mouseClick(double mouseX, double mouseY, int mouseButton) {
+    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+
+    }
+
+    @Override
+    protected void mouseClickCallback(double mouseX, double mouseY, int mouseButton) {
         if(!isEnabled()) return;
         widgets.forEach((key, value) ->  {
             if(value.isVisible() && value.isFocused((int)mouseX, (int)mouseY))
@@ -55,7 +57,7 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    public void mouseRelease(double mouseX, double mouseY, int state) {
+    protected void mouseReleaseCallback(double mouseX, double mouseY, int state) {
         if(!isVisible()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
@@ -64,34 +66,8 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    public boolean charTyped(char typedChar, int keyCode) {
-        return false;
-    }
-
-
-    @Override
-    public int getBoxWidth() {
-        return boxWidth ;
-    }
-
-    @Override
-    public int getBoxHeight() {
-        return boxHeight;
-    }
-
-    @Override
-    public float getRelativeX() {
-        return super.getRelativeX();
-    }
-
-    @Override
-    public float getRelativeY() {
-        return super.getRelativeY();
-    }
-
-    @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        if(!visible) return;
+        if(!isVisible()) return;
 
 
         matrices.push();
@@ -99,8 +75,8 @@ public class Container extends Widget implements IWidgetsStorage {
 
 
         matrices.push();
-        float offsetX = pivot.getX(getBoxWidth());
-        float offsetY = pivot.getY(getBoxHeight());
+        float offsetX = getPivot().getX(getBoxWidth());
+        float offsetY = getPivot().getY(getBoxHeight());
 
         matrices.push();
         matrices.translate(-offsetX, -offsetY, 0);
@@ -109,7 +85,7 @@ public class Container extends Widget implements IWidgetsStorage {
         matrices.translate(0,0,50);
         matrices.translate(0,0,-50);
 
-        matrices.scale(getSize(), getSize(), 1);
+        matrices.scale(getTransformSize(), getTransformSize(), 1);
         matrices.translate(-offsetX, -offsetY, 0);
 
         /*if(!ignoreContainerHitbox) {
@@ -122,16 +98,16 @@ public class Container extends Widget implements IWidgetsStorage {
             }
 
         }*/
-        renderArea(matrices);
+        drawBoxArea(matrices);
         /*if(!ignoreContainerHitbox) {
             RenderSystem.disableScissor();
         }*/
-        matrices.translate(0,0, getZOffset());
+        matrices.translate(0,0, getZ());
         RenderSystem.setShaderColor(1,1,1, getOpacity());
 
         ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
 
-        matrices.translate(0,0, -getZOffset());
+        matrices.translate(0,0, -getZ());
         RenderSystem.setShaderColor(1,1,1, 1);
 
 
@@ -145,9 +121,9 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    public void renderArea(MatrixStack matrices) {
-        if(!showArea) return;
-        DrawHelper.fillGradient(matrices, 0, 0, 0 + getBoxWidth(),0 + getBoxHeight(), randomColor, getOpacity(), getZOffset());
+    protected void drawBoxArea(MatrixStack matrices) {
+        if(!isShowArea()) return;
+        DrawHelper.fillGradient(matrices, 0, 0, getBoxWidth(),getBoxHeight(), getRandomColor(), getOpacity(), getZ());
     }
 
     @Deprecated
