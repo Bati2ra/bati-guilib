@@ -1,6 +1,7 @@
 package net.bati.guilib.utils.font;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.bati.guilib.utils.ColorUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -99,14 +100,14 @@ public class TextUtils {
             if(textComponent.getStyle() == null)
                 TextUtils.drawTextOutline(new LiteralText(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
             else
-                TextUtils.drawTextOutline(textComponent.getStyle().id(), new LiteralText(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), new LiteralText(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
             matrices.translate(0,0,-z);
             matrices.pop();
         } else {
             if(textComponent.getStyle() == null)
                 TextUtils.drawText(new LiteralText(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
             else
-                TextUtils.drawText(textComponent.getStyle().id(), new LiteralText(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(textComponent.getStyle().getIdentifier(), new LiteralText(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
         }
     }
 

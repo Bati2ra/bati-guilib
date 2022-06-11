@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.bati.guilib.utils.Callback;
 import net.bati.guilib.utils.DrawHelper;
-import net.bati.guilib.utils.PIVOT;
+import net.bati.guilib.utils.Pivot;
 import net.bati.guilib.utils.Vec2;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
@@ -49,8 +49,8 @@ public abstract class Widget implements Drawable, Element {
      */
     private boolean enabled = true;
 
-    private PIVOT pivot = PIVOT.LEFT_TOP;
-    private PIVOT attach = PIVOT.LEFT_TOP;
+    @Builder.Default private Pivot pivot = Pivot.LEFT_TOP;
+    @Builder.Default private Pivot attach = Pivot.LEFT_TOP;
 
 
     @Builder.Default private float transformSize = 1F;
@@ -64,7 +64,7 @@ public abstract class Widget implements Drawable, Element {
     /**
      * Just for development proposes, shows the area based on 'boxWidth' and 'boxHeight'.
      */
-    @Builder.Default private boolean showArea = false;
+    private boolean showArea;
     private final int randomColor;
 
     /**

@@ -1,6 +1,6 @@
 package net.bati.guilib.utils
 
-enum class PIVOT(private val x: Float, private val y: Float) {
+enum class Pivot(private val x: Float, private val y: Float) {
     /**
            middle top = width/2, 0
            middle = width/2 height/2

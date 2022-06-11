@@ -15,11 +15,15 @@ public class TestScreen extends AdvancedScreen{
 
     @Override
     public void build() {
-        Button button = Button.builder("identifier")
-                .identifier("")
+        /*Button button = Button.builder("button")
                 .positionCallback((a) -> new Vec2(20,20))
-                .error(null)
+                .boxWidth(200)
+                .boxHeight(20)
+                .enabled(true)
                 .build();
+
+        addWidget(button);*/
+
     }
 
     @Override

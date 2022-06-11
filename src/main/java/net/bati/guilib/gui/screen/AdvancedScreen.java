@@ -22,7 +22,7 @@ public abstract class AdvancedScreen extends Screen {
     private float partialTicks;
     private MatrixStack matrix;
 
-    private final Button emptyWidget = Button.builder("").ignoreBox(true).error(SoundEvents.AMBIENT_BASALT_DELTAS_ADDITIONS).build();
+    private final Button emptyWidget = Button.builder("").ignoreBox(true).build();
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);

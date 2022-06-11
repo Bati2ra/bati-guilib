@@ -6,6 +6,8 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Matrix4f
 import net.minecraft.util.math.Vec3d
+import org.jetbrains.annotations.NotNull
+
 object DrawHelper {
     @JvmOverloads
     @JvmStatic
@@ -71,5 +73,24 @@ object DrawHelper {
         builder.vertex(matrix, startX, startY, z.toFloat()).color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
         builder.vertex(matrix, startX, endY, z.toFloat()).color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
         builder.vertex(matrix, endX, endY, z.toFloat()).color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
+    }
+    @JvmStatic
+    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Int, y : Int, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.Drawable) {
+        val offsetX: Float = pivot.getX(width)
+        val offsetY: Float = pivot.getY(height)
+
+        matrices.push()
+
+        matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), 0.0)
+        matrices.push()
+        matrices.translate((x + offsetX).toDouble(), (y + offsetY).toDouble(), 0.0)
+        matrices.scale(size, size, size)
+        matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), 0.0)
+
+        drawCallback.draw(matrices, x, y, delta)
+
+        matrices.pop()
+        matrices.pop()
+
     }
 }

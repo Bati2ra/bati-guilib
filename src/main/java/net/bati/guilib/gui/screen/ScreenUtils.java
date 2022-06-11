@@ -18,6 +18,5 @@ public class ScreenUtils {
             value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()));
             value.render(matrices, x, y, delta);
         });
-        
     }
 }
