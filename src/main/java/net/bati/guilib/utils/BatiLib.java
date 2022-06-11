@@ -2,7 +2,6 @@ package net.bati.guilib.utils;
 
 import net.minecraft.entity.LivingEntity;
 
-import java.awt.*;
 
 public class BatiLib {
 

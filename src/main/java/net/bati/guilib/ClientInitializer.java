@@ -13,6 +13,5 @@ public class ClientInitializer implements ClientModInitializer {
             if(MinecraftClient.getInstance().options.sprintKey.isPressed())
                 MinecraftClient.getInstance().setScreen(new TestScreen(null));
         });
-
     }
 }

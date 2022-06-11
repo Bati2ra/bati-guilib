@@ -1,9 +1,6 @@
 package net.bati.guilib.utils.font;
 
-import net.bati.guilib.utils.ColorUtils;
 import net.bati.guilib.utils.Vec2;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 
 public class TextComponent {
     private String text = "";
