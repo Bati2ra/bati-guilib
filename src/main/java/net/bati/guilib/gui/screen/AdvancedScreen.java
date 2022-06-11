@@ -2,12 +2,12 @@ package net.bati.guilib.gui.screen;
 
 import net.bati.guilib.CommonInitializer;
 import net.bati.guilib.gui.components.Button;
-import net.bati.guilib.gui.components.IWidgetsStorage;
 import net.bati.guilib.gui.components.Widget;
 import net.bati.guilib.utils.Mouse;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ public abstract class AdvancedScreen extends Screen {
     private float partialTicks;
     private MatrixStack matrix;
 
-    private final Widget emptyWidget = new Button();
+    private final Button emptyWidget = Button.builder("").ignoreBox(true).error(SoundEvents.AMBIENT_BASALT_DELTAS_ADDITIONS).build();
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);

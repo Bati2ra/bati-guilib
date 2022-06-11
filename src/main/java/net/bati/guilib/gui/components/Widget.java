@@ -1,58 +1,42 @@
 package net.bati.guilib.gui.components;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import net.bati.guilib.gui.interfaces.*;
+import lombok.experimental.SuperBuilder;
+import net.bati.guilib.utils.Callback;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.PIVOT;
 import net.bati.guilib.utils.Vec2;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 @Getter
 @Setter
-public abstract class Widget extends DrawableHelper implements Drawable, Element {
+@SuperBuilder
+public abstract class Widget implements Drawable, Element {
     /**
      * A unique identifier, repeated identifiers will be ignored.
      * @param identifier Unique identifier to register the widget.
      * @return The Identifier.
      */
     private String identifier;
+
     /**
-     * Raw X axis position, not final, used to 'offset' the component
-     * @param x New value for X 'offset'.
-     * @return Current value of 'x'.
+     * Raw X,Y axis position, not final, used to 'offset' the component
      */
-    private int x;
-    /**
-     * Raw Y axis position, not final, used to 'offset' the component
-     * @param y New value for Y 'offset'.
-     * @return Current value of 'y'.
-     */
-    private int y;
+
+    @Builder.Default private Vec2 position = new Vec2(0,0);
     /**
      * Raw Z axis offset used to prioritize the top element (In case one or more element overlaps each other)
-     * @param z New value for Z 'offset'.
-     * @return Current value of 'z'.
      */
     private int z;
-
-    // Both variables determine the size of the "box", can be used to check if mouse is over the widget or to draw the element itself
     /**
-     * Determines the box's width size, used to check if mouse is over the widget.
-     * @param boxWidth New value for width.
-     * @return Width integer.
+     * Determines the box's size, used to check if mouse is over the widget.
      */
-    private int boxWidth;
-    /**
-     * Determines the box's height size, used to check if mouse is over the widget.
-     * @param boxHeight New value for height.
-     * @return Height integer.
-     */
-    private int boxHeight;
+    private int boxWidth, boxHeight;
     /**
      * If true, isHovered method will return true (Width & Height will be ignored)
      */
@@ -60,8 +44,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
 
     private Widget parent;
 
-    // This one is used to disable or enable the widget, if disabled then all the events (click, drag, key, etc) will be canceled.
-    /**
+     /**
      * If false, all the events (Click, drag, key, etc) will be canceled.
      */
     private boolean enabled = true;
@@ -69,16 +52,10 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     private PIVOT pivot = PIVOT.LEFT_TOP;
     private PIVOT attach = PIVOT.LEFT_TOP;
 
-    /**
-     * Size transformation, for increasing or decreasing the widget and their children if they have.
-     */
-    private float transformSize = 1F;
-    // Alpha channels for the widget
-    private float opacity = 1F;
-    /**
-     * Just handles the visual part, if you want to hide and disable the widget, you must combine this one with 'enabled'
-     */
-    private boolean visible = true;
+
+    @Builder.Default private float transformSize = 1F;
+    @Builder.Default private float opacity = 1F;
+    @Builder.Default private boolean visible = true;
     /**
      * Determines if the item is focused or not ( depends on 'z' offset)
      */
@@ -87,10 +64,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     /**
      * Just for development proposes, shows the area based on 'boxWidth' and 'boxHeight'.
      */
-    private boolean showArea = false;
-    /**
-     * Random color to paint the area.
-     */
+    @Builder.Default private boolean showArea = false;
     private final int randomColor;
 
     /**
@@ -102,23 +76,22 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
      * @param callback Lambda expression.
      * @return callback.
      */
-    private DrawableCallback preDrawCallback, postDrawCallback, drawCallback;
+    private Callback.Drawable preDrawCallback, postDrawCallback, drawCallback;
 
 
-    private MouseCallback clickCallback, releaseClickCallback;
+    private Callback.Mouse clickCallback, releaseClickCallback;
 
-    private PressableCallback keyPressedCallback, keyReleasedCallback;
+    private Callback.Pressable keyPressedCallback, keyReleasedCallback;
 
     /**
      * [Listener] Overrides isHover method with your custom lambda expression.
      */
-    private HoverCallback hoverCallback;
+    private Callback.Hoverable hoverCallback;
 
     /**
      * [Listener] If is used, it'll override 'x' and 'y' fields, used in case you need a dynamic position.
      */
-    private ScreenPositionCallback positionCallback;
-
+    private Callback.ScreenPosition positionCallback;
 
     public Widget() {
         randomColor = (int) (Math.random()*16777215);
@@ -129,7 +102,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public int getX() {
-        return  x + (int)calculateXAttachedValue();
+        return  position.getX() + (int)calculateXAttachedValue();
     }
 
     private float calculateXAttachedValue() {
@@ -145,7 +118,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public int getY() {
-        return y + (int)calculateYAttachedValue();
+        return position.getY() + (int)calculateYAttachedValue();
     }
 
     private float calculateYAttachedValue() {
@@ -186,7 +159,7 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
     }
 
     public boolean isHovered(int mouseX, int mouseY) {
-        return (hoverCallback == null) ? mouseX >= (calculateRelativeX()) && mouseY >= (calculateRelativeY()) && mouseX <= ((calculateRelativeX() + getBoxWidth()* getRelativeTransformSize())) && mouseY <= ((calculateRelativeY() + getBoxHeight()*getRelativeTransformSize())) : hoverCallback.isHover(mouseX, mouseY);
+        return (hoverCallback == null) ? mouseX >= (calculateRelativeX()) && mouseY >= (calculateRelativeY()) && mouseX <= ((calculateRelativeX() + getBoxWidth()* getRelativeTransformSize())) && mouseY <= ((calculateRelativeY() + getBoxHeight()*getRelativeTransformSize())) : hoverCallback.isHovering(mouseX, mouseY);
     }
 
     public boolean isFocused(int mouseX, int mouseY) {
@@ -200,15 +173,13 @@ public abstract class Widget extends DrawableHelper implements Drawable, Element
      * @param mouseY
      * @param delta
      */
-    protected abstract void draw(MatrixStack matrices, int mouseX, int mouseY, float delta);
+    protected  void draw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
 
     private void calculatePositionCallback() {
         if(positionCallback == null)
             return;
 
-        Vec2 positionVector = positionCallback.get(MinecraftClient.getInstance().getWindow());
-        setX(positionVector.getX());
-        setY(positionVector.getY());
+        setPosition(positionCallback.get(MinecraftClient.getInstance().getWindow()));
     }
 
     protected void drawBoxArea(MatrixStack matrices) {

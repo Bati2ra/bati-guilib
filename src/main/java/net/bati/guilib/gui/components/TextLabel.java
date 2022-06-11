@@ -1,13 +1,13 @@
 package net.bati.guilib.gui.components;
 
-import net.bati.guilib.gui.interfaces.TextCallback;
+import net.bati.guilib.utils.Callback;
 import net.bati.guilib.utils.font.TextComponent;
 import net.bati.guilib.utils.font.TextUtils;
 import net.minecraft.client.util.math.MatrixStack;
 
 public class TextLabel extends Widget{
     private TextComponent textComponent;
-    protected TextCallback callback;
+    protected Callback.Text callback;
 
 
     public TextLabel() {
@@ -21,7 +21,7 @@ public class TextLabel extends Widget{
     public void setTextComponent(TextComponent component) {
         this.textComponent = component;
     }
-    public void setTextCallback(TextCallback callback) {
+    public void setTextCallback(Callback.Text callback) {
         this.callback = callback;
     }
 
@@ -31,7 +31,7 @@ public class TextLabel extends Widget{
             return;
 
 
-        TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), matrices, getX(), getY(), getZOffset(), getOpacity());
+        TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), matrices, getX(), getY(), getZ(), getOpacity());
     }
 
 

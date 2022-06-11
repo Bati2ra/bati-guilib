@@ -123,7 +123,7 @@ public class Container extends Widget implements IWidgetsStorage {
     @Override
     protected void drawBoxArea(MatrixStack matrices) {
         if(!isShowArea()) return;
-        DrawHelper.fillGradient(matrices, 0, 0, getBoxWidth(),getBoxHeight(), getRandomColor(), getOpacity(), getZ());
+        DrawHelper.INSTANCE.fillGradient(matrices, 0, 0, getBoxWidth(),getBoxHeight(), getRandomColor(), getOpacity(), getZ());
     }
 
     @Deprecated

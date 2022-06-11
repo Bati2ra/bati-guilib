@@ -6,8 +6,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
-
-public class DrawHelper {
+@Deprecated
+public class DrawHelperR {
     public static void drawRectangle(Identifier texture, double x, double y, int u, int v, double width, double height, double scale, int imageWidth, int imageHeight) {
         drawRectangle(texture,x, y, u, v, width, height,scale,imageWidth, imageHeight, null);
     }

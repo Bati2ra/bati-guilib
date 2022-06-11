@@ -2,6 +2,7 @@ package net.bati.guilib.gui.components;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import lombok.experimental.SuperBuilder;
 import net.bati.guilib.utils.*;
 import net.bati.guilib.utils.font.TextComponent;
 import net.bati.guilib.utils.font.TextUtils;
@@ -12,7 +13,9 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
+@SuperBuilder
 public class Button extends Widget {
     protected static final Identifier WIDGETS_LOCATION = new Identifier("textures/gui/widgets.png");
     protected TextureComponent textureComponent = new TextureComponent(0, 46, 256, 256, WIDGETS_LOCATION);
@@ -27,6 +30,12 @@ public class Button extends Widget {
     private boolean isPressed;
 
 
+    /**
+     * @param identifier Must be an unique name, if it's repeated, it'll be ignored
+     */
+    public static ButtonBuilder<?, ?> builder(@NotNull String identifier) {
+        return new ButtonBuilderImpl().identifier(identifier);
+    }
     @Override
     protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 
@@ -72,7 +81,7 @@ public class Button extends Widget {
         if(textComponent == null) return;
 
         int moveX = textComponent.isCentered() ? Math.round(getBoxWidth() / 2) :  Math.round(textComponent.getOffsetPosition().getX());
-        int moveY = textComponent.isCentered() ? Math.round((getBoxHeight() / 2 - ((textComponent.hasStyle() ? textComponent.getStyle().getHeight() : TextUtils.font.fontHeight)* textComponent.getSize())/2)) : Math.round(textComponent.getOffsetPosition().getY());
+        int moveY = textComponent.isCentered() ? Math.round((getBoxHeight() / 2 - ((textComponent.hasStyle() ? textComponent.getStyle().height() : TextUtils.font.fontHeight)* textComponent.getSize())/2)) : Math.round(textComponent.getOffsetPosition().getY());
 
         String buttonText = textComponent.getText();
         int strWidth = (int) (MinecraftClient.getInstance().textRenderer.getWidth(buttonText)*textComponent.getSize());
@@ -81,24 +90,24 @@ public class Button extends Widget {
         if (strWidth > getBoxWidth()*getTransformSize() - 20 && strWidth > ellipsisWidth)
             buttonText = MinecraftClient.getInstance().textRenderer.trimToWidth(buttonText, (int) (strWidth + getBoxWidth()*getTransformSize() - 20 - ellipsisWidth)).trim() + "...";
 
-        int color = ColorUtils.toHex(textComponent.getColor(), getOpacity());
+        int color = ColorUtils.INSTANCE.toHex(textComponent.getColor(), getOpacity());
 
         if(textComponent.isOutlined()) {
-            int lineColor = ColorUtils.toHex(textComponent.getLineColor(), getOpacity());
+            int lineColor = ColorUtils.INSTANCE.toHex(textComponent.getLineColor(), getOpacity());
 
             matrices.push();
             matrices.translate(0,0,1);
             if(textComponent.getStyle() == null)
                 TextUtils.drawTextOutline(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
             else
-                TextUtils.drawTextOutline(textComponent.getStyle().getId(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(textComponent.getStyle().id(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
             matrices.translate(0,0,-1);
             matrices.pop();
         } else {
             if(textComponent.getStyle() == null)
                 TextUtils.drawText(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
             else
-                TextUtils.drawText(textComponent.getStyle().getId(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(textComponent.getStyle().id(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
         }
     }
 
@@ -146,8 +155,8 @@ public class Button extends Widget {
         matrices.scale(expand, expand, expand);
         matrices.translate(-offsetX, -offsetY, 0);
 
-        DrawHelper.drawRectangle(textureComponent.resource(), 0, 0, textureComponent.u(), textureComponent.v() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, getBoxHeight(), 1, textureComponent.textureWidth(), textureComponent.textureHeight(), matrices.peek().getPositionMatrix());
-        DrawHelper.drawRectangle(textureComponent.resource(), getBoxWidth()/2, 0, Math.round((textureComponent.u()+this.getBoxWidth()/2)), textureComponent.v() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, this.getBoxHeight(), 1, textureComponent.textureWidth(), textureComponent.textureHeight(), matrices.peek().getPositionMatrix());
+        DrawHelper.INSTANCE.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
+        DrawHelper.INSTANCE.drawRectangle(textureComponent.getResource(), getBoxWidth()/2, 0, Math.round((textureComponent.getU()+this.getBoxWidth()/2)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
 
         drawText(matrices);
         matrices.pop();
