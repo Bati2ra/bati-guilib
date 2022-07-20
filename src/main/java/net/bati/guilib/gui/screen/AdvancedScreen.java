@@ -115,9 +115,30 @@ public abstract class AdvancedScreen extends Screen {
     }
 
     @Override
+    public boolean charTyped(char chr, int modifiers) {
+        widgets.forEach((key, value) ->  {
+            if(value.isVisible())
+                value.charTyped(chr, modifiers);
+
+        });
+        return true;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        widgets.forEach((key, value) ->  {
+            if(value.isVisible())
+                value.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+
+        });
+
+        return true;
+    }
+
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         widgets.forEach((key, value) ->  {
-            if(value.isVisible() && value.isFocused((int)mouseX, (int)mouseY))
+            if(value.isVisible())
                 value.mouseClicked(mouseX, mouseY, mouseButton);
 
         });
@@ -125,6 +146,35 @@ public abstract class AdvancedScreen extends Screen {
         return true;
     }
 
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        widgets.forEach((key, value) ->  {
+            if(value.isVisible())
+                value.mouseReleased(mouseX, mouseY, button);
+
+        });
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        widgets.forEach((key, value) ->  {
+            if(value.isVisible())
+                value.keyPressed(keyCode, scanCode, modifiers);
+
+        });
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        widgets.forEach((key, value) ->  {
+            if(value.isVisible())
+                value.keyReleased(keyCode, scanCode, modifiers);
+
+        });
+        return super.keyReleased(keyCode, scanCode, modifiers);
+    }
 
     public HashMap<String, Widget> getWidgets() {
         return widgets;
@@ -140,6 +190,7 @@ public abstract class AdvancedScreen extends Screen {
             CommonInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
             return;
         }
+        widget.init();
         this.widgets.put(widget.getIdentifier(), widget);
     }
 

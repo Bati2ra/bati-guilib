@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull
 object DrawHelper {
     @JvmOverloads
     @JvmStatic
-    fun drawRectangle(texture: Identifier?, x: Double, y: Double, u: Int, v: Int, width: Double, height: Double, scale: Double=1.0, imageWidth: Int=256, imageHeight: Int=256, matrix: Matrix4f? = null) {
+    fun drawRectangle(texture: Identifier?, x: Double, y: Double, u: Int, v: Int, width: Double, height: Double, scale: Double=1.0, imageWidth: Int=256, imageHeight: Int=256, matrix: Matrix4f? = null, z : Float= 0.0F) {
         RenderSystem.setShader { GameRenderer.getPositionTexShader() }
         RenderSystem.setShaderTexture(0, texture)
         val bufferBuilder = Tessellator.getInstance().buffer
@@ -23,10 +23,10 @@ object DrawHelper {
         RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE)
-        bufferBuilder.vertex(matrix, (x + scale * width).toFloat(), (y + scale * height).toFloat(), 0f).texture(maxU.toFloat(), maxV.toFloat()).next()
-        bufferBuilder.vertex(matrix, (x + scale * width).toFloat(), y.toFloat(), 0f).texture(maxU.toFloat(), minV.toFloat()).next()
-        bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), 0f).texture(minU.toFloat(), minV.toFloat()).next()
-        bufferBuilder.vertex(matrix, x.toFloat(), (y + scale * height).toFloat(), 0f).texture(minU.toFloat(), maxV.toFloat()).next()
+        bufferBuilder.vertex(matrix, (x + scale * width).toFloat(), (y + scale * height).toFloat(), z).texture(maxU.toFloat(), maxV.toFloat()).next()
+        bufferBuilder.vertex(matrix, (x + scale * width).toFloat(), y.toFloat(), z).texture(maxU.toFloat(), minV.toFloat()).next()
+        bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), z).texture(minU.toFloat(), minV.toFloat()).next()
+        bufferBuilder.vertex(matrix, x.toFloat(), (y + scale * height).toFloat(), z).texture(minU.toFloat(), maxV.toFloat()).next()
         bufferBuilder.end()
         BufferRenderer.draw(bufferBuilder)
         RenderSystem.disableBlend()
@@ -87,7 +87,7 @@ object DrawHelper {
         matrices.scale(size, size, size)
         matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), 0.0)
 
-        drawCallback.draw(matrices, x, y, delta)
+        drawCallback.draw(matrices, 0, 0, delta)
 
         matrices.pop()
         matrices.pop()
