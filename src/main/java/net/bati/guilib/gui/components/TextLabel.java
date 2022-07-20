@@ -20,7 +20,7 @@ public class TextLabel extends Widget {
             return;
 
 
-        TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), matrices, getX(), getY(), getZ(), getOpacity());
+        TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), matrices, getOffsetX(), getOffsetY(), getRecursiveZ(), getRecursiveOpacity());
     }
 
 

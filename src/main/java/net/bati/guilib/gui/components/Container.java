@@ -17,49 +17,55 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Builder.Default private HashMap<String, Widget> widgets = new HashMap<>();
 
+    public Container(String identifier) {
+        this.setIdentifier(identifier);
+    }
+
     @Override
     protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        matrices.push();
         matrices.translate(0,0, getZ());
-        RenderSystem.setShaderColor(1,1,1, getOpacity());
+        RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
 
         DrawHelper.drawWithPivot(
                 matrices,
-                getX(),
-                getY(),
+                getOffsetX(),
+                getOffsetY(),
                 getBoxWidth(),
                 getBoxHeight(),
-                getTransformSize(),
+                getSize(),
                 delta,
                 getPivot(),
                 (matrixStack, x, y, deltaTime) -> ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta)
         );
         matrices.translate(0,0, -getZ());
         RenderSystem.setShaderColor(1,1,1, 1);
+        matrices.pop();
 
     }
 
     @Override
-    protected void mouseClickCallback(double mouseX, double mouseY, int mouseButton) {
-        if(!isEnabled()) return;
+    public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
+        if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
         widgets.forEach((key, value) ->  {
-            if(value.isVisible() && value.isFocused((int)mouseX, (int)mouseY))
+            if(value.isVisible())
                 value.mouseClicked(mouseX, mouseY, mouseButton);
 
         });
     }
+
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if(!isEnabled()) return false;
+    public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
         widgets.forEach((key, value) ->  {
-            if(value.isVisible() && value.isFocused((int)mouseX, (int)mouseY))
-                value.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+            if(value.isVisible())
+                value.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
         });
-        return true;
     }
 
     @Override
-    protected void mouseReleaseCallback(double mouseX, double mouseY, int state) {
-        if(!isVisible()) return;
+    public void onMouseRelease(double mouseX, double mouseY, int state) {
+        if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
                 value.mouseReleased(mouseX, mouseY, state);
@@ -67,9 +73,30 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    protected void drawBoxArea(MatrixStack matrices) {
-        if(!isShowArea()) return;
-        DrawHelper.fillGradient(matrices, 0, 0, getBoxWidth(),getBoxHeight(), getRandomColor(), getOpacity(), getZ());
+    public void onKeyPress(int keyCode, int scanCode, int modifiers) {
+        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.onKeyPress(keyCode, scanCode, modifiers);
+        });
+    }
+
+    @Override
+    public void onKeyRelease(int keyCode, int scanCode, int modifiers) {
+        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.onKeyRelease(keyCode, scanCode, modifiers);
+        });
+    }
+
+    @Override
+    public void onCharType(char chr, int modifiers) {
+        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.onCharType(chr, modifiers);
+        });
     }
 
     @Deprecated

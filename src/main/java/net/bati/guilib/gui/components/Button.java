@@ -25,7 +25,9 @@ public class Button extends Widget {
     @Builder.Default private TextComponent textComponent = new TextComponent().text("Empty");
     private boolean pressed;
 
-
+    public Button(String identifier) {
+        this.setIdentifier(identifier);
+    }
     /**
      * @param identifier Must be an unique name, if it's repeated, it'll be ignored
      */
@@ -39,16 +41,16 @@ public class Button extends Widget {
         if(textComponent == null) return;
 
         int i = getYImage(isFocused(mouseX, mouseY));
-        matrices.translate(0,0,getZ());
-        RenderSystem.setShaderColor(1,1,1,getOpacity());
+        matrices.translate(0,0, getZ());
+        RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
 
         DrawHelper.drawWithPivot(
                 matrices,
-                getX(),
-                getY(),
+                getOffsetX(),
+                getOffsetY(),
                 getBoxWidth(),
                 getBoxHeight(),
-                getTransformSize(),
+                getSize(),
                 delta,
                 getPivot(),
                 (matrixStack, x, y, deltaTime) -> {
@@ -101,13 +103,13 @@ public class Button extends Widget {
         int strWidth = (int) (MinecraftClient.getInstance().textRenderer.getWidth(buttonText)*textComponent.getSize());
         int ellipsisWidth = (int) (MinecraftClient.getInstance().textRenderer.getWidth("...") * textComponent.getSize());
 
-        if (strWidth > getBoxWidth()*getTransformSize() - 20 && strWidth > ellipsisWidth)
-            buttonText = MinecraftClient.getInstance().textRenderer.trimToWidth(buttonText, (int) (strWidth + getBoxWidth()*getTransformSize() - 20 - ellipsisWidth)).trim() + "...";
+        if (strWidth > getBoxWidth()* getSize() - 20 && strWidth > ellipsisWidth)
+            buttonText = MinecraftClient.getInstance().textRenderer.trimToWidth(buttonText, (int) (strWidth + getBoxWidth()* getSize() - 20 - ellipsisWidth)).trim() + "...";
 
-        int color = ColorUtils.INSTANCE.toHex(textComponent.getColor(), getOpacity());
+        int color = ColorUtils.toHex(textComponent.getColor(), getRecursiveOpacity());
 
         if(textComponent.isOutlined()) {
-            int lineColor = ColorUtils.INSTANCE.toHex(textComponent.getLineColor(), getOpacity());
+            int lineColor = ColorUtils.toHex(textComponent.getLineColor(), getRecursiveOpacity());
 
             matrices.push();
             matrices.translate(0,0,1);

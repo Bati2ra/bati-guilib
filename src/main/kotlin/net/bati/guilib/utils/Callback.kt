@@ -8,7 +8,7 @@ class Callback {
         fun draw(matrices: MatrixStack?, x: Int, y: Int, delta: Float)
     }
     interface  Hoverable {
-        fun isHovering(x: Int, y: Int): Boolean
+        fun isHovering(x: Double, y: Double): Boolean
     }
     interface Mouse {
         fun call(x: Double, y: Double, mouseButton: Int)

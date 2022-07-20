@@ -4,7 +4,6 @@ import net.minecraft.entity.LivingEntity;
 
 
 public class BatiLib {
-
     public static double lerpBetween(LivingEntity entity, double color1, double color2) {
         return lerpBetween(entity, color1, color2, 25);
     }

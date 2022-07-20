@@ -15,14 +15,17 @@ public class TestScreen extends AdvancedScreen{
 
     @Override
     public void build() {
-        /*Button button = Button.builder("button")
-                .positionCallback((a) -> new Vec2(20,20))
+        Button button = Button.builder("uniqueID")
                 .boxWidth(200)
                 .boxHeight(20)
-                .enabled(true)
+                .positionCallback((window) -> new Vec2(window.getScaledWidth()/2, 60))
+                .clickCallback((x, y, type) -> System.out.println("Click!"))
+                .postDrawCallback((matrices, x, y, delta) -> {
+                    // ...
+                })
                 .build();
 
-        addWidget(button);*/
+        addWidget(button);
 
     }
 
