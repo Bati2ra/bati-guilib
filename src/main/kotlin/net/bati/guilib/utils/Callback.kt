@@ -1,11 +1,16 @@
 package net.bati.guilib.utils
 
+import net.bati.guilib.gui.components.Widget
 import net.minecraft.client.util.Window
 import net.minecraft.client.util.math.MatrixStack
+import org.jetbrains.annotations.Nullable
 
 class Callback {
     interface Drawable {
-        fun draw(matrices: MatrixStack?, x: Int, y: Int, delta: Float)
+        fun draw(@Nullable widget: Widget?,matrices: MatrixStack?, x: Int, y: Int, delta: Float)
+    }
+    interface DrawableBasic {
+        fun draw()
     }
     interface  Hoverable {
         fun isHovering(x: Double, y: Double): Boolean

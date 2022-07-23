@@ -26,7 +26,12 @@ public class Button extends Widget {
     private boolean pressed;
 
     public Button(String identifier) {
-        this.setIdentifier(identifier);
+        super(identifier, 0, 0);
+
+    }
+    public Button(String identifier, int boxWidth, int boxHeight) {
+        super(identifier, boxWidth, boxHeight);
+
     }
     /**
      * @param identifier Must be an unique name, if it's repeated, it'll be ignored
@@ -53,8 +58,8 @@ public class Button extends Widget {
                 getSize(),
                 delta,
                 getPivot(),
-                (matrixStack, x, y, deltaTime) -> {
-                    matrixStack.push();
+                () -> {
+                    matrices.push();
                     RenderSystem.enableBlend();
                     RenderSystem.defaultBlendFunc();
                     RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
@@ -63,7 +68,7 @@ public class Button extends Widget {
                     DrawHelper.drawRectangle(textureComponent.getResource(), getBoxWidth() / 2, 0, Math.round((textureComponent.getU()+this.getBoxWidth() / 2)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
 
                     drawText(matrices);
-                    matrixStack.pop();
+                    matrices.pop();
                 }
         );
 
