@@ -13,6 +13,9 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.function.Consumer;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -79,6 +82,11 @@ public abstract class Widget implements Drawable, Element {
      */
     private Callback.Drawable preDrawCallback, postDrawCallback, drawCallback;
 
+    /**
+     * Updates every tick inclusive when the widget is not visible
+     */
+    private Consumer<Widget> updateCallback;
+
 
     private Callback.Mouse clickCallback, releaseClickCallback;
 
@@ -96,6 +104,19 @@ public abstract class Widget implements Drawable, Element {
 
     private double mouseX, mouseY;
 
+    public Widget(String identifier, int boxWidth, int boxHeight) {
+        this();
+        setIdentifier(identifier);
+        setBoxWidth(boxWidth);
+        setBoxHeight(boxHeight);
+        setEnabled(true);
+        setVisible(true);
+        setOpacity(1);
+        setSize(1);
+        setPivot(Pivot.LEFT_TOP);
+        setAttach(Pivot.LEFT_TOP);
+        setOffsetPosition(new Vec2(0,0));
+    }
     public Widget() {
         randomColor = (int) (Math.random()*16777215);
     }
@@ -218,6 +239,9 @@ public abstract class Widget implements Drawable, Element {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        if(updateCallback != null)
+            updateCallback.accept(this);
+
         if(!visible) return;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
@@ -225,15 +249,15 @@ public abstract class Widget implements Drawable, Element {
         drawBoxArea(matrices);
 
         if(preDrawCallback != null)
-            preDrawCallback.draw(matrices, mouseX, mouseY, delta);
+            preDrawCallback.draw(this, matrices, mouseX, mouseY, delta);
 
         if(drawCallback != null)
-            drawCallback.draw(matrices, mouseX, mouseY, delta);
+            drawCallback.draw(this, matrices, mouseX, mouseY, delta);
         else
             draw(matrices, mouseX, mouseY, delta);
 
         if(postDrawCallback != null)
-            postDrawCallback.draw(matrices, mouseX, mouseY, delta);
+            postDrawCallback.draw(this, matrices, mouseX, mouseY, delta);
     }
 
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {

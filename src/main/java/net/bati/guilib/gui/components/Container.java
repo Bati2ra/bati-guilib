@@ -36,7 +36,7 @@ public class Container extends Widget implements IWidgetsStorage {
                 getSize(),
                 delta,
                 getPivot(),
-                (matrixStack, x, y, deltaTime) -> ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta)
+                () -> ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta)
         );
         matrices.translate(0,0, -getZ());
         RenderSystem.setShaderColor(1,1,1, 1);

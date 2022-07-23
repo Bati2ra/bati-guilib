@@ -20,7 +20,7 @@ public class TestScreen extends AdvancedScreen{
                 .boxHeight(20)
                 .positionCallback((window) -> new Vec2(window.getScaledWidth()/2, 60))
                 .clickCallback((x, y, type) -> System.out.println("Click!"))
-                .postDrawCallback((matrices, x, y, delta) -> {
+                .postDrawCallback((widget, matrices, x, y, delta) -> {
                     // ...
                 })
                 .build();
