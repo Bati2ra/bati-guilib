@@ -13,6 +13,9 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.function.Consumer;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -78,6 +81,11 @@ public abstract class Widget implements Drawable, Element {
      * @return callback.
      */
     private Callback.Drawable preDrawCallback, postDrawCallback, drawCallback;
+
+    /**
+     * Updates every tick inclusive when the widget is not visible
+     */
+    private Consumer<Widget> updateCallback;
 
 
     private Callback.Mouse clickCallback, releaseClickCallback;
@@ -231,6 +239,9 @@ public abstract class Widget implements Drawable, Element {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        if(updateCallback != null)
+            updateCallback.accept(this);
+
         if(!visible) return;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
