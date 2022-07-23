@@ -134,9 +134,12 @@ object DrawHelper {
         builder.vertex(matrix, endX, endY, z.toFloat())
             .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
     }
-
     @JvmStatic
     fun drawWithPivot(@NotNull matrices : MatrixStack, x : Int, y : Int, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic) {
+        drawWithPivot(matrices, x, y, width, height, size, delta, pivot, drawCallback, null)
+    }
+    @JvmStatic
+    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Int, y : Int, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic, @Nullable transformationCallback : Callback.DrawableBasic?) {
         val offsetX: Float = pivot.getX(width)
         val offsetY: Float = pivot.getY(height)
 
@@ -146,6 +149,7 @@ object DrawHelper {
         matrices.push()
         matrices.translate((x + offsetX).toDouble(), (y + offsetY).toDouble(), 0.0)
         matrices.scale(size, size, size)
+        transformationCallback?.draw()
         matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), 0.0)
 
         drawCallback.draw()
