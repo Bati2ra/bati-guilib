@@ -101,6 +101,7 @@ public abstract class Widget implements Drawable, Element {
      * [Listener] If is used, it'll override 'x' and 'y' fields, used in case you need a dynamic position.
      */
     private Callback.ScreenPosition positionListener;
+    private Runnable onInit;
 
     private double mouseX, mouseY;
 
@@ -185,7 +186,8 @@ public abstract class Widget implements Drawable, Element {
 
 
     public void init() {
-
+        if(onInit != null)
+            onInit.run();
     }
 
     /**
