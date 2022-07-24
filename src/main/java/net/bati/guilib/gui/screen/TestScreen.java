@@ -18,9 +18,9 @@ public class TestScreen extends AdvancedScreen{
         Button button = Button.builder("uniqueID")
                 .boxWidth(200)
                 .boxHeight(20)
-                .positionCallback((window) -> new Vec2(window.getScaledWidth()/2, 60))
-                .clickCallback((x, y, type) -> System.out.println("Click!"))
-                .postDrawCallback((widget, matrices, x, y, delta) -> {
+                .positionListener((window) -> new Vec2(window.getScaledWidth()/2, 60))
+                .onClick((x, y, type) -> System.out.println("Click!"))
+                .onPostDraw((widget, matrices, x, y, delta) -> {
                     // ...
                 })
                 .build();
