@@ -11,9 +11,6 @@ import java.util.Optional;
 
 public class ScreenUtils {
     public static void renderWidgets(HashMap<String, Widget> widgets, MatrixStack matrices, int x, int y, float delta) {
-        renderWidgets(widgets, matrices, x, y, delta, false);
-    }
-    public static void renderWidgets(HashMap<String, Widget> widgets, MatrixStack matrices, int x, int y, float delta, boolean includePost) {
         Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(x,y)).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
         widgets.forEach((key, value) -> {
@@ -24,8 +21,6 @@ public class ScreenUtils {
 
             value.render(matrices, x, y, delta);
 
-            if(includePost)
-                value.postRender(matrices, x,y, delta);
         });
     }
 }

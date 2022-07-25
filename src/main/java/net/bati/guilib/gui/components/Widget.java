@@ -270,10 +270,9 @@ public abstract class Widget implements Drawable, Element {
         postDraw(matrices, mouseX, mouseY, delta);
     }
 
-    /** This is used to render things that require to not apply transformations (from parents, size changes, rotations, etc) example: Tooltips.
-     * will be executed after render()
+    /** This method will be executed after all the widgets are rendered, (can be useful to draw tooltips)
      */
-    public void postRender(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void lastRender(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 
     }
 
