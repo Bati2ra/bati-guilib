@@ -101,7 +101,7 @@ public abstract class Widget implements Drawable, Element {
      * [Listener] If is used, it'll override 'x' and 'y' fields, used in case you need a dynamic position.
      */
     private Callback.ScreenPosition positionListener;
-    private Runnable onInit;
+    private Consumer<Widget> onInit;
 
     private double mouseX, mouseY;
 
@@ -187,7 +187,7 @@ public abstract class Widget implements Drawable, Element {
 
     public void init() {
         if(onInit != null)
-            onInit.run();
+            onInit.accept(this);
     }
 
     /**
@@ -217,6 +217,10 @@ public abstract class Widget implements Drawable, Element {
      * @param delta
      */
     protected  void draw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
+
+    protected  void postDraw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
+
+    protected  void preDraw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
 
     private void calculatePositionCallback() {
         if(positionListener == null)
@@ -253,6 +257,8 @@ public abstract class Widget implements Drawable, Element {
         if(onPreDraw != null)
             onPreDraw.draw(this, matrices, mouseX, mouseY, delta);
 
+        preDraw(matrices, mouseX, mouseY, delta);
+
         if(onDraw != null)
             onDraw.draw(this, matrices, mouseX, mouseY, delta);
         else
@@ -260,6 +266,15 @@ public abstract class Widget implements Drawable, Element {
 
         if(onPostDraw != null)
             onPostDraw.draw(this, matrices, mouseX, mouseY, delta);
+
+        postDraw(matrices, mouseX, mouseY, delta);
+    }
+
+    /** This is used to render things that require to not apply transformations (from parents, size changes, rotations, etc) example: Tooltips.
+     * will be executed after render()
+     */
+    public void postRender(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+
     }
 
     public void onMouseClick(double mouseX, double mouseY, int mouseButton){}

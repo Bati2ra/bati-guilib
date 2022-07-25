@@ -45,6 +45,11 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
+    public void postRender(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        widgets.forEach((key, value) -> value.postRender(matrices, mouseX, mouseY, delta));
+    }
+
+    @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
         if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
         widgets.forEach((key, value) ->  {
