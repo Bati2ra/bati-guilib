@@ -15,7 +15,7 @@ public class TextLabel extends Widget {
     private Callback.Text callback;
 
     @Override
-    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         if(textComponent == null)
             return;
 

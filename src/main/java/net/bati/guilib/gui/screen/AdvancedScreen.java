@@ -159,6 +159,15 @@ public abstract class AdvancedScreen extends Screen {
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.mouseScrolled(mouseX, mouseY, amount);
+        });
+        return super.mouseScrolled(mouseX, mouseY, amount);
+    }
+
     public HashMap<String, Widget> getWidgets() {
         return widgets;
     }

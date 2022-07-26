@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable
 
 class Callback {
     interface Drawable {
-        fun draw(@Nullable widget: Widget?,matrices: MatrixStack?, x: Int, y: Int, delta: Float)
+        fun draw(@Nullable widget: Widget?,matrices: MatrixStack?, x: Float, y: Float, delta: Float)
     }
     interface DrawableBasic {
         fun draw()

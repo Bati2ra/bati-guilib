@@ -18,11 +18,12 @@ public class Container extends Widget implements IWidgetsStorage {
     @Builder.Default private HashMap<String, Widget> widgets = new HashMap<>();
 
     public Container(String identifier) {
-        this.setIdentifier(identifier);
+        super(identifier, 1, 1);
+
     }
 
     @Override
-    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         matrices.push();
         matrices.translate(0,0, getZ());
         RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
@@ -45,7 +46,7 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    public void lastRender(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         widgets.forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
     }
 
@@ -102,6 +103,16 @@ public class Container extends Widget implements IWidgetsStorage {
             if(value.isVisible())
                 value.onCharType(chr, modifiers);
         });
+    }
+
+    @Override
+    public void onMouseScroll(double mouseX, double mouseY, double amount) {
+        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.onMouseScroll(mouseX, mouseY, amount);
+        });
+        super.onMouseScroll(mouseX, mouseY, amount);
     }
 
     @Deprecated

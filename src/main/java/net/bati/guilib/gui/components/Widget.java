@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 @Getter
 @Setter
 @SuperBuilder
-public abstract class Widget implements Drawable, Element {
+public abstract class Widget implements Element {
     /**
      * A unique identifier, repeated identifiers will be ignored.
      * @param identifier Unique identifier to register the widget.
@@ -216,11 +216,11 @@ public abstract class Widget implements Drawable, Element {
      * @param mouseY
      * @param delta
      */
-    protected  void draw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
+    protected  void draw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
 
-    protected  void postDraw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
+    protected  void postDraw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
 
-    protected  void preDraw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
+    protected  void preDraw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
 
     private void calculatePositionCallback() {
         if(positionListener == null)
@@ -243,8 +243,7 @@ public abstract class Widget implements Drawable, Element {
         );
     }
 
-    @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         if(onUpdate != null)
             onUpdate.accept(this);
 
@@ -272,7 +271,7 @@ public abstract class Widget implements Drawable, Element {
 
     /** This method will be executed after all the widgets are rendered, (can be useful to draw tooltips)
      */
-    public void lastRender(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
 
     }
 
@@ -282,6 +281,8 @@ public abstract class Widget implements Drawable, Element {
     public void onKeyRelease(int keyCode, int scanCode, int modifiers){}
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY){}
     public void onCharType(char chr, int modifiers){}
+
+    public void onMouseScroll(double mouseX, double mouseY, double amount){}
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
@@ -327,6 +328,12 @@ public abstract class Widget implements Drawable, Element {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
+        return true;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        onMouseScroll(mouseX, mouseY, amount);
         return true;
     }
 

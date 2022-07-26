@@ -40,7 +40,7 @@ public class Button extends Widget {
         return new ButtonBuilderImpl().identifier(identifier);
     }
     @Override
-    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         shouldPlaySound(mouseX, mouseY);
 
         if(textComponent == null) return;
@@ -76,7 +76,7 @@ public class Button extends Widget {
 
     }
 
-    private void shouldPlaySound(int mouseX, int mouseY) {
+    private void shouldPlaySound(float mouseX, float mouseY) {
         if(!isFocused(mouseX, mouseY)) {
             hoverSound = true;
             return;
