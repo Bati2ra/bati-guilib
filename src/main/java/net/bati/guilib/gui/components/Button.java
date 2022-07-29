@@ -111,10 +111,10 @@ public class Button extends Widget {
         if (strWidth > getBoxWidth()* getSize() - 20 && strWidth > ellipsisWidth)
             buttonText = MinecraftClient.getInstance().textRenderer.trimToWidth(buttonText, (int) (strWidth + getBoxWidth()* getSize() - 20 - ellipsisWidth)).trim() + "...";
 
-        int color = ColorUtils.toHex(textComponent.getColor(), getRecursiveOpacity());
+        int color = ColorUtils.convertToHex(textComponent.getColor(), getRecursiveOpacity());
 
         if(textComponent.isOutlined()) {
-            int lineColor = ColorUtils.toHex(textComponent.getLineColor(), getRecursiveOpacity());
+            int lineColor = ColorUtils.convertToHex(textComponent.getLineColor(), getRecursiveOpacity());
 
             matrices.push();
             matrices.translate(0,0,1);
