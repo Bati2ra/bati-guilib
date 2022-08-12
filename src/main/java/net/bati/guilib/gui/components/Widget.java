@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 @Getter
 @Setter
 @SuperBuilder
-public abstract class Widget implements Drawable, Element {
+public abstract class Widget implements Element {
     /**
      * A unique identifier, repeated identifiers will be ignored.
      * @param identifier Unique identifier to register the widget.
@@ -80,27 +80,28 @@ public abstract class Widget implements Drawable, Element {
      * @param callback Lambda expression.
      * @return callback.
      */
-    private Callback.Drawable preDrawCallback, postDrawCallback, drawCallback;
+    private Callback.Drawable onPreDraw, onPostDraw, onDraw;
 
     /**
      * Updates every tick inclusive when the widget is not visible
      */
-    private Consumer<Widget> updateCallback;
+    private Consumer<Widget> onUpdate;
 
 
-    private Callback.Mouse clickCallback, releaseClickCallback;
+    private Callback.Mouse onClick, onReleaseClick;
 
-    private Callback.Pressable keyPressedCallback, keyReleasedCallback;
+    private Callback.Pressable onPressKey, onReleaseKey;
 
     /**
      * [Listener] Overrides isHover method with your custom lambda expression.
      */
-    private Callback.Hoverable hoverCallback;
+    private Callback.Hoverable hoveringListener;
 
     /**
      * [Listener] If is used, it'll override 'x' and 'y' fields, used in case you need a dynamic position.
      */
-    private Callback.ScreenPosition positionCallback;
+    private Callback.ScreenPosition positionListener;
+    private Consumer<Widget> onInit;
 
     private double mouseX, mouseY;
 
@@ -185,7 +186,8 @@ public abstract class Widget implements Drawable, Element {
 
 
     public void init() {
-
+        if(onInit != null)
+            onInit.accept(this);
     }
 
     /**
@@ -198,9 +200,9 @@ public abstract class Widget implements Drawable, Element {
     }
 
     public boolean isHovered(double mouseX, double mouseY) {
-        return (hoverCallback == null) ?
+        return (hoveringListener == null) ?
                 mouseX >= (getRecursiveX() - expandHitbox) && mouseY >= (getRecursiveY() - expandHitbox) && mouseX <= ((getRecursiveX() + expandHitbox + getBoxWidth()* getRecursiveSize())) && mouseY <= ((getRecursiveY() + expandHitbox + getBoxHeight()* getRecursiveSize()))
-                : hoverCallback.isHovering(mouseX, mouseY);
+                : hoveringListener.isHovering(mouseX, mouseY);
     }
 
     public boolean isFocused(double mouseX, double mouseY) {
@@ -214,13 +216,17 @@ public abstract class Widget implements Drawable, Element {
      * @param mouseY
      * @param delta
      */
-    protected  void draw(MatrixStack matrices, int mouseX, int mouseY, float delta){};
+    protected  void draw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
+
+    protected  void postDraw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
+
+    protected  void preDraw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
 
     private void calculatePositionCallback() {
-        if(positionCallback == null)
+        if(positionListener == null)
             return;
 
-        setOffsetPosition(positionCallback.get(MinecraftClient.getInstance().getWindow()));
+        setOffsetPosition(positionListener.get(MinecraftClient.getInstance().getWindow()));
     }
 
     protected void drawBoxArea(MatrixStack matrices) {
@@ -237,10 +243,9 @@ public abstract class Widget implements Drawable, Element {
         );
     }
 
-    @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        if(updateCallback != null)
-            updateCallback.accept(this);
+    public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        if(onUpdate != null)
+            onUpdate.accept(this);
 
         if(!visible) return;
         this.mouseX = mouseX;
@@ -248,82 +253,81 @@ public abstract class Widget implements Drawable, Element {
         calculatePositionCallback();
         drawBoxArea(matrices);
 
-        if(preDrawCallback != null)
-            preDrawCallback.draw(this, matrices, mouseX, mouseY, delta);
+        if(onPreDraw != null)
+            onPreDraw.draw(this, matrices, mouseX, mouseY, delta);
 
-        if(drawCallback != null)
-            drawCallback.draw(this, matrices, mouseX, mouseY, delta);
+        preDraw(matrices, mouseX, mouseY, delta);
+
+        if(onDraw != null)
+            onDraw.draw(this, matrices, mouseX, mouseY, delta);
         else
             draw(matrices, mouseX, mouseY, delta);
 
-        if(postDrawCallback != null)
-            postDrawCallback.draw(this, matrices, mouseX, mouseY, delta);
+        if(onPostDraw != null)
+            onPostDraw.draw(this, matrices, mouseX, mouseY, delta);
+
+        postDraw(matrices, mouseX, mouseY, delta);
     }
 
-    public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
-        if(!isFocused(mouseX, mouseY))
-            return;
-
-        if(clickCallback != null)
-            clickCallback.call(mouseX, mouseY, mouseButton);
-
-
-    }
-    public void onMouseRelease(double mouseX, double mouseY, int state) {
-        if(!isFocused(mouseX, mouseY))
-            return;
-        if(releaseClickCallback != null)
-            releaseClickCallback.call(mouseX, mouseY, state);
-
+    /** This method will be executed after all the widgets are rendered, (can be useful to draw tooltips)
+     */
+    public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
 
     }
 
-    public void onKeyPress(int keyCode, int scanCode, int modifiers) {
-        if(!isFocused(mouseX, mouseY))
-            return;
-        if(keyPressedCallback != null)
-            keyPressedCallback.call(keyCode, scanCode, modifiers);
+    public void onMouseClick(double mouseX, double mouseY, int mouseButton){}
+    public void onMouseRelease(double mouseX, double mouseY, int state){}
+    public void onKeyPress(int keyCode, int scanCode, int modifiers){}
+    public void onKeyRelease(int keyCode, int scanCode, int modifiers){}
+    public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY){}
+    public void onCharType(char chr, int modifiers){}
 
-    }
-
-    public void onKeyRelease(int keyCode, int scanCode, int modifiers) {
-        if(!isFocused(mouseX, mouseY))
-            return;
-        if(keyReleasedCallback != null)
-            keyReleasedCallback.call(keyCode, scanCode, modifiers);
-    }
-
-
-
-    public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if(!isFocused(mouseX, mouseY))
-            return;
-    }
-    public void onCharType(char chr, int modifiers) {
-        if(!isFocused(mouseX, mouseY))
-            return;
-    }
+    public void onMouseScroll(double mouseX, double mouseY, double amount){}
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if(!isEnabled()) return false;
+
+        if(isFocused(mouseX, mouseY) && onClick != null) {
+            onClick.call(mouseX, mouseY, mouseButton);
+            return true;
+        }
         onMouseClick(mouseX, mouseY, mouseButton);
         return true;
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int state) {
+        if(!isEnabled()) return false;
+
+        if(isFocused(mouseX, mouseY) && onReleaseClick != null) {
+            onReleaseClick.call(mouseX, mouseY, state);
+            return true;
+        }
         this.onMouseRelease(mouseX, mouseY, state);
         return true;
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(!isEnabled()) return false;
+
+        if(isFocused(mouseX, mouseY) && onPressKey != null) {
+            onPressKey.call(keyCode, scanCode, modifiers);
+            return true;
+        }
         this.onKeyPress(keyCode, scanCode, modifiers);
         return true;
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(!isEnabled()) return false;
+
+        if(isFocused(mouseX, mouseY) && onReleaseKey != null) {
+            onReleaseKey.call(keyCode, scanCode, modifiers);
+            return true;
+        }
         this.onKeyRelease(keyCode, scanCode, modifiers);
         return true;
     }
@@ -331,12 +335,24 @@ public abstract class Widget implements Drawable, Element {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if(!isEnabled()) return false;
+
         onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
         return true;
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!isEnabled()) return false;
+
+        onMouseScroll(mouseX, mouseY, amount);
+        return true;
+    }
+
+    @Override
     public boolean charTyped(char chr, int modifiers) {
+        if(!isEnabled()) return false;
+
         onCharType(chr, modifiers);
         return true;
     }

@@ -18,11 +18,12 @@ public class Container extends Widget implements IWidgetsStorage {
     @Builder.Default private HashMap<String, Widget> widgets = new HashMap<>();
 
     public Container(String identifier) {
-        this.setIdentifier(identifier);
+        super(identifier, 1, 1);
+        setWidgets(new HashMap<>()); // SuperBuilder ignora los valores por defecto si no se usa el builder, por lo que hay que inicializar todos los atributos
     }
 
     @Override
-    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         matrices.push();
         matrices.translate(0,0, getZ());
         RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
@@ -42,6 +43,11 @@ public class Container extends Widget implements IWidgetsStorage {
         RenderSystem.setShaderColor(1,1,1, 1);
         matrices.pop();
 
+    }
+
+    @Override
+    public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        widgets.forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
     }
 
     @Override
@@ -99,39 +105,24 @@ public class Container extends Widget implements IWidgetsStorage {
         });
     }
 
-    @Deprecated
-    public void fit() {
-        /*
-        ArrayList<Float> list = new ArrayList<>();
-        ArrayList<Float> list1 = new ArrayList<>();
-        ArrayList<Float> width = new ArrayList<>();
-        for(Map.Entry<String, Widget> entry : widgets.entrySet()) {
-            Widget value = entry.getValue();
-            list.add(value.getRelativeY() - this.getY());
-            list1.add((value.getRelativeX() - this.getRelativeX()));
-            width.add(value.getRelativeX() + value.getRelativeBoxWidth());
-        }
-        Collections.sort(list);
-        Collections.sort(list1);
-        Collections.sort(width);
-        offsetY = list.get(0);
-        offsetX = list1.get(0);
-       // contentX = (int) (width.get(width.size()-1).intValue() - x - offsetX);
-      //  contentY = 100;
-        System.out.println(width);
-        widgets.forEach((key, widget) -> {
-              if((widget.getRelativeX() - getX() - getOffsetX() + widget.getRelativeBoxWidth()) > contentX)
-                  contentX = (int)(widget.getRelativeX() - getX() - getOffsetX() + widget.getRelativeBoxWidth());
-
-            if((widget.getRelativeY() - getY() - getOffsetY() + widget.getRelativeBoxHeight()) > contentY)
-                contentY = (int)(widget.getRelativeY() - getY() - getOffsetY() + widget.getRelativeBoxHeight());
-
+    @Override
+    public void onMouseScroll(double mouseX, double mouseY, double amount) {
+        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.onMouseScroll(mouseX, mouseY, amount);
         });
-        */
+        super.onMouseScroll(mouseX, mouseY, amount);
     }
 
+    public void fit() {}
     @Override
     public HashMap<String, Widget> getWidgets() {
         return widgets;
+    }
+
+    @Override
+    public boolean isHovered(double mouseX, double mouseY) {
+        return isIgnoreBox() || super.isHovered(mouseX, mouseY);
     }
 }

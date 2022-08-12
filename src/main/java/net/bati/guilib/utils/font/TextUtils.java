@@ -90,10 +90,10 @@ public class TextUtils {
             return;
 
         String content = (text == null) ? textComponent.getText() : text;
-        int color = ColorUtils.toHex(textComponent.getColor(), alpha);
+        int color = ColorUtils.convertToHex(textComponent.getColor(), alpha);
 
         if(textComponent.isOutlined()) {
-            int lineColor = ColorUtils.toHex(textComponent.getLineColor(), alpha);
+            int lineColor = ColorUtils.convertToHex(textComponent.getLineColor(), alpha);
 
             matrices.push();
             matrices.translate(0,0,z);

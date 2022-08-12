@@ -40,7 +40,7 @@ public class Button extends Widget {
         return new ButtonBuilderImpl().identifier(identifier);
     }
     @Override
-    protected void draw(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         shouldPlaySound(mouseX, mouseY);
 
         if(textComponent == null) return;
@@ -76,7 +76,7 @@ public class Button extends Widget {
 
     }
 
-    private void shouldPlaySound(int mouseX, int mouseY) {
+    private void shouldPlaySound(float mouseX, float mouseY) {
         if(!isFocused(mouseX, mouseY)) {
             hoverSound = true;
             return;
@@ -111,10 +111,10 @@ public class Button extends Widget {
         if (strWidth > getBoxWidth()* getSize() - 20 && strWidth > ellipsisWidth)
             buttonText = MinecraftClient.getInstance().textRenderer.trimToWidth(buttonText, (int) (strWidth + getBoxWidth()* getSize() - 20 - ellipsisWidth)).trim() + "...";
 
-        int color = ColorUtils.toHex(textComponent.getColor(), getRecursiveOpacity());
+        int color = ColorUtils.convertToHex(textComponent.getColor(), getRecursiveOpacity());
 
         if(textComponent.isOutlined()) {
-            int lineColor = ColorUtils.toHex(textComponent.getLineColor(), getRecursiveOpacity());
+            int lineColor = ColorUtils.convertToHex(textComponent.getLineColor(), getRecursiveOpacity());
 
             matrices.push();
             matrices.translate(0,0,1);

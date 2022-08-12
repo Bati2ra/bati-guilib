@@ -41,26 +41,9 @@ public abstract class AdvancedScreen extends Screen {
         matrix = matrices;
         update();
 
-        //List<Widget> result = new ArrayList<>();
-        //widgets.forEach((key, value)-> {
-        //    value.setFocused(false);
-        //    if(value.isVisible() && value.isEnabled() && value.isHovered(mouseX, mouseY))
-        //        result.add(value);
-        //});
-
-        //Widget widget = (result.size() > 1) ? Collections.max(result, Comparator.comparingInt(current -> current.getZOffset())) : (result.size() == 1) ? result.get(0) : null;
-        //if(widget != null)
-        //    widget.setFocused(true);
-
-        //widgets.forEach((key, value) -> {
-        //    value.render(matrices, mouseX, mouseY, delta);
-        //});
-
-
-        //  Widget widget = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(mouseX,mouseY)).max(Comparator.comparingInt(current -> current.getValue().getZOffset())).get().getValue();
-
         ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
 
+        getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
     }
 
 
@@ -174,6 +157,15 @@ public abstract class AdvancedScreen extends Screen {
 
         });
         return super.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        widgets.forEach((key, value) -> {
+            if(value.isVisible())
+                value.mouseScrolled(mouseX, mouseY, amount);
+        });
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     public HashMap<String, Widget> getWidgets() {
