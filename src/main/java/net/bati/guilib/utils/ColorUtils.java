@@ -24,6 +24,20 @@ public class ColorUtils {
         RenderSystem.setShaderColor(h2, h3, h4, alpha);
     }
 
+    public static float[] convertToRGB(int color, float alpha) {
+        var h2 = (color >> 16 & 0xff) / 255.0F;
+        var h3 = (color >> 8 & 0xff) / 255.0f;
+        var h4 = (color & 0xff) / 255.0f;
+        return new float[]{h2, h3, h4, alpha};
+    }
+
+    public static float[] convertToRGB(int color, int alpha) {
+        return convertToRGB(color, alpha / 255.0F);
+    }
+
+    public static float[] convertToRGB(int color) {
+        return convertToRGB(color, (color >> 24 & 0xff) / 255.0F);
+    }
 
     public static int convertToHex(int r, int g, int b, int a) {
         return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);

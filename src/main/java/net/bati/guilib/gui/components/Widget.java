@@ -286,6 +286,8 @@ public abstract class Widget implements Element {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if(!isEnabled()) return false;
+
         if(isFocused(mouseX, mouseY) && onClick != null) {
             onClick.call(mouseX, mouseY, mouseButton);
             return true;
@@ -296,6 +298,8 @@ public abstract class Widget implements Element {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int state) {
+        if(!isEnabled()) return false;
+
         if(isFocused(mouseX, mouseY) && onReleaseClick != null) {
             onReleaseClick.call(mouseX, mouseY, state);
             return true;
@@ -306,6 +310,8 @@ public abstract class Widget implements Element {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(!isEnabled()) return false;
+
         if(isFocused(mouseX, mouseY) && onPressKey != null) {
             onPressKey.call(keyCode, scanCode, modifiers);
             return true;
@@ -316,6 +322,8 @@ public abstract class Widget implements Element {
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(!isEnabled()) return false;
+
         if(isFocused(mouseX, mouseY) && onReleaseKey != null) {
             onReleaseKey.call(keyCode, scanCode, modifiers);
             return true;
@@ -327,18 +335,24 @@ public abstract class Widget implements Element {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if(!isEnabled()) return false;
+
         onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
         return true;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if(!isEnabled()) return false;
+
         onMouseScroll(mouseX, mouseY, amount);
         return true;
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
+        if(!isEnabled()) return false;
+
         onCharType(chr, modifiers);
         return true;
     }

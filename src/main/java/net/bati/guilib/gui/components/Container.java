@@ -19,7 +19,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     public Container(String identifier) {
         super(identifier, 1, 1);
-
+        setWidgets(new HashMap<>()); // SuperBuilder ignora los valores por defecto si no se usa el builder, por lo que hay que inicializar todos los atributos
     }
 
     @Override
@@ -115,39 +115,14 @@ public class Container extends Widget implements IWidgetsStorage {
         super.onMouseScroll(mouseX, mouseY, amount);
     }
 
-    @Deprecated
-    public void fit() {
-        /*
-        ArrayList<Float> list = new ArrayList<>();
-        ArrayList<Float> list1 = new ArrayList<>();
-        ArrayList<Float> width = new ArrayList<>();
-        for(Map.Entry<String, Widget> entry : widgets.entrySet()) {
-            Widget value = entry.getValue();
-            list.add(value.getRelativeY() - this.getY());
-            list1.add((value.getRelativeX() - this.getRelativeX()));
-            width.add(value.getRelativeX() + value.getRelativeBoxWidth());
-        }
-        Collections.sort(list);
-        Collections.sort(list1);
-        Collections.sort(width);
-        offsetY = list.get(0);
-        offsetX = list1.get(0);
-       // contentX = (int) (width.get(width.size()-1).intValue() - x - offsetX);
-      //  contentY = 100;
-        System.out.println(width);
-        widgets.forEach((key, widget) -> {
-              if((widget.getRelativeX() - getX() - getOffsetX() + widget.getRelativeBoxWidth()) > contentX)
-                  contentX = (int)(widget.getRelativeX() - getX() - getOffsetX() + widget.getRelativeBoxWidth());
-
-            if((widget.getRelativeY() - getY() - getOffsetY() + widget.getRelativeBoxHeight()) > contentY)
-                contentY = (int)(widget.getRelativeY() - getY() - getOffsetY() + widget.getRelativeBoxHeight());
-
-        });
-        */
-    }
-
+    public void fit() {}
     @Override
     public HashMap<String, Widget> getWidgets() {
         return widgets;
+    }
+
+    @Override
+    public boolean isHovered(double mouseX, double mouseY) {
+        return isIgnoreBox() || super.isHovered(mouseX, mouseY);
     }
 }
