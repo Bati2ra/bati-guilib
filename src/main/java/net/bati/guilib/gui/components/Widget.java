@@ -105,6 +105,12 @@ public abstract class Widget implements Element {
 
     private double mouseX, mouseY;
 
+
+    // Estas variables son para evitar llamar repetidas veces a métodos que usan recursividad
+    private float recursiveXLastTick;
+    private float recursiveYLastTick;
+    private float recursiveSizeLastTick;
+
     public Widget(String identifier, int boxWidth, int boxHeight) {
         this();
         setIdentifier(identifier);
@@ -200,8 +206,12 @@ public abstract class Widget implements Element {
     }
 
     public boolean isHovered(double mouseX, double mouseY) {
+        float recursiveX = recursiveXLastTick;
+        float recursiveY = recursiveYLastTick;
+        float recursiveSize = recursiveSizeLastTick;
+
         return (hoveringListener == null) ?
-                mouseX >= (getRecursiveX() - expandHitbox) && mouseY >= (getRecursiveY() - expandHitbox) && mouseX <= ((getRecursiveX() + expandHitbox + getBoxWidth()* getRecursiveSize())) && mouseY <= ((getRecursiveY() + expandHitbox + getBoxHeight()* getRecursiveSize()))
+                mouseX >= (recursiveX - expandHitbox) && mouseY >= (recursiveY - expandHitbox) && mouseX <= ((recursiveX + expandHitbox + getBoxWidth()* recursiveSize)) && mouseY <= ((recursiveY + expandHitbox + getBoxHeight()* recursiveSize))
                 : hoveringListener.isHovering(mouseX, mouseY);
     }
 
@@ -243,7 +253,14 @@ public abstract class Widget implements Element {
         );
     }
 
+    public void updateLastTick() {
+        recursiveXLastTick = getRecursiveX();
+        recursiveYLastTick = getRecursiveY();
+        recursiveSizeLastTick = getRecursiveSizeLastTick();
+    }
     public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        updateLastTick();
+
         if(onUpdate != null)
             onUpdate.accept(this);
 
