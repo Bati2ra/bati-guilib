@@ -79,6 +79,14 @@ public class Slider extends Widget {
         return max;
     }
 
+    public double getTempValue() {
+        return tempValue;
+    }
+
+    public void setTempValue(double tempValue) {
+        this.tempValue = tempValue;
+    }
+
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
