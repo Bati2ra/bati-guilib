@@ -2,9 +2,9 @@ package net.bati.guilib.gui.components;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Vec2;
 
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -21,7 +21,7 @@ import java.util.Map;
 @Setter
 @Getter
 public class AlignedContainer extends Container {
-    private Align               align = Align.HORIZONTAL;
+    private Orientation align = Orientation.HORIZONTAL;
     private double              spacing = 20;
     private int                 contentSize = 0;
 
@@ -30,9 +30,6 @@ public class AlignedContainer extends Container {
         setIgnoreBox(true); // isFocused/isHovered retornará siempre verdadero, este contenedor por defecto no posee un tamaño.
     }
 
-    public enum Align {
-        HORIZONTAL, VERTICAL
-    }
 
     /**
      * Acomoda los Widgets dependiendo el alineamiento establecido, en este componente no se respeta el offset de los Widgets hijos,
@@ -43,7 +40,7 @@ public class AlignedContainer extends Container {
         var prevEndPos = 0.0;
         for (Map.Entry<String, Widget> stringWidgetEntry : getWidgets().entrySet()) {
             var entry = stringWidgetEntry.getValue();
-            if (align.equals(Align.HORIZONTAL)) {
+            if (align.equals(Orientation.HORIZONTAL)) {
                 entry.setOffsetPosition(new Vec2((int) prevEndPos, 0));
                 prevEndPos = entry.getOffsetX() + entry.getBoxWidth() * entry.getSize() + spacing;
             } else {
