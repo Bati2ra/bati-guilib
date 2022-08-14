@@ -8,10 +8,10 @@ import net.minecraft.client.MinecraftClient;
 public class ClientInitializer implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        /*ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
+        ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
             if(MinecraftClient.getInstance().options.sneakKey.isPressed()) {
                 MinecraftClient.getInstance().setScreen(new TestScreen(null));
             }
-        });*/
+        });
     }
 }

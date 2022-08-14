@@ -5,6 +5,7 @@ import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.DrawUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Comparator;
@@ -24,8 +25,19 @@ public class ScrollContainer extends Container {
     private boolean scrolling;
     private int contentHeight;
 
+    private boolean objectCulling = true;
+
+    private BAR barPosition = BAR.RIGHT;
+
+    private boolean hideScrollAnimation = false;
+    private long scrollTimer = 0L;
+    private long scrollFadeTimer = 0L;
+
+    private int barHoverColor = 16771400;
+    private int barColor = 0x595A61;
     public ScrollContainer(String identifier) {
         super(identifier);
+        contentHeight = 1;
     }
 
     public float getScrollDistance() {
@@ -33,15 +45,31 @@ public class ScrollContainer extends Container {
     }
 
     public void calculate() {
-        this.top = getY();
-        this.left = getX();
+        this.top = getRecursiveY();
+        this.left = getRecursiveX();
         this.bottom = getBoxHeight() + this.top;
         this.right = getBoxWidth() + this.left;
-        this.barLeft = this.left + this.getBoxWidth() - barWidth;
+
+        this.barLeft = (barPosition.equals(BAR.RIGHT)) ? this.left + this.getBoxWidth() - barWidth : left;
     }
 
     public int getContentHeight() {
         return contentHeight;
+    }
+
+    public float getHideScrollProgress(float speed, long t) {
+        return MathHelper.clamp((float) ((Util.getMeasuringTimeMs() - t) / 1000.0F * speed), 0, 1);
+    }
+
+    public void setHideScrollAnimation(boolean t) {
+        hideScrollAnimation = t;
+    }
+
+    private void onScroll() {
+        if(hideScrollAnimation) {
+            scrollTimer = Util.getMeasuringTimeMs();
+            scrollFadeTimer = 0L;
+        }
     }
 
     public void setContentHeight(int contentHeight) {
@@ -56,6 +84,9 @@ public class ScrollContainer extends Container {
         return this.getContentHeight() - (getBoxHeight() - this.border);
     }
 
+    public void setBarPosition(BAR position) {
+        barPosition = position;
+    }
     private void limitScroll() {
         int max = getMaxScroll();
 
@@ -80,6 +111,21 @@ public class ScrollContainer extends Container {
         });
     }
 
+    public void disableObjectCulling() {
+        objectCulling = false;
+    }
+
+    public void enableObjectCulling() {
+        objectCulling = true;
+    }
+
+    public void setBarHoverColor(int color) {
+        barHoverColor = color;
+    }
+
+    public void setBarColor(int color) {
+        barColor = color;
+    }
     private int getBarHeight() {
         int barHeight = (getBoxHeight() * getBoxHeight()) / this.getContentHeight();
 
@@ -103,6 +149,7 @@ public class ScrollContainer extends Container {
         if (amount == 0 || !isHovered(mouseX, mouseY)) return;
 
         this.scrollDistance += -amount * getScrollAmount();
+        onScroll();
         limitScroll();
 
 
@@ -127,6 +174,7 @@ public class ScrollContainer extends Container {
             int maxScroll = getBoxHeight() - getBarHeight();
             double moved = deltaY / maxScroll;
             this.scrollDistance += getMaxScroll() * moved;
+            onScroll();
             limitScroll();
         }
         if (this.isEnabled() && this.isHovered(mouseX, mouseY)) {
@@ -142,9 +190,10 @@ public class ScrollContainer extends Container {
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
         if (isEnabled() && isHovered(mouseX, mouseY)) {
             double ps = getRecursiveXLastTick()+getBoxWidth()*getRecursiveSizeLastTick();
-            this.scrolling = mouseButton == 0 && mouseX >= ps-4 && mouseX < ps;
+            this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-4 && mouseX < ps : mouseX >= getRecursiveXLastTick() && mouseX <= getRecursiveXLastTick() + barWidth);
             if (this.scrolling) {
                 this.scrollDistance = getMaxScroll() * (float) ((mouseY - getRecursiveYLastTick()) / (getBoxHeight()*getRecursiveSizeLastTick()));
+                onScroll();
                 return;
             }
 
@@ -196,16 +245,26 @@ public class ScrollContainer extends Container {
                     float barTop =  this.smoothScrollDistance * (getBoxHeight() - barHeight) / extraHeight;
 
 
-                    boolean isHover =  (mouseX >= getRecursiveXLastTick()+getBoxWidth()*getRecursiveSizeLastTick() - 4 && mouseX <= getRecursiveXLastTick()+getBoxWidth()*getRecursiveSizeLastTick() && mouseY >=  getRecursiveYLastTick() + barTop*getRecursiveSizeLastTick() && mouseY <= getRecursiveYLastTick() + barTop*getRecursiveSizeLastTick() + barHeight*getRecursiveSizeLastTick()) || this.scrolling;
+                    float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveXLastTick() + getBoxWidth()*getRecursiveSizeLastTick() - barWidth : getRecursiveXLastTick();
+                    boolean isHover =  (mouseX >= barPosX && mouseX <= barPosX + barWidth && mouseY >=  getRecursiveYLastTick() + barTop*getRecursiveSizeLastTick() && mouseY <= getRecursiveYLastTick() + barTop*getRecursiveSizeLastTick() + barHeight*getRecursiveSizeLastTick()) || this.scrolling;
                     if(isHover) {
-                        color = 16771400;
+                        onScroll();
+                        color = barHoverColor;
                     } else {
-                        color = 0x595A61;
+                        color = barColor;
                     }
 
-                    DrawUtils.drawVerticalGradient(matrices, getBoxWidth() - 4, 0, getBoxWidth(), getBoxHeight(), 0, 1, 1, 0.4f, 0.4f);
+                    float alphaProgress = 1;
+                    if(hideScrollAnimation && getHideScrollProgress(0.3f, scrollTimer) >= 1) {
+                        if(scrollFadeTimer == 0L) {
+                            scrollFadeTimer = Util.getMeasuringTimeMs();
+                        }
+                        alphaProgress = 1 - (getHideScrollProgress(1, scrollFadeTimer));
+                    }
 
-                    DrawUtils.drawVerticalGradient(matrices, getBoxWidth() - 4, barTop, getBoxWidth(), barTop+ barHeight, 0, color, color, 1,1);
+                    DrawUtils.drawVerticalGradient(matrices, barPosition.equals(BAR.RIGHT) ? getBoxWidth() - barWidth : 0, 0, barPosition.equals(BAR.RIGHT) ? getBoxWidth() : barWidth, getBoxHeight(), 0, 1, 1, 0.4f*alphaProgress, 0.4f*alphaProgress);
+
+                    DrawUtils.drawVerticalGradient(matrices, barPosition.equals(BAR.RIGHT) ? getBoxWidth() - barWidth : 0, barTop, barPosition.equals(BAR.RIGHT) ? getBoxWidth() : barWidth, barTop+ barHeight, 0, color, color, alphaProgress,alphaProgress);
 
                 }
         );
@@ -229,15 +288,21 @@ public class ScrollContainer extends Container {
             else
                 value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()));
 
-            var v = value.getRecursiveYLastTick() - smoothScrollDistance*getRecursiveSizeLastTick();
-            if(v <= getRecursiveYLastTick()+((getBoxHeight()/2F)*getRecursiveSizeLastTick())) {
-                v += value.getBoxHeight() * value.getRecursiveSizeLastTick();
-            }
+            if(objectCulling) {
+                var v = value.getRecursiveYLastTick() - smoothScrollDistance * getRecursiveSizeLastTick();
+                if (v <= getRecursiveYLastTick() + ((getBoxHeight() / 2F) * getRecursiveSizeLastTick())) {
+                    v += value.getBoxHeight() * value.getRecursiveSizeLastTick();
+                }
 
-            value.setVisible(isHovered(value.getRecursiveXLastTick(), v));
+                value.setVisible(isHovered(value.getRecursiveXLastTick(), v));
+            }
 
             value.render(matrices, x, y, delta);
 
         });
+    }
+
+    public enum BAR {
+        RIGHT, LEFT
     }
 }
