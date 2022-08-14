@@ -47,7 +47,7 @@ public class Button extends Widget {
 
         int i = getYImage(isFocused(mouseX, mouseY));
         matrices.translate(0,0, getZ());
-        RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
+        RenderSystem.setShaderColor(1,1,1, getRecursiveOpacityLastTick());
 
         DrawHelper.drawWithPivot(
                 matrices,
@@ -64,9 +64,12 @@ public class Button extends Widget {
                     RenderSystem.defaultBlendFunc();
                     RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
-                    DrawHelper.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() * 0.5, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
-                    DrawHelper.drawRectangle(textureComponent.getResource(), getBoxWidth() / 2, 0, Math.round((textureComponent.getU()+this.getBoxWidth() / 2)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth()/2, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
-
+                    if(getRenderType().equals(RENDER.PLACEHOLDER)) {
+                        DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), getBoxHeight(), 0, isHovered(mouseX, mouseY) ? 16777215 : getPlaceHolderColor(), isHovered(mouseX, mouseY) ? 16777215 : getPlaceHolderColor(), getRecursiveOpacityLastTick(), getRecursiveOpacityLastTick());
+                    } else {
+                        DrawHelper.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() * 0.5, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
+                        DrawHelper.drawRectangle(textureComponent.getResource(), getBoxWidth() / 2F, 0, Math.round((textureComponent.getU() + this.getBoxWidth() / 2F)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() / 2F, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
+                    }
                     drawText(matrices);
                     matrices.pop();
                 }

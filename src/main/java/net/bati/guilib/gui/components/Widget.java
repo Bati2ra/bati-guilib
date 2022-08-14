@@ -4,10 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import net.bati.guilib.utils.Callback;
-import net.bati.guilib.utils.DrawHelper;
-import net.bati.guilib.utils.Pivot;
-import net.bati.guilib.utils.Vec2;
+import net.bati.guilib.utils.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -60,6 +57,10 @@ public abstract class Widget implements Element {
     private float expandHitbox;
     @Builder.Default private float opacity = 1F;
     @Builder.Default private boolean visible = true;
+
+    @Builder.Default private RENDER renderType = RENDER.PLACEHOLDER;
+    private int placeHolderColor;
+
     /**
      * Determines if the item is focused or not ( depends on 'z' offset)
      */
@@ -111,6 +112,8 @@ public abstract class Widget implements Element {
     private float recursiveYLastTick;
     private float recursiveSizeLastTick;
 
+    private float recursiveOpacityLastTick;
+
     public Widget(String identifier, int boxWidth, int boxHeight) {
         this();
         setIdentifier(identifier);
@@ -123,6 +126,7 @@ public abstract class Widget implements Element {
         setPivot(Pivot.LEFT_TOP);
         setAttach(Pivot.LEFT_TOP);
         setOffsetPosition(new Vec2(0,0));
+        setRenderType(RENDER.PLACEHOLDER);
     }
     public Widget() {
         randomColor = (int) (Math.random()*16777215);
@@ -256,7 +260,8 @@ public abstract class Widget implements Element {
     public void updateLastTick() {
         recursiveXLastTick = getRecursiveX();
         recursiveYLastTick = getRecursiveY();
-        recursiveSizeLastTick = getRecursiveSizeLastTick();
+        recursiveSizeLastTick = getRecursiveSize();
+        recursiveOpacityLastTick = getRecursiveOpacity();
     }
     public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         updateLastTick();

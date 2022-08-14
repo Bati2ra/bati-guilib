@@ -37,7 +37,7 @@ public class DrawUtils {
     }
     private static void vertex(Matrix4f matrix, BufferBuilder builder, float x, float y, float z, int color, float a) {
         float[] rgb = ColorUtils.convertToRGB(color);
-        builder.vertex(matrix, x, y, z).color(rgb[0], rgb[1], rgb[2], rgb[3] * a).next();
+        builder.vertex(matrix, x, y, z).color(rgb[0], rgb[1], rgb[2], a).next();
 
     }
 }

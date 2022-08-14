@@ -4,6 +4,7 @@ import net.bati.guilib.CommonInitializer;
 import net.bati.guilib.gui.components.Button;
 import net.bati.guilib.gui.components.Widget;
 import net.bati.guilib.utils.Mouse;
+import net.bati.guilib.utils.WindowOptions;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -22,10 +23,13 @@ public abstract class AdvancedScreen extends Screen {
     private float partialTicks;
     private MatrixStack matrix;
 
+    private WindowOptions options;
+
     private final Button emptyWidget = Button.builder("").ignoreBox(true).build();
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);
+        options = new WindowOptions(MinecraftClient.getInstance());
         build();
     }
 
@@ -36,6 +40,7 @@ public abstract class AdvancedScreen extends Screen {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         super.render(matrices, mouseX, mouseY, delta);
+        options.update();
         updateMouse(mouseX, mouseY);
         partialTicks = delta;
         matrix = matrices;
@@ -46,6 +51,10 @@ public abstract class AdvancedScreen extends Screen {
         getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
     }
 
+
+    public WindowOptions getOptions() {
+        return options;
+    }
 
     public void openGui(@Nullable Screen gui) {
         MinecraftClient.getInstance().setScreen(gui);
