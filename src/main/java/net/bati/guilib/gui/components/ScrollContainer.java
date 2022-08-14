@@ -16,7 +16,7 @@ import java.util.Optional;
 public class ScrollContainer extends Container {
     protected final int border = 4;
 
-    private final int barWidth = 6;
+    private int barWidth = 6;
     protected float top, bottom, right, left;
     protected float scrollDistance;
     protected float smoothScrollDistance;
@@ -65,6 +65,9 @@ public class ScrollContainer extends Container {
         hideScrollAnimation = t;
     }
 
+    public void setBarWidth(int width) {
+        barWidth = width;
+    }
     private void onScroll() {
         if(hideScrollAnimation) {
             scrollTimer = Util.getMeasuringTimeMs();

@@ -63,6 +63,7 @@ public class TestScreen extends AdvancedScreen{
         container.disableObjectCulling();
         container.setBarPosition(ScrollContainer.BAR.RIGHT);
         container.setHideScrollAnimation(true);
+        container.setBarWidth(3);
         container.fit();
         return container;
     }
