@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Range;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -65,8 +66,8 @@ public class ScrollContainer extends Container {
         hideScrollAnimation = t;
     }
 
-    public void setBarWidth(int width) {
-        barWidth = width;
+    public void setBarWidth(@Range(from = 1, to = 100) int width) {
+        barWidth = MathHelper.clamp(width, 1, 100);
     }
     private void onScroll() {
         if(hideScrollAnimation) {

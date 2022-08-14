@@ -6,6 +6,7 @@ import net.bati.guilib.utils.Pivot;
 import net.bati.guilib.utils.Vec2;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 
 public class TestScreen extends AdvancedScreen{
