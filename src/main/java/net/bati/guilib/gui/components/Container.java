@@ -53,9 +53,12 @@ public class Container extends Widget implements IWidgetsStorage {
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
         if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
+
         widgets.forEach((key, value) ->  {
-            if(value.isVisible())
+            if(value.isVisible()) {
                 value.mouseClicked(mouseX, mouseY, mouseButton);
+            }
+
 
         });
     }

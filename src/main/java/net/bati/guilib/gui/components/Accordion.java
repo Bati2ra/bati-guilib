@@ -26,8 +26,8 @@ public class Accordion extends Container {
 
     private int contentHeight;
     private double animProgress;
-    private int prevPosX;
-    private int prevPosY;
+    private float prevPosX;
+    private float prevPosY;
 
     public Accordion(String identifier) {
         super(identifier);
@@ -64,8 +64,8 @@ public class Accordion extends Container {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
         animProgress = MathHelper.clamp(MathHelper.lerp(delta * 0.5, animProgress, (show) ? 1 : 0), 0F, 1F);
 
-        prevPosX = (int)MathHelper.lerp(delta * 0.5F, prevPosX, this.getOffsetX());
-        prevPosY = (int)MathHelper.lerp(delta * 0.5F, prevPosY, this.getOffsetY());
+        prevPosX = MathHelper.lerp(delta * 0.5F, prevPosX, (float)this.getOffsetX());
+        prevPosY = MathHelper.lerp(delta * 0.5F, prevPosY, (float)this.getOffsetY());
         DrawHelper.drawWithPivot(matrices, prevPosX, prevPosY, (float)this.getBoxWidth(), (float)this.getBoxHeight(), this.getSize(), delta, this.getPivot(), () -> {
             boolean hovered = isHoveringAccordion(mouseX, mouseY);
             DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), minHeight, 0, hovered ? 16777215 : 1, hovered ? 16777215 : 1, 0.5f, 0.5f);
@@ -74,7 +74,7 @@ public class Accordion extends Container {
             TextUtils.drawText((show) ? "▲" : "▼", getBoxWidth() - 6, 3, 0.6f, 16777215, false, false, matrices);
 
             if(animProgress > 0.1) {
-                DrawHelper.drawWithPivot(matrices, getBoxWidth()/2, minHeight, (float) this.getBoxWidth(), (float) this.getBoxHeight() - minHeight, this.getSize(), delta, Pivot.MIDDLE_TOP, () -> {
+                DrawHelper.drawWithPivot(matrices, getBoxWidth()/2F, minHeight, (float) this.getBoxWidth(), (float) this.getBoxHeight() - minHeight, this.getSize(), delta, Pivot.MIDDLE_TOP, () -> {
                     setOpacity((float) (getOpacity() * animProgress));
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
                     DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), (float)(contentHeight*animProgress), 0, 1, 1, 0.25f, 0.25f);

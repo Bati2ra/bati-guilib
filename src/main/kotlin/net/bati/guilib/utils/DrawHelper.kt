@@ -135,11 +135,11 @@ object DrawHelper {
             .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
     }
     @JvmStatic
-    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Int, y : Int, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic) {
+    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Float, y : Float, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic) {
         drawWithPivot(matrices, x, y, width, height, size, delta, pivot, drawCallback, null)
     }
     @JvmStatic
-    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Int, y : Int, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic, @Nullable transformationCallback : Callback.DrawableBasic?) {
+    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Float, y : Float, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic, @Nullable transformationCallback : Callback.DrawableBasic?) {
         val offsetX: Float = pivot.getX(width)
         val offsetY: Float = pivot.getY(height)
 

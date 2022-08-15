@@ -283,14 +283,18 @@ public class ScrollContainer extends Container {
      * campo de "visión" basándonos en el tamaño y escala y deja de dibujarlos.
      */
     public void renderWidgets(HashMap<String, Widget> widgets, MatrixStack matrices, float x, float y, float delta) {
-        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(x,y)).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(x,y) && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
         widgets.forEach((key, value) -> {
+            if(value.isIgnoreBox()) {
+                value.setFocused(true);
+            } else {
 
-            if(value.hasParent())
-                value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()) && widgetEntry.get().getValue().getParent().isFocused());
-            else
-                value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()));
+                if (value.hasParent())
+                    value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()) && widgetEntry.get().getValue().getParent().isFocused());
+                else
+                    value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()));
+            }
 
             if(objectCulling) {
                 var v = value.getRecursiveYLastTick() - smoothScrollDistance * getRecursiveSizeLastTick();
