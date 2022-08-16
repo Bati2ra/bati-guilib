@@ -79,7 +79,7 @@ public class Button extends Widget {
 
     }
 
-    private void shouldPlaySound(float mouseX, float mouseY) {
+    protected void shouldPlaySound(float mouseX, float mouseY) {
         if(!isFocused()) {
             hoverSound = true;
             return;

@@ -30,7 +30,6 @@ public class ScreenUtils {
 
             value.render(matrices, x, y, delta);
 
-            value.lastRender(matrices, x, y, delta);
 
         });
     }

@@ -45,11 +45,11 @@ public class Container extends Widget implements IWidgetsStorage {
 
     }
 
-    /*
+
     @Override
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         widgets.forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
-    }*/
+    }
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {

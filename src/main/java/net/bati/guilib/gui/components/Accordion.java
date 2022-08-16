@@ -83,7 +83,7 @@ public class Accordion extends Container {
                 DrawHelper.drawWithPivot(matrices, getBoxWidth()/2F, minHeight, (float) this.getBoxWidth(), (float) this.getBoxHeight() - minHeight, this.getSize(), delta, Pivot.MIDDLE_TOP, () -> {
                     setOpacity((float) (getOpacity() * animProgress));
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
-                    DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), (float)(contentHeight*animProgress), 0, 1, 1, 0.25f, 0.25f);
+                    DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), (float)((contentHeight + heightAddition)*animProgress), 0, 1, 1, 0.25f, 0.25f);
 
                     renderWidgets(matrices, mouseX, mouseY - minHeight, delta);
                 }, () -> matrices.scale(1, (float)animProgress, 1));

@@ -143,9 +143,9 @@ public class ScrollContainer extends Container {
 
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         getWidgets().forEach((key, value) -> {
-        //    matrices.translate(0, -smoothScrollDistance, 0);
+            matrices.translate(0, -smoothScrollDistance, 0);
             value.lastRender(matrices, mouseX, mouseY, delta);
-        //    matrices.translate(0, smoothScrollDistance, 0);
+            matrices.translate(0, smoothScrollDistance, 0);
         });
     }
     @Override
