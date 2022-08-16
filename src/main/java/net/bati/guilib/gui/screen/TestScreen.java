@@ -38,7 +38,7 @@ public class TestScreen extends AdvancedScreen{
         alignedContainer.fit();
 
         addWidget(alignedContainer);*/
-        addWidgets(createAdvancedContainer(), createNavigationBar());
+        addWidgets(createAdvancedContainer(), createNavigationBar(),createRightSliderContainer());
     }
     private AlignedContainer createNavigationBar() {
         AlignedContainer alignedContainer = new AlignedContainer("buttonsx");
@@ -80,9 +80,10 @@ public class TestScreen extends AdvancedScreen{
     private ScrollContainer createRightSliderContainer() {
         ScrollContainer container = new ScrollContainer("right_sliders");
         container.setBoxWidth(100);
-        container.setBoxHeight(200);
-        container.setOffsetPosition(new Vec2(10,10));
-        container.addWidget(createRightAccordions());
+        container.setBoxHeight(40);
+        container.setSize(1.5f);
+        container.setOffsetPosition(new Vec2(100,10));
+        container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(1).onClick((a,b,c) -> System.out.println("SEX")).build());
         container.disableObjectCulling();
         container.setBarPosition(ScrollContainer.BAR.RIGHT);
         container.setHideScrollAnimation(true);

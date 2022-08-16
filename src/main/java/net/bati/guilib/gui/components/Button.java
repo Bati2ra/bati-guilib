@@ -45,7 +45,7 @@ public class Button extends Widget {
 
         if(textComponent == null) return;
 
-        int i = getYImage(isFocused(mouseX, mouseY));
+        int i = getYImage(isFocused());
         matrices.translate(0,0, getZ());
         RenderSystem.setShaderColor(1,1,1, getRecursiveOpacityLastTick());
 
@@ -65,7 +65,7 @@ public class Button extends Widget {
                     RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
                     if(getRenderType().equals(RENDER.PLACEHOLDER)) {
-                        DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), getBoxHeight(), 0, isHovered(mouseX, mouseY) ? 16777215 : getPlaceHolderColor(), isHovered(mouseX, mouseY) ? 16777215 : getPlaceHolderColor(), getRecursiveOpacityLastTick(), getRecursiveOpacityLastTick());
+                        DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), getBoxHeight(), 0, isHovered() ? 16777215 : getPlaceHolderColor(), isHovered() ? 16777215 : getPlaceHolderColor(), getRecursiveOpacityLastTick(), getRecursiveOpacityLastTick());
                     } else {
                         DrawHelper.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() * 0.5, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
                         DrawHelper.drawRectangle(textureComponent.getResource(), getBoxWidth() / 2F, 0, Math.round((textureComponent.getU() + this.getBoxWidth() / 2F)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() / 2F, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
@@ -80,13 +80,13 @@ public class Button extends Widget {
     }
 
     private void shouldPlaySound(float mouseX, float mouseY) {
-        if(!isFocused(mouseX, mouseY)) {
+        if(!isFocused()) {
             hoverSound = true;
             return;
         }
         if(!hoverSound || hoverSoundEvent == null) return;
 
-        if(isEnabled() && isFocused(mouseX, mouseY))
+        if(isEnabled() && isFocused())
             playSound(hoverSoundEvent);
 
         hoverSound = !hoverSound;

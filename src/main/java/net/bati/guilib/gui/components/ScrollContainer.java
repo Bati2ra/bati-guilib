@@ -143,14 +143,14 @@ public class ScrollContainer extends Container {
 
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         getWidgets().forEach((key, value) -> {
-            matrices.translate(0, -smoothScrollDistance, 0);
+        //    matrices.translate(0, -smoothScrollDistance, 0);
             value.lastRender(matrices, mouseX, mouseY + smoothScrollDistance*getRecursiveSizeLastTick(), delta);
-            matrices.translate(0, smoothScrollDistance, 0);
+        //    matrices.translate(0, smoothScrollDistance, 0);
         });
     }
     @Override
     public void onMouseScroll(double mouseX, double mouseY, double amount) {
-        if (amount == 0 || !isHovered(mouseX, mouseY)) return;
+        if (amount == 0 || !isHovered()) return;
 
         this.scrollDistance += -amount * getScrollAmount();
         onScroll();
@@ -162,7 +162,7 @@ public class ScrollContainer extends Container {
     @Override
     public void onMouseRelease(double mouseX, double mouseY, int state) {
         this.scrolling = false;
-        if (this.isEnabled() && this.isHovered(mouseX, mouseY)) {
+        if (this.isEnabled() && this.isHovered()) {
             getWidgets().forEach((key, value) -> {
                 if (value.isVisible()) {
                     value.mouseReleased(mouseX, mouseY + smoothScrollDistance*getRecursiveSizeLastTick(), state);
@@ -181,7 +181,7 @@ public class ScrollContainer extends Container {
             onScroll();
             limitScroll();
         }
-        if (this.isEnabled() && this.isHovered(mouseX, mouseY)) {
+        if (this.isEnabled() && this.isHovered()) {
             getWidgets().forEach((key, value) -> {
                 if (value.isVisible()) {
                     value.onMouseDrag(mouseX, mouseY  + smoothScrollDistance*getRecursiveSizeLastTick(), button, deltaX, deltaY);
@@ -192,7 +192,7 @@ public class ScrollContainer extends Container {
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
-        if (isEnabled() && isHovered(mouseX, mouseY)) {
+        if (isEnabled() && isHovered()) {
             double ps = getRecursiveXLastTick()+getBoxWidth()*getRecursiveSizeLastTick();
             this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-4 && mouseX < ps : mouseX >= getRecursiveXLastTick() && mouseX <= getRecursiveXLastTick() + barWidth);
             if (this.scrolling) {
@@ -212,9 +212,11 @@ public class ScrollContainer extends Container {
 
     @Override
     protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        boolean canScroll = ((getContentHeight() + border) - getBoxHeight()) > 0;
+
         matrices.push();
         matrices.translate(0,0, getZ());
-        smoothScrollDistance = MathHelper.clamp((float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance), 0, getMaxScroll());
+        smoothScrollDistance = canScroll ? MathHelper.clamp((float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance), 0, getMaxScroll()) : 0;
 
         float recursiveOpacity = getRecursiveOpacity();
         RenderSystem.setShaderColor(1,1,1, recursiveOpacity);
@@ -248,28 +250,28 @@ public class ScrollContainer extends Container {
 
                     float barTop =  this.smoothScrollDistance * (getBoxHeight() - barHeight) / extraHeight;
 
-
-                    float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveXLastTick() + getBoxWidth()*getRecursiveSizeLastTick() - barWidth : getRecursiveXLastTick();
-                    boolean isHover =  (mouseX >= barPosX && mouseX <= barPosX + barWidth && mouseY >=  getRecursiveYLastTick() + barTop*getRecursiveSizeLastTick() && mouseY <= getRecursiveYLastTick() + barTop*getRecursiveSizeLastTick() + barHeight*getRecursiveSizeLastTick()) || this.scrolling;
-                    if(isHover) {
-                        onScroll();
-                        color = barHoverColor;
-                    } else {
-                        color = barColor;
-                    }
-
-                    float alphaProgress = 1;
-                    if(hideScrollAnimation && getHideScrollProgress(0.3f, scrollTimer) >= 1) {
-                        if(scrollFadeTimer == 0L) {
-                            scrollFadeTimer = Util.getMeasuringTimeMs();
+                    if(canScroll) {
+                        float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveXLastTick() + getBoxWidth() * getRecursiveSizeLastTick() - barWidth : getRecursiveXLastTick();
+                        boolean isHover = (mouseX >= barPosX && mouseX <= barPosX + barWidth && mouseY >= getRecursiveYLastTick() + barTop * getRecursiveSizeLastTick() && mouseY <= getRecursiveYLastTick() + barTop * getRecursiveSizeLastTick() + barHeight * getRecursiveSizeLastTick()) || this.scrolling;
+                        if (isHover) {
+                            onScroll();
+                            color = barHoverColor;
+                        } else {
+                            color = barColor;
                         }
-                        alphaProgress = 1 - (getHideScrollProgress(1, scrollFadeTimer));
+
+                        float alphaProgress = 1;
+                        if (hideScrollAnimation && getHideScrollProgress(0.3f, scrollTimer) >= 1) {
+                            if (scrollFadeTimer == 0L) {
+                                scrollFadeTimer = Util.getMeasuringTimeMs();
+                            }
+                            alphaProgress = 1 - (getHideScrollProgress(1, scrollFadeTimer));
+                        }
+
+                        DrawUtils.drawVerticalGradient(matrices, barPosition.equals(BAR.RIGHT) ? getBoxWidth() - barWidth : 0, 0, barPosition.equals(BAR.RIGHT) ? getBoxWidth() : barWidth, getBoxHeight(), 0, 1, 1, 0.4f * alphaProgress, 0.4f * alphaProgress);
+
+                        DrawUtils.drawVerticalGradient(matrices, barPosition.equals(BAR.RIGHT) ? getBoxWidth() - barWidth : 0, barTop, barPosition.equals(BAR.RIGHT) ? getBoxWidth() : barWidth, barTop + barHeight, 0, color, color, alphaProgress, alphaProgress);
                     }
-
-                    DrawUtils.drawVerticalGradient(matrices, barPosition.equals(BAR.RIGHT) ? getBoxWidth() - barWidth : 0, 0, barPosition.equals(BAR.RIGHT) ? getBoxWidth() : barWidth, getBoxHeight(), 0, 1, 1, 0.4f*alphaProgress, 0.4f*alphaProgress);
-
-                    DrawUtils.drawVerticalGradient(matrices, barPosition.equals(BAR.RIGHT) ? getBoxWidth() - barWidth : 0, barTop, barPosition.equals(BAR.RIGHT) ? getBoxWidth() : barWidth, barTop+ barHeight, 0, color, color, alphaProgress,alphaProgress);
-
                 }
         );
         matrices.translate(0,0, -getZ());
@@ -283,7 +285,9 @@ public class ScrollContainer extends Container {
      * campo de "visión" basándonos en el tamaño y escala y deja de dibujarlos.
      */
     public void renderWidgets(HashMap<String, Widget> widgets, MatrixStack matrices, float x, float y, float delta) {
-        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(x,y) && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+        widgets.forEach((key, value) -> value.preRender(matrices, x, y, delta));
+
+        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
         widgets.forEach((key, value) -> {
             if(value.isIgnoreBox()) {
@@ -302,7 +306,7 @@ public class ScrollContainer extends Container {
                     v += value.getBoxHeight() * value.getRecursiveSizeLastTick();
                 }
 
-                value.setVisible(isHovered(value.getRecursiveXLastTick(), v));
+                value.setVisible(calculateHovered(value.getRecursiveXLastTick(), v));
             }
 
             value.render(matrices, x, y, delta);

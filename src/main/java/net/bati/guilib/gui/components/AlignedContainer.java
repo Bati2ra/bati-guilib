@@ -27,6 +27,8 @@ public class AlignedContainer extends Container {
     private double              spacing = 20;
     private int                 contentSize = 0;
 
+    private boolean dynamicClose = true;
+
     public AlignedContainer(String identifier) {
         super(identifier);
         setIgnoreBox(true); // isFocused/isHovered retornará siempre verdadero, este contenedor por defecto no posee un tamaño.
@@ -81,6 +83,14 @@ public class AlignedContainer extends Container {
         setBoxHeight((int) tempHeight);
         setBoxWidth((int) tempWidth);
 
+    }
+
+    public void setDynamicClose(boolean b) {
+        dynamicClose = b;
+    }
+
+    public boolean shouldDynamicClose() {
+        return dynamicClose;
     }
 
 /*

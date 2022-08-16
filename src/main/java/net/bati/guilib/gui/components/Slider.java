@@ -53,13 +53,13 @@ public class Slider extends Widget {
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
-        if(isFocused(mouseX, mouseY))
+        if(isFocused())
             calculate(mouseX);
     }
 
     @Override
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if(isFocused(mouseX, mouseY))
+        if(isFocused())
             calculate(mouseX);
     }
 

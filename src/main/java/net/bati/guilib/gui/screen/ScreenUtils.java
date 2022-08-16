@@ -11,7 +11,9 @@ import java.util.Optional;
 
 public class ScreenUtils {
     public static void renderWidgets(HashMap<String, Widget> widgets, MatrixStack matrices, float x, float y, float delta) {
-        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered(x,y) && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+        widgets.forEach((key, value) -> value.preRender(matrices, x, y, delta));
+
+        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
         widgets.forEach((key, value) -> {
             if(value.isIgnoreBox()) {
@@ -26,6 +28,8 @@ public class ScreenUtils {
 
 
             value.render(matrices, x, y, delta);
+
+            value.lastRender(matrices, x, y, delta);
 
         });
     }

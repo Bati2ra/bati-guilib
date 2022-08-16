@@ -113,6 +113,7 @@ public abstract class Widget implements Element {
     private float recursiveSizeLastTick;
 
     private float recursiveOpacityLastTick;
+    private boolean lastTickHovered;
 
     public Widget(String identifier, int boxWidth, int boxHeight) {
         this();
@@ -209,18 +210,29 @@ public abstract class Widget implements Element {
         setEnabled(!s);
     }
 
-    public boolean isHovered(double mouseX, double mouseY) {
+    public boolean isHovered() {
+        return lastTickHovered;
+    }
+
+    /**
+     * Solo se utiliza una vez por iteración de {@link Widget#render(MatrixStack, float, float, float)}, para ahorrar llamados a métodos que
+     * utilizan recursividad.
+     *
+     * Un Widget se considera en estado "hovered" siempre y cuando el mouse se encuentre dentro de la hitbox del mismo y en caso de tener un
+     * objeto padre asignado, si el mismo se encuentra "focused"
+     */
+    protected boolean calculateHovered(double mouseX, double mouseY) {
         float recursiveX = recursiveXLastTick;
         float recursiveY = recursiveYLastTick;
         float recursiveSize = recursiveSizeLastTick;
-
-        return (hoveringListener == null) ?
-                mouseX >= (recursiveX - expandHitbox) && mouseY >= (recursiveY - expandHitbox) && mouseX <= ((recursiveX + expandHitbox + getBoxWidth()* recursiveSize)) && mouseY <= ((recursiveY + expandHitbox + getBoxHeight()* recursiveSize))
-                : hoveringListener.isHovering(mouseX, mouseY);
+        boolean parent = !hasParent() || getParent().isFocused();
+        return parent && ((hoveringListener == null) ?
+                (mouseX >= (recursiveX - expandHitbox) && mouseY >= (recursiveY - expandHitbox) && mouseX <= ((recursiveX + expandHitbox + getBoxWidth()* recursiveSize)) && mouseY <= ((recursiveY + expandHitbox + getBoxHeight()* recursiveSize)))
+                : hoveringListener.isHovering(mouseX, mouseY));
     }
 
-    public boolean isFocused(double mouseX, double mouseY) {
-        return focused && isHovered(mouseX, mouseY);
+    public boolean isFocused() {
+        return focused && isHovered();
     }
 
     /**
@@ -257,14 +269,19 @@ public abstract class Widget implements Element {
         );
     }
 
-    public void updateLastTick() {
+    public void updateLastTick(float mouseX, float mouseY) {
         recursiveXLastTick = getRecursiveX();
         recursiveYLastTick = getRecursiveY();
         recursiveSizeLastTick = getRecursiveSize();
         recursiveOpacityLastTick = getRecursiveOpacity();
+
+        lastTickHovered = calculateHovered(mouseX, mouseY);
+    }
+
+    public void preRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        updateLastTick(mouseX, mouseY);
     }
     public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
-        updateLastTick();
 
         if(onUpdate != null)
             onUpdate.accept(this);
@@ -310,7 +327,7 @@ public abstract class Widget implements Element {
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         if(!isEnabled()) return false;
 
-        if(isFocused(mouseX, mouseY) && onClick != null) {
+        if(isFocused() && onClick != null) {
             onClick.call(mouseX, mouseY, mouseButton);
             return true;
         }
@@ -322,7 +339,7 @@ public abstract class Widget implements Element {
     public boolean mouseReleased(double mouseX, double mouseY, int state) {
         if(!isEnabled()) return false;
 
-        if(isFocused(mouseX, mouseY) && onReleaseClick != null) {
+        if(isFocused() && onReleaseClick != null) {
             onReleaseClick.call(mouseX, mouseY, state);
             return true;
         }
@@ -334,7 +351,7 @@ public abstract class Widget implements Element {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if(!isEnabled()) return false;
 
-        if(isFocused(mouseX, mouseY) && onPressKey != null) {
+        if(isFocused() && onPressKey != null) {
             onPressKey.call(keyCode, scanCode, modifiers);
             return true;
         }
@@ -346,7 +363,7 @@ public abstract class Widget implements Element {
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if(!isEnabled()) return false;
 
-        if(isFocused(mouseX, mouseY) && onReleaseKey != null) {
+        if(isFocused() && onReleaseKey != null) {
             onReleaseKey.call(keyCode, scanCode, modifiers);
             return true;
         }

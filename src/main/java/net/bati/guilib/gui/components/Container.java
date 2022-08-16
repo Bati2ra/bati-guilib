@@ -52,7 +52,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
-        if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
+        if(!isEnabled() || !isHovered()) return;
 
         widgets.forEach((key, value) ->  {
             if(value.isVisible()) {
@@ -65,7 +65,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
+        if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) ->  {
             if(value.isVisible())
                 value.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
@@ -74,7 +74,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseRelease(double mouseX, double mouseY, int state) {
-        if(!isEnabled() || !isHovered(mouseX, mouseY)) return;
+        if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
                 value.mouseReleased(mouseX, mouseY, state);
@@ -83,7 +83,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onKeyPress(int keyCode, int scanCode, int modifiers) {
-        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
                 value.onKeyPress(keyCode, scanCode, modifiers);
@@ -92,7 +92,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onKeyRelease(int keyCode, int scanCode, int modifiers) {
-        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
                 value.onKeyRelease(keyCode, scanCode, modifiers);
@@ -101,7 +101,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onCharType(char chr, int modifiers) {
-        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
                 value.onCharType(chr, modifiers);
@@ -110,7 +110,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseScroll(double mouseX, double mouseY, double amount) {
-        if(!isEnabled() || !isHovered(getMouseX(), getMouseY())) return;
+        if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
                 value.onMouseScroll(mouseX, mouseY, amount);
@@ -125,7 +125,7 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    public boolean isHovered(double mouseX, double mouseY) {
-        return isIgnoreBox() || super.isHovered(mouseX, mouseY);
+    public boolean isHovered() {
+        return isIgnoreBox() || super.isHovered();
     }
 }

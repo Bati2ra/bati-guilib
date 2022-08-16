@@ -29,6 +29,8 @@ public class Accordion extends Container {
     private float prevPosX;
     private float prevPosY;
 
+    private int heightAddition;
+
     public Accordion(String identifier) {
         super(identifier);
         setBoxWidth(100);
@@ -54,6 +56,10 @@ public class Accordion extends Container {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public void setHeightAddition(int addition) {
+        heightAddition = addition;
     }
 
     @Override
@@ -104,7 +110,7 @@ public class Accordion extends Container {
                 }
             });
         }
-        setBoxHeight(minHeight + contentHeight);
+        setBoxHeight(minHeight + contentHeight + heightAddition);
     }
 
 
@@ -118,30 +124,41 @@ public class Accordion extends Container {
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
-        super.onMouseClick(mouseX, mouseY - minHeight, mouseButton);
+        super.onMouseClick(mouseX, mouseY, mouseButton);
         if(isHoveringAccordion(mouseX, mouseY)) {
             show = !show;
             fit();
             if(hasParent() && getParent() instanceof AlignedContainer alignedContainer) {
                 prevPosX = getOffsetX();
                 prevPosY = getOffsetY();
+
+                // Cierra todos los acordeones a excepción del activado siempre y cuando la dynamicClose este activo y se intente abrir el acordeón
+                if(alignedContainer.shouldDynamicClose() && show) {
+                    alignedContainer.getWidgets().forEach((key, value) -> {
+                        if (value instanceof Accordion accordion) {
+                            if (key.contentEquals(getIdentifier())) return;
+                            accordion.show = false;
+                            accordion.fit();
+                        }
+                    });
+                }
                 alignedContainer.fit();
             }
         }
     }
     @Override
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        super.onMouseDrag(mouseX, mouseY - minHeight, button, deltaX, deltaY);
+        super.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
     public void onMouseRelease(double mouseX, double mouseY, int state) {
-        super.onMouseRelease(mouseX, mouseY - minHeight, state);
+        super.onMouseRelease(mouseX, mouseY, state);
     }
 
     @Override
     public void onMouseScroll(double mouseX, double mouseY, double amount) {
-        super.onMouseScroll(mouseX, mouseY - minHeight, amount);
+        super.onMouseScroll(mouseX, mouseY, amount);
     }
 
 }
