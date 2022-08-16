@@ -85,7 +85,7 @@ public class Accordion extends Container {
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
                     DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), (float)(contentHeight*animProgress), 0, 1, 1, 0.25f, 0.25f);
 
-                    ScreenUtils.renderWidgets(this.getWidgets(), matrices, mouseX, mouseY - minHeight, delta);
+                    renderWidgets(matrices, mouseX, mouseY - minHeight, delta);
                 }, () -> matrices.scale(1, (float)animProgress, 1));
                 setOpacity(opacity);
             }
@@ -119,12 +119,14 @@ public class Accordion extends Container {
      */
     public boolean isHoveringAccordion(double mouseX, double mouseY) {
 
-        return isIgnoreBox() || (mouseX >= getRecursiveXLastTick() && mouseX <= getRecursiveXLastTick()+getBoxWidth()*getRecursiveSizeLastTick() && mouseY >= getRecursiveYLastTick() && mouseY <= getRecursiveYLastTick()+minHeight*getRecursiveSizeLastTick());
+        return isIgnoreBox() || (mouseX >= getRecursiveX() && mouseX <= getRecursiveX()+getBoxWidth()* getRecursiveSize() && mouseY >= getRecursiveY() && mouseY <= getRecursiveY()+minHeight* getRecursiveSize());
     }
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
-        super.onMouseClick(mouseX, mouseY, mouseButton);
+        if(show) {
+            super.onMouseClick(mouseX, mouseY, mouseButton);
+        }
         if(isHoveringAccordion(mouseX, mouseY)) {
             show = !show;
             fit();
@@ -148,17 +150,23 @@ public class Accordion extends Container {
     }
     @Override
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        super.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
+        if(show) {
+            super.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
+        }
     }
 
     @Override
     public void onMouseRelease(double mouseX, double mouseY, int state) {
-        super.onMouseRelease(mouseX, mouseY, state);
+        if(show) {
+            super.onMouseRelease(mouseX, mouseY, state);
+        }
     }
 
     @Override
     public void onMouseScroll(double mouseX, double mouseY, double amount) {
-        super.onMouseScroll(mouseX, mouseY, amount);
+        if(show) {
+            super.onMouseScroll(mouseX, mouseY, amount);
+        }
     }
 
 }

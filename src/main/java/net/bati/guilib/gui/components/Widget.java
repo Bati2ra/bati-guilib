@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.bati.guilib.utils.*;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
@@ -108,11 +107,12 @@ public abstract class Widget implements Element {
 
 
     // Estas variables son para evitar llamar repetidas veces a métodos que usan recursividad
-    private float recursiveXLastTick;
-    private float recursiveYLastTick;
-    private float recursiveSizeLastTick;
+    private float lastTickX;
+    private float lastTickY;
+    private float lastTickSize;
 
     private float recursiveOpacityLastTick;
+
     private boolean lastTickHovered;
 
     public Widget(String identifier, int boxWidth, int boxHeight) {
@@ -146,6 +146,10 @@ public abstract class Widget implements Element {
     }
 
     public float getRecursiveX() {
+        return lastTickX;
+    }
+
+    public float calculateRecursiveX() {
         return hasParent() ? parent.getRecursiveX() + getX() * parent.getRecursiveSize() : getX();
     }
 
@@ -162,6 +166,10 @@ public abstract class Widget implements Element {
     }
 
     public float getRecursiveY() {
+        return lastTickY;
+    }
+
+    public float calculateRecursiveY() {
         return hasParent() ? parent.getRecursiveY() + getY() * parent.getRecursiveSize() : getY();
     }
 
@@ -170,6 +178,10 @@ public abstract class Widget implements Element {
     }
 
     public float getRecursiveSize() {
+        return lastTickSize;
+    }
+
+    protected float calculateRecursiveSize() {
         return (hasParent() ? parent.getRecursiveSize() : 1) * getSize();
     }
 
@@ -222,12 +234,9 @@ public abstract class Widget implements Element {
      * objeto padre asignado, si el mismo se encuentra "focused"
      */
     protected boolean calculateHovered(double mouseX, double mouseY) {
-        float recursiveX = recursiveXLastTick;
-        float recursiveY = recursiveYLastTick;
-        float recursiveSize = recursiveSizeLastTick;
-        boolean parent = !hasParent() || getParent().isFocused();
+        boolean parent = !hasParent() || getParent().isHovered();
         return parent && ((hoveringListener == null) ?
-                (mouseX >= (recursiveX - expandHitbox) && mouseY >= (recursiveY - expandHitbox) && mouseX <= ((recursiveX + expandHitbox + getBoxWidth()* recursiveSize)) && mouseY <= ((recursiveY + expandHitbox + getBoxHeight()* recursiveSize)))
+                (mouseX >= (getRecursiveX() - expandHitbox) && mouseY >= (getRecursiveY() - expandHitbox) && mouseX <= ((getRecursiveX() + expandHitbox + getBoxWidth()* getRecursiveSize())) && mouseY <= ((getRecursiveY() + expandHitbox + getBoxHeight()* getRecursiveSize())))
                 : hoveringListener.isHovering(mouseX, mouseY));
     }
 
@@ -237,10 +246,6 @@ public abstract class Widget implements Element {
 
     /**
      * If you want to draw something for the widget, use this method instead of render (which is used to handle other listeners)
-     * @param matrices
-     * @param mouseX
-     * @param mouseY
-     * @param delta
      */
     protected  void draw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
 
@@ -270,9 +275,9 @@ public abstract class Widget implements Element {
     }
 
     public void updateLastTick(float mouseX, float mouseY) {
-        recursiveXLastTick = getRecursiveX();
-        recursiveYLastTick = getRecursiveY();
-        recursiveSizeLastTick = getRecursiveSize();
+        lastTickX = calculateRecursiveX();
+        lastTickY = calculateRecursiveY();
+        lastTickSize = calculateRecursiveSize();
         recursiveOpacityLastTick = getRecursiveOpacity();
 
         lastTickHovered = calculateHovered(mouseX, mouseY);

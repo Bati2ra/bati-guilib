@@ -31,7 +31,7 @@ public class AlignedContainer extends Container {
 
     public AlignedContainer(String identifier) {
         super(identifier);
-        setIgnoreBox(true); // isFocused/isHovered retornará siempre verdadero, este contenedor por defecto no posee un tamaño.
+       // setIgnoreBox(true); // isFocused/isHovered retornará siempre verdadero, este contenedor por defecto no posee un tamaño.
     }
 
 
@@ -96,7 +96,8 @@ public class AlignedContainer extends Container {
 /*
     @Override
     protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
-        super.draw(matrices, mouseX, mouseY, delta);
         DrawUtils.drawHorizontalGradient(matrices, getX(), getY(), getX() + getBoxWidth()*getSize(), getY() + getBoxHeight() * getSize(), 0, 1, 1, 0.5f, 0.5f);
+
+        super.draw(matrices, mouseX, mouseY, delta);
     }*/
 }

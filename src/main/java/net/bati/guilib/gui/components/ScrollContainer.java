@@ -144,7 +144,7 @@ public class ScrollContainer extends Container {
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         getWidgets().forEach((key, value) -> {
         //    matrices.translate(0, -smoothScrollDistance, 0);
-            value.lastRender(matrices, mouseX, mouseY + smoothScrollDistance*getRecursiveSizeLastTick(), delta);
+            value.lastRender(matrices, mouseX, mouseY, delta);
         //    matrices.translate(0, smoothScrollDistance, 0);
         });
     }
@@ -165,7 +165,7 @@ public class ScrollContainer extends Container {
         if (this.isEnabled() && this.isHovered()) {
             getWidgets().forEach((key, value) -> {
                 if (value.isVisible()) {
-                    value.mouseReleased(mouseX, mouseY + smoothScrollDistance*getRecursiveSizeLastTick(), state);
+                    value.mouseReleased(mouseX, mouseY, state);
                 }
 
             });
@@ -184,7 +184,7 @@ public class ScrollContainer extends Container {
         if (this.isEnabled() && this.isHovered()) {
             getWidgets().forEach((key, value) -> {
                 if (value.isVisible()) {
-                    value.onMouseDrag(mouseX, mouseY  + smoothScrollDistance*getRecursiveSizeLastTick(), button, deltaX, deltaY);
+                    value.onMouseDrag(mouseX, mouseY , button, deltaX, deltaY);
                 }
             });
         }
@@ -193,17 +193,17 @@ public class ScrollContainer extends Container {
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
         if (isEnabled() && isHovered()) {
-            double ps = getRecursiveXLastTick()+getBoxWidth()*getRecursiveSizeLastTick();
-            this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-4 && mouseX < ps : mouseX >= getRecursiveXLastTick() && mouseX <= getRecursiveXLastTick() + barWidth);
+            double ps = getRecursiveX()+getBoxWidth()* getRecursiveSize();
+            this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-4 && mouseX < ps : mouseX >= getRecursiveX() && mouseX <= getRecursiveX() + barWidth);
             if (this.scrolling) {
-                this.scrollDistance = getMaxScroll() * (float) ((mouseY - getRecursiveYLastTick()) / (getBoxHeight()*getRecursiveSizeLastTick()));
+                this.scrollDistance = getMaxScroll() * (float) ((mouseY - getRecursiveY()) / (getBoxHeight()* getRecursiveSize()));
                 onScroll();
                 return;
             }
 
             getWidgets().forEach((key, value) -> {
                 if (value.isVisible()) {
-                    value.mouseClicked(mouseX, mouseY + smoothScrollDistance*getRecursiveSizeLastTick(), mouseButton);
+                    value.mouseClicked(mouseX, mouseY, mouseButton);
                 }
 
             });
@@ -238,9 +238,9 @@ public class ScrollContainer extends Container {
                     matrices.translate(0, -smoothScrollDistance, 0);
                     double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor();
 
-                    RenderSystem.enableScissor((int) (getRecursiveXLastTick()*scaleFactor), (int) (MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (getRecursiveYLastTick()+getBoxHeight()*getRecursiveSizeLastTick())*scaleFactor), (int)((getBoxWidth()*getRecursiveSizeLastTick())*scaleFactor), (int)((getBoxHeight()*getRecursiveSizeLastTick())*scaleFactor));
+                    RenderSystem.enableScissor((int) (getRecursiveX()*scaleFactor), (int) (MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (getRecursiveY()+getBoxHeight()* getRecursiveSize())*scaleFactor), (int)((getBoxWidth()* getRecursiveSize())*scaleFactor), (int)((getBoxHeight()* getRecursiveSize())*scaleFactor));
 
-                    renderWidgets(getWidgets(), matrices, mouseX, (mouseY + smoothScrollDistance*getRecursiveSizeLastTick()), delta);
+                    renderWidgets(matrices, mouseX, (mouseY + smoothScrollDistance* getRecursiveSize()), delta);
                     RenderSystem.disableScissor();
 
                     matrices.translate(0, smoothScrollDistance, 0);
@@ -251,8 +251,8 @@ public class ScrollContainer extends Container {
                     float barTop =  this.smoothScrollDistance * (getBoxHeight() - barHeight) / extraHeight;
 
                     if(canScroll) {
-                        float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveXLastTick() + getBoxWidth() * getRecursiveSizeLastTick() - barWidth : getRecursiveXLastTick();
-                        boolean isHover = (mouseX >= barPosX && mouseX <= barPosX + barWidth && mouseY >= getRecursiveYLastTick() + barTop * getRecursiveSizeLastTick() && mouseY <= getRecursiveYLastTick() + barTop * getRecursiveSizeLastTick() + barHeight * getRecursiveSizeLastTick()) || this.scrolling;
+                        float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveX() + getBoxWidth() * getRecursiveSize() - barWidth : getRecursiveX();
+                        boolean isHover = (mouseX >= barPosX && mouseX <= barPosX + barWidth && mouseY >= getRecursiveY() + barTop * getRecursiveSize() && mouseY <= getRecursiveY() + barTop * getRecursiveSize() + barHeight * getRecursiveSize()) || this.scrolling;
                         if (isHover) {
                             onScroll();
                             color = barHoverColor;
@@ -284,12 +284,13 @@ public class ScrollContainer extends Container {
      * Variante de {@link net.bati.guilib.gui.screen.ScreenUtils#renderWidgets(HashMap, MatrixStack, float, float, float)}, determina que Widgets se encuentran en el
      * campo de "visión" basándonos en el tamaño y escala y deja de dibujarlos.
      */
-    public void renderWidgets(HashMap<String, Widget> widgets, MatrixStack matrices, float x, float y, float delta) {
-        widgets.forEach((key, value) -> value.preRender(matrices, x, y, delta));
+    public void renderWidgets(MatrixStack matrices, float x, float y, float delta) {
 
-        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+        getWidgets().forEach((key, value) -> value.preRender(matrices, x, y, delta));
 
-        widgets.forEach((key, value) -> {
+        Optional<Map.Entry<String, Widget>> widgetEntry = getWidgets().entrySet().stream().filter((entry) -> entry.getValue().isVisible() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+
+        getWidgets().forEach((key, value) -> {
             if(value.isIgnoreBox()) {
                 value.setFocused(true);
             } else {
@@ -298,15 +299,15 @@ public class ScrollContainer extends Container {
                     value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()) && widgetEntry.get().getValue().getParent().isFocused());
                 else
                     value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()));
-            }
 
+            }
             if(objectCulling) {
-                var v = value.getRecursiveYLastTick() - smoothScrollDistance * getRecursiveSizeLastTick();
-                if (v <= getRecursiveYLastTick() + ((getBoxHeight() / 2F) * getRecursiveSizeLastTick())) {
-                    v += value.getBoxHeight() * value.getRecursiveSizeLastTick();
+                var v = value.getRecursiveY() - smoothScrollDistance * getRecursiveSize();
+                if (v <= getRecursiveY() + ((getBoxHeight() / 2F) * getRecursiveSize())) {
+                    v += value.getBoxHeight() * value.getRecursiveSize();
                 }
 
-                value.setVisible(calculateHovered(value.getRecursiveXLastTick(), v));
+                value.setVisible(calculateHovered(value.getRecursiveX(), v));
             }
 
             value.render(matrices, x, y, delta);

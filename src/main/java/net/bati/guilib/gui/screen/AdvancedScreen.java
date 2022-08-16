@@ -2,6 +2,7 @@ package net.bati.guilib.gui.screen;
 
 import net.bati.guilib.CommonInitializer;
 import net.bati.guilib.gui.components.Button;
+import net.bati.guilib.gui.components.Container;
 import net.bati.guilib.gui.components.Widget;
 import net.bati.guilib.utils.Mouse;
 import net.bati.guilib.utils.WindowOptions;
@@ -13,7 +14,10 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 
 public abstract class AdvancedScreen extends Screen {
@@ -25,7 +29,8 @@ public abstract class AdvancedScreen extends Screen {
 
     private WindowOptions options;
 
-    private final Button emptyWidget = Button.builder("").ignoreBox(true).build();
+    private final Button emptyWidget = Button.builder("").build();
+
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);
@@ -48,6 +53,7 @@ public abstract class AdvancedScreen extends Screen {
 
       //  getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
     }
+
 
     public void preUpdate(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         options.update();

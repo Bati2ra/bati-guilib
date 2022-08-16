@@ -64,7 +64,7 @@ public class TestScreen extends AdvancedScreen{
     private Container createAdvancedContainer() {
         Container container = Container.builder()
                 .identifier("advanced")
-                .ignoreBox(true)
+
                 .onInit(widget -> {
 
                     if(widget instanceof Container widgetContainer) {
@@ -82,8 +82,8 @@ public class TestScreen extends AdvancedScreen{
         container.setBoxWidth(100);
         container.setBoxHeight(40);
         container.setSize(1.5f);
-        container.setOffsetPosition(new Vec2(100,10));
-        container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(1).onClick((a,b,c) -> System.out.println("SEX")).build());
+        container.setOffsetPosition(new Vec2(90,10));
+        container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(4).onClick((a,b,c) -> System.out.println("SEX")).build());
         container.disableObjectCulling();
         container.setBarPosition(ScrollContainer.BAR.RIGHT);
         container.setHideScrollAnimation(true);
@@ -96,6 +96,8 @@ public class TestScreen extends AdvancedScreen{
         AlignedContainer container = new AlignedContainer("right_accordions");
         container.setSpacing(20);
         container.setAlign(Orientation.VERTICAL);
+        container.setIgnoreBox(false);
+        container.setShowArea(true);
 
         Accordion accordion;
         Button button;

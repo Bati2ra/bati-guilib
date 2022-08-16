@@ -37,7 +37,7 @@ public class Container extends Widget implements IWidgetsStorage {
                 getSize(),
                 delta,
                 getPivot(),
-                () -> ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta)
+                () -> renderWidgets(matrices, mouseX, mouseY, delta)
         );
         matrices.translate(0,0, -getZ());
         RenderSystem.setShaderColor(1,1,1, 1);
@@ -45,10 +45,11 @@ public class Container extends Widget implements IWidgetsStorage {
 
     }
 
+    /*
     @Override
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         widgets.forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
-    }
+    }*/
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
@@ -124,8 +125,36 @@ public class Container extends Widget implements IWidgetsStorage {
         return widgets;
     }
 
-    @Override
+  @Override
     public boolean isHovered() {
         return isIgnoreBox() || super.isHovered();
+    }
+
+
+    public void renderWidgets(MatrixStack matrices, float x, float y, float delta) {
+
+        widgets.forEach((key, value) -> value.preRender(matrices, x, y, delta));
+
+        Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+
+        // Si el componente tiene ignoreBox, no se checará si el widget se encuentra hovered, solo se checará la Z
+        widgets.forEach((key, value) -> {
+
+            if(value.isIgnoreBox()) {
+                value.setFocused(true);
+              } else {
+
+            if (value.hasParent())
+                value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()) && widgetEntry.get().getValue().getParent().isFocused());
+            else
+                value.setFocused(widgetEntry.isPresent() && key.contentEquals(widgetEntry.get().getKey()));
+            }
+
+
+            value.render(matrices, x, y, delta);
+
+            value.lastRender(matrices, x, y, delta);
+
+        });
     }
 }
