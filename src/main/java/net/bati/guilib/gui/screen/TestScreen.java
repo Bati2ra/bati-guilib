@@ -45,6 +45,7 @@ public class TestScreen extends AdvancedScreen{
         alignedContainer.setAlign(Orientation.HORIZONTAL);
         alignedContainer.setPivot(Pivot.MIDDLE_BOT);
         alignedContainer.setSpacing(10);
+        alignedContainer.setZ(-20);
         alignedContainer.setPositionListener((window) -> new Vec2(window.getScaledWidth()/2, (int) (window.getScaledHeight() - 10* getOptions().getScaleY())));
 
         Button button;
@@ -53,6 +54,7 @@ public class TestScreen extends AdvancedScreen{
             button = Button.builder("testx"+i)
                     .boxWidth(20)
                     .boxHeight(20)
+                    .z(10*i)
                     .onClick((a,b,c) -> System.out.println("E"))
                     .build();
             alignedContainer.addWidget(button);
@@ -64,7 +66,7 @@ public class TestScreen extends AdvancedScreen{
     private Container createAdvancedContainer() {
         Container container = Container.builder()
                 .identifier("advanced")
-
+                .z(45)
                 .onInit(widget -> {
 
                     if(widget instanceof Container widgetContainer) {
@@ -82,6 +84,7 @@ public class TestScreen extends AdvancedScreen{
         container.setBoxWidth(100);
         container.setBoxHeight(40);
         container.setSize(1.5f);
+        container.setZ(34);
         container.setOffsetPosition(new Vec2(90,10));
         container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(4).onClick((a,b,c) -> System.out.println("SEX")).build());
         container.disableObjectCulling();
@@ -98,19 +101,26 @@ public class TestScreen extends AdvancedScreen{
         container.setAlign(Orientation.VERTICAL);
         container.setIgnoreBox(false);
         container.setShowArea(true);
+        container.setOnUpdate(widget -> {
+            widget.getParent().setBoxWidth(widget.getBoxWidth());
+            widget.getParent().setBoxHeight(widget.getBoxHeight());
+        });
+        container.setZ(45);
 
         Accordion accordion;
         Button button;
         for( int i=0; i<8; i++) {
             accordion = new Accordion("accordion" + i);
-            button = Button.builder("test-accordion"+i).boxWidth(30).boxHeight(30).onClick((a,b,c) -> System.out.println("A")).build();
+            accordion.setZ(5*i);
+
+            button = Button.builder("test-accordion"+i).boxWidth(30).boxHeight(30).z(-4 * i).onClick((a,b,c) -> System.out.println("A")).build();
             Slider slider = Slider.builder().identifier("aaa"+i).min(0).max(1).boxWidth(100).boxHeight(4).build();
             accordion.addWidget(slider);
             accordion.addWidget(button);
             container.addWidget(accordion);
         }
         container.fit();
-        System.out.println(container.getBoxHeight());
+
         return container;
     }
     @Override

@@ -65,7 +65,6 @@ public class Accordion extends Container {
     @Override
     protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         matrices.push();
-        matrices.translate(0.0, 0.0, this.getZ());
         float opacity = getOpacity();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
         animProgress = MathHelper.clamp(MathHelper.lerp(delta * 0.5, animProgress, (show) ? 1 : 0), 0F, 1F);
@@ -91,8 +90,6 @@ public class Accordion extends Container {
             }
         });
 
-
-        matrices.translate(0.0, 0.0, -this.getZ());
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         matrices.pop();
     }

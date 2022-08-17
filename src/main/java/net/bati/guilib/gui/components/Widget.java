@@ -270,7 +270,7 @@ public abstract class Widget implements Element {
                 getY() + getBoxHeight() * getSize(),
                 randomColor,
                 0.5f,
-                getZ()
+                0
         );
     }
 

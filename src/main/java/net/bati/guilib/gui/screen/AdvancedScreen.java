@@ -14,10 +14,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 public abstract class AdvancedScreen extends Screen {
@@ -36,9 +33,43 @@ public abstract class AdvancedScreen extends Screen {
         super((title == null) ? new LiteralText("") : title);
         options = new WindowOptions(MinecraftClient.getInstance());
         build();
+
+        widgets = sort(widgets);
+        //printRecursive(widgets);
     }
 
     public abstract void build();
+
+    public void printRecursive(HashMap<String,Widget> map) {
+        for (Map.Entry<String, Widget> entry : map.entrySet()) {
+            if(entry.getValue() instanceof Container) {
+                System.out.println(String.format("container: %s, %s", entry.getKey(), entry.getValue().getZ()));
+                printRecursive(((Container) entry.getValue()).getWidgets());
+            } else {
+                System.out.println(String.format("%s, %s", entry.getKey(), entry.getValue().getZ()));
+            }
+        }
+    }
+
+    public static HashMap<String, Widget> sort(HashMap<String, Widget> hm)
+    {
+        // Create a list from elements of HashMap
+        List<Map.Entry<String, Widget> > list = new LinkedList<>(hm.entrySet());
+
+        // Sort the list using lambda expression
+        Collections.sort(list, Comparator.comparingInt(o -> o.getValue().getZ()));
+
+        // put data from sorted list to hashmap
+        HashMap<String, Widget> temp = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Widget> aa : list) {
+            if(aa.getValue() instanceof Container container) {
+                container.setWidgets(sort(container.getWidgets()));
+            }
+            temp.put(aa.getKey(), aa.getValue());
+        }
+        return temp;
+    }
 
     public abstract void update();
 

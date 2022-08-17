@@ -25,7 +25,6 @@ public class Container extends Widget implements IWidgetsStorage {
     @Override
     protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         matrices.push();
-        matrices.translate(0,0, getZ());
         RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
 
         DrawHelper.drawWithPivot(
@@ -39,7 +38,6 @@ public class Container extends Widget implements IWidgetsStorage {
                 getPivot(),
                 () -> renderWidgets(matrices, mouseX, mouseY, delta)
         );
-        matrices.translate(0,0, -getZ());
         RenderSystem.setShaderColor(1,1,1, 1);
         matrices.pop();
 

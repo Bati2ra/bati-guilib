@@ -136,21 +136,26 @@ object DrawHelper {
     }
     @JvmStatic
     fun drawWithPivot(@NotNull matrices : MatrixStack, x : Float, y : Float, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic) {
-        drawWithPivot(matrices, x, y, width, height, size, delta, pivot, drawCallback, null)
+        drawWithPivot(matrices, x, y, 0f, width, height, size, delta, pivot, drawCallback, null)
     }
+
     @JvmStatic
     fun drawWithPivot(@NotNull matrices : MatrixStack, x : Float, y : Float, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic, @Nullable transformationCallback : Callback.DrawableBasic?) {
+        drawWithPivot(matrices, x, y, 0f, width, height, size, delta, pivot, drawCallback, transformationCallback)
+    }
+    @JvmStatic
+    fun drawWithPivot(@NotNull matrices : MatrixStack, x : Float, y : Float, z : Float, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic, @Nullable transformationCallback : Callback.DrawableBasic?) {
         val offsetX: Float = pivot.getX(width)
         val offsetY: Float = pivot.getY(height)
 
         matrices.push()
 
-        matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), 0.0)
+        matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), z.toDouble())
         matrices.push()
-        matrices.translate((x + offsetX).toDouble(), (y + offsetY).toDouble(), 0.0)
-        matrices.scale(size, size, size)
+        matrices.translate((x + offsetX).toDouble(), (y + offsetY).toDouble(), z.toDouble())
+        matrices.scale(size, size, 1f)
         transformationCallback?.draw()
-        matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), 0.0)
+        matrices.translate(-offsetX.toDouble(), -offsetY.toDouble(), z.toDouble())
 
         drawCallback.draw()
 

@@ -32,7 +32,6 @@ public class Slider extends Widget {
     @Override
     protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         matrices.push();
-        matrices.translate(0,0,getZ());
         var opacity = getRecursiveOpacity();
         RenderSystem.setShaderColor(1,1,1, opacity);
 
@@ -46,7 +45,6 @@ public class Slider extends Widget {
             DrawUtils.drawHorizontalGradient(matrices, (float) (getBoxWidth() * tempValue - 4), -5, (float) ((getBoxWidth() * tempValue - 4) + 8), 9, 0, isEnabled() ? 16777215 : 7040105, isEnabled() ? 16777215 : 7040105, opacity, opacity);
         });
 
-        matrices.translate(0,0,-getZ());
         RenderSystem.setShaderColor(1,1,1, 1);
         matrices.pop();
     }

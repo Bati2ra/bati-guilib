@@ -215,7 +215,6 @@ public class ScrollContainer extends Container {
         boolean canScroll = ((getContentHeight() + border) - getBoxHeight()) > 0;
 
         matrices.push();
-        matrices.translate(0,0, getZ());
         smoothScrollDistance = canScroll ? MathHelper.clamp((float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance), 0, getMaxScroll()) : 0;
 
         float recursiveOpacity = getRecursiveOpacity();
@@ -274,7 +273,7 @@ public class ScrollContainer extends Container {
                     }
                 }
         );
-        matrices.translate(0,0, -getZ());
+
         RenderSystem.setShaderColor(1,1,1, 1);
         matrices.pop();
 
