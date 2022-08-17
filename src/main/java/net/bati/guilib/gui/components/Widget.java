@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import net.bati.guilib.gui.screen.AdvancedScreen;
 import net.bati.guilib.utils.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
@@ -42,6 +43,7 @@ public abstract class Widget implements Element {
     private boolean ignoreBox;
 
     private Widget parent;
+    private AdvancedScreen screen;
 
      /**
      * If false, all the events (Click, drag, key, etc) will be canceled.
@@ -257,7 +259,7 @@ public abstract class Widget implements Element {
         if(positionListener == null)
             return;
 
-        setOffsetPosition(positionListener.get(MinecraftClient.getInstance().getWindow()));
+        setOffsetPosition(positionListener.get(this, MinecraftClient.getInstance().getWindow()));
     }
 
     protected void drawBoxArea(MatrixStack matrices) {
@@ -286,8 +288,17 @@ public abstract class Widget implements Element {
     public void preRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         updateLastTick(mouseX, mouseY);
     }
+    public void updateMouseAppearance() {
+        if(getScreen() == null) return;
+        if(isFocused() && !(this instanceof Container)) {
+            if(isEnabled()) {
+                getScreen().setMouseState("hover");
+            } else {
+                getScreen().setMouseState("disabled");
+            }
+        }
+    }
     public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
-
         if(onUpdate != null)
             onUpdate.accept(this);
 
@@ -316,7 +327,7 @@ public abstract class Widget implements Element {
     /** This method will be executed after all the widgets are rendered, (can be useful to draw tooltips)
      */
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
-
+        updateMouseAppearance();
     }
 
     public void onMouseClick(double mouseX, double mouseY, int mouseButton){}
@@ -333,7 +344,7 @@ public abstract class Widget implements Element {
         if(!isEnabled()) return false;
 
         if(isFocused() && onClick != null) {
-            onClick.call(mouseX, mouseY, mouseButton);
+            onClick.call(this,mouseX, mouseY, mouseButton);
             return true;
         }
         onMouseClick(mouseX, mouseY, mouseButton);
@@ -345,7 +356,7 @@ public abstract class Widget implements Element {
         if(!isEnabled()) return false;
 
         if(isFocused() && onReleaseClick != null) {
-            onReleaseClick.call(mouseX, mouseY, state);
+            onReleaseClick.call(this, mouseX, mouseY, state);
             return true;
         }
         this.onMouseRelease(mouseX, mouseY, state);
@@ -357,7 +368,7 @@ public abstract class Widget implements Element {
         if(!isEnabled()) return false;
 
         if(isFocused() && onPressKey != null) {
-            onPressKey.call(keyCode, scanCode, modifiers);
+            onPressKey.call(this, keyCode, scanCode, modifiers);
             return true;
         }
         this.onKeyPress(keyCode, scanCode, modifiers);
@@ -369,7 +380,7 @@ public abstract class Widget implements Element {
         if(!isEnabled()) return false;
 
         if(isFocused() && onReleaseKey != null) {
-            onReleaseKey.call(keyCode, scanCode, modifiers);
+            onReleaseKey.call(this, keyCode, scanCode, modifiers);
             return true;
         }
         this.onKeyRelease(keyCode, scanCode, modifiers);

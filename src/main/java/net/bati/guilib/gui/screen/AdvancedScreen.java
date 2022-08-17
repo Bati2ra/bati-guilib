@@ -4,15 +4,17 @@ import net.bati.guilib.CommonInitializer;
 import net.bati.guilib.gui.components.Button;
 import net.bati.guilib.gui.components.Container;
 import net.bati.guilib.gui.components.Widget;
+import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.Mouse;
 import net.bati.guilib.utils.WindowOptions;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
@@ -27,6 +29,11 @@ public abstract class AdvancedScreen extends Screen {
     private WindowOptions options;
 
     private final Button emptyWidget = Button.builder("").build();
+
+    protected Identifier selectedMouse = null;
+    protected String mouseState = null;
+    protected boolean replaceMouse = false;
+
 
 
     protected AdvancedScreen(@Nullable Text title) {
@@ -51,7 +58,7 @@ public abstract class AdvancedScreen extends Screen {
         }
     }
 
-    public static HashMap<String, Widget> sort(HashMap<String, Widget> hm)
+    public HashMap<String, Widget> sort(HashMap<String, Widget> hm)
     {
         // Create a list from elements of HashMap
         List<Map.Entry<String, Widget> > list = new LinkedList<>(hm.entrySet());
@@ -66,6 +73,7 @@ public abstract class AdvancedScreen extends Screen {
             if(aa.getValue() instanceof Container container) {
                 container.setWidgets(sort(container.getWidgets()));
             }
+            aa.getValue().setScreen(this);
             temp.put(aa.getKey(), aa.getValue());
         }
         return temp;
@@ -76,13 +84,19 @@ public abstract class AdvancedScreen extends Screen {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         //super.render(matrices, mouseX, mouseY, delta);
+        mouseState = "idle";
+
         preUpdate(matrices, mouseX, mouseY, delta);
 
         update();
 
         ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
 
-      //  getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
+        getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
+
+        updateMouseTexture();
+
+        drawMouse(mouseX, mouseY);
     }
 
 
@@ -109,6 +123,34 @@ public abstract class AdvancedScreen extends Screen {
         if(mouse == null) return;
         mouse.setX(x);
         mouse.setY(y);
+    }
+
+    public void setReplaceMouse(boolean b) {
+        replaceMouse = b;
+    }
+
+    public void setMouseState(String state) {
+        mouseState = state;
+    }
+
+    public void updateMouseTexture() {
+
+    }
+    protected void drawMouse(int x, int y) {
+        if(replaceMouse) {
+            toggleMouse(false);
+            if(selectedMouse == null) return;
+
+            DrawHelper.drawRectangle(selectedMouse, x - 3, y - 2, 0, 0, 16, 16, 1, 16, 16, getMatrix().peek().getPositionMatrix());
+
+        } else {
+            if(GLFW.glfwGetInputMode(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_CURSOR) == GLFW.GLFW_CURSOR_HIDDEN) {
+                toggleMouse(true);
+            }
+        }
+    }
+    public void toggleMouse(boolean b) {
+        GLFW.glfwSetInputMode(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_CURSOR, (b) ? GLFW.GLFW_CURSOR_NORMAL: GLFW.GLFW_CURSOR_HIDDEN);
     }
     public Mouse getMouse() {
         return mouse;

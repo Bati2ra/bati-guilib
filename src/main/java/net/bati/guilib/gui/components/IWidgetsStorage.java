@@ -20,6 +20,7 @@ public interface IWidgetsStorage {
             return;
         }
         widget.init();
+
         widget.setParent(this instanceof Widget ? (Widget)this : null);
         this.getWidgets().put(widget.getIdentifier(), widget);
     }

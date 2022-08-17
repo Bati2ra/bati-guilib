@@ -3,11 +3,13 @@ package net.bati.guilib.gui.screen;
 import net.bati.guilib.gui.components.Container;
 import net.bati.guilib.gui.components.Widget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 
 public class ScreenUtils {
@@ -29,7 +31,6 @@ public class ScreenUtils {
 
 
             value.render(matrices, x, y, delta);
-
 
         });
     }

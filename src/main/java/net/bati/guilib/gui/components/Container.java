@@ -46,6 +46,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        updateMouseAppearance();
         widgets.forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
     }
 
@@ -150,8 +151,6 @@ public class Container extends Widget implements IWidgetsStorage {
 
 
             value.render(matrices, x, y, delta);
-
-            value.lastRender(matrices, x, y, delta);
 
         });
     }

@@ -16,13 +16,13 @@ class Callback {
         fun isHovering(x: Double, y: Double): Boolean
     }
     interface Mouse {
-        fun call(x: Double, y: Double, mouseButton: Int)
+        fun call(widget : Widget, x: Double, y: Double, mouseButton: Int)
     }
     interface Pressable {
-        fun call(keyCode : Int, scanCode : Int, modifiers : Int)
+        fun call(widget : Widget, keyCode : Int, scanCode : Int, modifiers : Int)
     }
     interface ScreenPosition {
-        fun get(window : Window) : Vec2
+        fun get(widget : Widget, window : Window) : Vec2
     }
     interface Text {
         fun get() : String

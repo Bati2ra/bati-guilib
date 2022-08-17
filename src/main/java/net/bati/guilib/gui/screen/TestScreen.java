@@ -46,7 +46,7 @@ public class TestScreen extends AdvancedScreen{
         alignedContainer.setPivot(Pivot.MIDDLE_BOT);
         alignedContainer.setSpacing(10);
         alignedContainer.setZ(-20);
-        alignedContainer.setPositionListener((window) -> new Vec2(window.getScaledWidth()/2, (int) (window.getScaledHeight() - 10* getOptions().getScaleY())));
+        alignedContainer.setPositionListener((w,window) -> new Vec2(window.getScaledWidth()/2, (int) (window.getScaledHeight() - 10* getOptions().getScaleY())));
 
         Button button;
         for(int i = 0; i< 4; i++) {
@@ -55,7 +55,7 @@ public class TestScreen extends AdvancedScreen{
                     .boxWidth(20)
                     .boxHeight(20)
                     .z(10*i)
-                    .onClick((a,b,c) -> System.out.println("E"))
+                    .onClick((w,a,b,c) -> System.out.println("E"))
                     .build();
             alignedContainer.addWidget(button);
         }
@@ -86,7 +86,7 @@ public class TestScreen extends AdvancedScreen{
         container.setSize(1.5f);
         container.setZ(34);
         container.setOffsetPosition(new Vec2(90,10));
-        container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(4).onClick((a,b,c) -> System.out.println("SEX")).build());
+        container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(4).onClick((w,a,b,c) -> System.out.println("SEX")).build());
         container.disableObjectCulling();
         container.setBarPosition(ScrollContainer.BAR.RIGHT);
         container.setHideScrollAnimation(true);
@@ -113,7 +113,7 @@ public class TestScreen extends AdvancedScreen{
             accordion = new Accordion("accordion" + i);
             accordion.setZ(5*i);
 
-            button = Button.builder("test-accordion"+i).boxWidth(30).boxHeight(30).z(-4 * i).onClick((a,b,c) -> System.out.println("A")).build();
+            button = Button.builder("test-accordion"+i).boxWidth(30).boxHeight(30).z(-4 * i).onClick((w,a,b,c) -> System.out.println("A")).build();
             Slider slider = Slider.builder().identifier("aaa"+i).min(0).max(1).boxWidth(100).boxHeight(4).build();
             accordion.addWidget(slider);
             accordion.addWidget(button);

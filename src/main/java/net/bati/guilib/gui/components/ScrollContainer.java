@@ -142,6 +142,7 @@ public class ScrollContainer extends Container {
     }
 
     public void lastRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        updateMouseAppearance();
         getWidgets().forEach((key, value) -> {
             matrices.translate(0, -smoothScrollDistance, 0);
             value.lastRender(matrices, mouseX, mouseY, delta);
