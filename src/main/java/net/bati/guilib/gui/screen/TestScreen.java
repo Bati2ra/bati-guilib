@@ -4,10 +4,8 @@ import net.bati.guilib.gui.components.*;
 import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Pivot;
 import net.bati.guilib.utils.Vec2;
-import net.bati.guilib.utils.font.TextComponent;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Range;
 
 
 public class TestScreen extends AdvancedScreen{
@@ -40,16 +38,17 @@ public class TestScreen extends AdvancedScreen{
         addWidget(alignedContainer);*/
         addWidgets(createAdvancedContainer(), createNavigationBar(),createRightSliderContainer());
     }
-    private AlignedContainer createNavigationBar() {
-        AlignedContainer alignedContainer = new AlignedContainer("buttonsx");
-        alignedContainer.setAlign(Orientation.HORIZONTAL);
-        alignedContainer.setPivot(Pivot.MIDDLE_BOT);
-        alignedContainer.setSpacing(10);
+    private FlexContainer createNavigationBar() {
+        FlexContainer alignedContainer = new FlexContainer("buttonsx");
+        alignedContainer.setAlign(Orientation.VERTICAL);
+        alignedContainer.setPivot(Pivot.MIDDLE);
+        alignedContainer.setSpacing(20);
+        alignedContainer.setBreakLine(4);
         alignedContainer.setZ(-20);
-        alignedContainer.setPositionListener((w,window) -> new Vec2(window.getScaledWidth()/2, (int) (window.getScaledHeight() - 10* getOptions().getScaleY())));
+        alignedContainer.setPositionListener((w,window) -> new Vec2(window.getScaledWidth()/2, (int) ((window.getScaledHeight()/2 ))));
 
         Button button;
-        for(int i = 0; i< 4; i++) {
+        for(int i = 0; i< 7; i++) {
             int k = i;
             button = Button.builder("testx"+i)
                     .boxWidth(20)
@@ -82,11 +81,14 @@ public class TestScreen extends AdvancedScreen{
     private ScrollContainer createRightSliderContainer() {
         ScrollContainer container = new ScrollContainer("right_sliders");
         container.setBoxWidth(100);
-        container.setBoxHeight(40);
-        container.setSize(1.5f);
+        container.setBoxHeight(100);
+        container.setSize(1f);
         container.setZ(34);
         container.setOffsetPosition(new Vec2(90,10));
-        container.addWidget(Button.builder("asa").boxWidth(20).boxHeight(20).size(4).onClick((w,a,b,c) -> System.out.println("SEX")).build());
+        for(int i=0;i <5;i++) {
+            container.addWidget(Button.builder("asa"+i).offsetPosition(new Vec2(10, 100*i)).boxWidth(20).boxHeight(20).size(2).onClick((w,a,b,c) -> System.out.println("SEX")).build());
+
+        }
         container.disableObjectCulling();
         container.setBarPosition(ScrollContainer.BAR.RIGHT);
         container.setHideScrollAnimation(true);

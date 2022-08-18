@@ -216,7 +216,8 @@ public class ScrollContainer extends Container {
         boolean canScroll = ((getContentHeight() + border) - getBoxHeight()) > 0;
 
         matrices.push();
-        smoothScrollDistance = canScroll ? MathHelper.clamp((float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance), 0, getMaxScroll()) : 0;
+     //   smoothScrollDistance = canScroll ? MathHelper.clamp((float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance), 0, getMaxScroll()) : 0;
+        smoothScrollDistance =(float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance);
 
         float recursiveOpacity = getRecursiveOpacity();
         RenderSystem.setShaderColor(1,1,1, recursiveOpacity);
@@ -251,8 +252,8 @@ public class ScrollContainer extends Container {
                     float barTop =  this.smoothScrollDistance * (getBoxHeight() - barHeight) / extraHeight;
 
                     if(canScroll) {
-                        float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveX() + getBoxWidth() * getRecursiveSize() - barWidth : getRecursiveX();
-                        boolean isHover = (mouseX >= barPosX && mouseX <= barPosX + barWidth && mouseY >= getRecursiveY() + barTop * getRecursiveSize() && mouseY <= getRecursiveY() + barTop * getRecursiveSize() + barHeight * getRecursiveSize()) || this.scrolling;
+                        float barPosX = barPosition.equals(BAR.RIGHT) ? getRecursiveX() + getBoxWidth() * getRecursiveSize() - barWidth * getRecursiveSize() : getRecursiveX();
+                        boolean isHover = (mouseX >= barPosX && mouseX <= barPosX + barWidth * getRecursiveSize() && mouseY >= getRecursiveY() + barTop * getRecursiveSize() && mouseY <= getRecursiveY() + barTop * getRecursiveSize() + barHeight * getRecursiveSize()) || this.scrolling;
                         if (isHover) {
                             onScroll();
                             color = barHoverColor;
@@ -288,7 +289,7 @@ public class ScrollContainer extends Container {
 
         getWidgets().forEach((key, value) -> value.preRender(matrices, x, y, delta));
 
-        Optional<Map.Entry<String, Widget>> widgetEntry = getWidgets().entrySet().stream().filter((entry) -> entry.getValue().isVisible() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
+        Optional<Map.Entry<String, Widget>> widgetEntry = getWidgets().entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
         getWidgets().forEach((key, value) -> {
             if(value.isIgnoreBox()) {

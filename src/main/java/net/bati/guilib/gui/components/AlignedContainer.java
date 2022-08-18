@@ -23,11 +23,13 @@ import java.util.Map;
 @Setter
 @Getter
 public class AlignedContainer extends Container {
-    private Orientation align = Orientation.HORIZONTAL;
-    private double              spacing = 20;
-    private int                 contentSize = 0;
+    protected Orientation align = Orientation.HORIZONTAL;
+    protected double              spacing = 20;
+    protected int                 contentSize = 0;
 
-    private boolean dynamicClose = true;
+
+    protected boolean dynamicClose = true;
+
 
     public AlignedContainer(String identifier) {
         super(identifier);
