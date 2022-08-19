@@ -3,7 +3,9 @@ package net.bati.guilib.gui.screen;
 import net.bati.guilib.gui.components.*;
 import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Pivot;
+import net.bati.guilib.utils.Sound;
 import net.bati.guilib.utils.Vec2;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +19,27 @@ public class TestScreen extends AdvancedScreen{
 
     @Override
     public void build() {
+        Radio radio = new Radio("radio");
+        radio.setAlign(Orientation.VERTICAL);
+        radio.setSpacing(20);
+        for(int i=0; i<5; i++) {
+            Checkbox checkbox = new Checkbox("checkbox" + i);
+            checkbox.setBoxWidth(10);
+            checkbox.setBoxHeight(10);
+            checkbox.setCheckType(Checkbox.CHECK_TYPE.BOX);
+            checkbox.setCheckColor(16777215);
+            checkbox.setDisplayText("Textura por defecto " + i, 0.5F);
+            checkbox.setAlignRight(true);
+            checkbox.setClickEnabledSound(SoundEvents.UI_BUTTON_CLICK);
+            checkbox.setOnChange((check, action) -> Sound.ENABLED);
+            radio.addOption(checkbox);
+        }
+        addWidget(radio);
+
+
+        if(true) {
+            return;
+        }
        /* AlignedContainer alignedContainer = new AlignedContainer("buttons");
         alignedContainer.setAlign(Orientation.VERTICAL);
         alignedContainer.setPivot(Pivot.MIDDLE_TOP);

@@ -15,6 +15,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.LiteralText;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 @Getter
 @Setter
 @SuperBuilder
@@ -22,6 +24,9 @@ public class Button extends Widget {
     @Builder.Default private TextureComponent textureComponent = new TextureComponent(0, 46, 256, 256, Constants.getWIDGETS_LOCATION());
     private boolean hoverSound;
     private SoundEvent hoverSoundEvent;
+
+    private SoundEvent clickEnabledSound;
+    private SoundEvent clickDisabledSound;
     @Builder.Default private TextComponent textComponent = new TextComponent().text("Empty");
     private boolean pressed;
 
@@ -91,7 +96,8 @@ public class Button extends Widget {
 
     }
 
-    public void playSound(SoundEvent sound) {
+    public void playSound(@Nullable SoundEvent sound) {
+        if(sound == null) return;
         MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(sound, 1, 0.5f));
     }
 

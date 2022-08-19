@@ -72,6 +72,7 @@ public abstract class AdvancedScreen extends Screen {
         for (Map.Entry<String, Widget> aa : list) {
             if(aa.getValue() instanceof Container container) {
                 container.setWidgets(sort(container.getWidgets()));
+                container.fit();
             }
             aa.getValue().setScreen(this);
             temp.put(aa.getKey(), aa.getValue());
