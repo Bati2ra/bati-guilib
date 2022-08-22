@@ -5,6 +5,7 @@ import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Pivot;
 import net.bati.guilib.utils.Sound;
 import net.bati.guilib.utils.Vec2;
+import net.bati.guilib.utils.font.TextComponent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -34,12 +35,10 @@ public class TestScreen extends AdvancedScreen{
             checkbox.setOnChange((check, action) -> Sound.ENABLED);
             radio.addOption(checkbox);
         }
-        addWidget(radio);
+       // addWidget(radio);
 
 
-        if(true) {
-            return;
-        }
+
        /* AlignedContainer alignedContainer = new AlignedContainer("buttons");
         alignedContainer.setAlign(Orientation.VERTICAL);
         alignedContainer.setPivot(Pivot.MIDDLE_TOP);
@@ -59,30 +58,43 @@ public class TestScreen extends AdvancedScreen{
         alignedContainer.fit();
 
         addWidget(alignedContainer);*/
-        addWidgets(createAdvancedContainer(), createNavigationBar(),createRightSliderContainer());
+        ScrollContainer asd = createRightSliderContainer();
+        asd.addWidget(createNavigationBar());
+        addWidgets(createAdvancedContainer(), asd);
     }
     private FlexContainer createNavigationBar() {
         FlexContainer alignedContainer = new FlexContainer("buttonsx");
-        alignedContainer.setAlign(Orientation.VERTICAL);
-        alignedContainer.setPivot(Pivot.MIDDLE);
+        alignedContainer.setAlign(Orientation.HORIZONTAL);
+        alignedContainer.setPivot(Pivot.LEFT_TOP);
         alignedContainer.setSpacing(20);
         alignedContainer.setBreakLine(4);
+        alignedContainer.setHide(false);
         alignedContainer.setZ(-20);
-        alignedContainer.setPositionListener((w,window) -> new Vec2(window.getScaledWidth()/2, (int) ((window.getScaledHeight()/2 ))));
+        alignedContainer.setShowArea(true);
+        alignedContainer.setIgnoreInvisibles(true);
+        alignedContainer.setLookForVisibilityChanges(true);
+        alignedContainer.setOffsetPosition(new Vec2(20, 20));
+       // alignedContainer.setPositionListener((w,window) -> new Vec2(window.getScaledWidth()/2, (int) ((window.getScaledHeight()/2 ))));
 
         Button button;
-        for(int i = 0; i< 7; i++) {
+        for(int i = 0; i< 10; i++) {
             int k = i;
             button = Button.builder("testx"+i)
-                    .boxWidth(20)
+                    .boxWidth(40)
                     .boxHeight(20)
+                    .visible(!(i == 2 || i==3 || i==4))
+                    .textComponent(new TextComponent().text("s"+i))
                     .z(10*i)
-                    .onClick((w,a,b,c) -> System.out.println("E"))
+                    .onClick((w,a,b,c) -> {
+                        alignedContainer.getWidget("testx"+2).setVisible(true);
+                        alignedContainer.getWidget("testx"+3).setVisible(true);
+                        alignedContainer.getWidget("testx"+4).setVisible(true);
+                    })
                     .build();
             alignedContainer.addWidget(button);
         }
 
-        alignedContainer.fit();
+
         return alignedContainer;
     }
     private Container createAdvancedContainer() {
@@ -103,13 +115,13 @@ public class TestScreen extends AdvancedScreen{
 
     private ScrollContainer createRightSliderContainer() {
         ScrollContainer container = new ScrollContainer("right_sliders");
-        container.setBoxWidth(100);
+        container.setBoxWidth(300);
         container.setBoxHeight(100);
         container.setSize(1f);
         container.setZ(34);
         container.setOffsetPosition(new Vec2(90,10));
         for(int i=0;i <5;i++) {
-            container.addWidget(Button.builder("asa"+i).offsetPosition(new Vec2(10, 100*i)).boxWidth(20).boxHeight(20).size(2).onClick((w,a,b,c) -> System.out.println("SEX")).build());
+         //   container.addWidget(Button.builder("asa"+i).offsetPosition(new Vec2(10, 100*i)).boxWidth(20).boxHeight(20).size(2).onClick((w,a,b,c) -> System.out.println("SEX")).build());
 
         }
         container.disableObjectCulling();

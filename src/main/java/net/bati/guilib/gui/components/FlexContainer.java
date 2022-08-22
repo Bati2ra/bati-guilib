@@ -3,6 +3,7 @@ package net.bati.guilib.gui.components;
 import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Vec2;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class FlexContainer extends AlignedContainer{
@@ -36,8 +37,17 @@ public class FlexContainer extends AlignedContainer{
         var actualWidth = 0.0;
         var actualHeight = 0.0;
 
+        if(ignoreInvisibles) {
+            lastStates = new ArrayList<>();
+        }
+
         for (Map.Entry<String, Widget> stringWidgetEntry : getWidgets().entrySet()) {
             var entry = stringWidgetEntry.getValue();
+
+            if(ignoreInvisibles) {
+                lastStates.add(entry.isVisible());
+                if(!entry.isVisible()) continue;
+            }
 
             entryWidth = entry.getBoxWidth() * entry.getSize();
             entryHeight = entry.getBoxHeight() * entry.getSize();
@@ -57,7 +67,6 @@ public class FlexContainer extends AlignedContainer{
                     actualWidth = Math.max(actualWidth, tempWidth);
                 }
 
-                index++;
             } else {
                 entry.setOffsetPosition(new Vec2((int) (pivotOffsetX + (entryWidth + spacing) * jump), (int) (((index != 0 && (index) % breakLine == 0) ? 0 : tempHeight) + pivotOffsetY)));
                 tempWidth = Math.max(tempWidth, (entryWidth * (jump + 1)) + (spacing * jump));
@@ -68,13 +77,21 @@ public class FlexContainer extends AlignedContainer{
                     actualHeight = Math.max(actualHeight, tempHeight);
                 }
 
-                index++;
             }
+            index++;
         }
+
+
         if(align.equals(Orientation.HORIZONTAL)) {
+            if(index < breakLine) {
+                actualWidth = tempWidth;
+            }
             actualWidth -= spacing;
             actualHeight = tempHeight;
         } else {
+            if(index < breakLine) {
+                actualHeight = tempHeight;
+            }
             actualHeight -= spacing;
             actualWidth = tempWidth;
         }

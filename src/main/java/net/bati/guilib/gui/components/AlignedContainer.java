@@ -7,6 +7,7 @@ import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Vec2;
 import net.minecraft.client.util.math.MatrixStack;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 
@@ -27,8 +28,12 @@ public class AlignedContainer extends Container {
     protected double              spacing = 20;
     protected int                 contentSize = 0;
 
+    protected boolean ignoreInvisibles;
+    protected ArrayList<Boolean> lastStates;
+    protected boolean lookForVisibilityChanges;
 
     protected boolean dynamicClose = true;
+
 
 
     public AlignedContainer(String identifier) {
@@ -53,8 +58,17 @@ public class AlignedContainer extends Container {
         var pivotOffsetY = 0.0;
         var entryWidth = 0.0F;
         var entryHeight = 0.0F;
+
+        if(ignoreInvisibles) {
+            lastStates = new ArrayList<>();
+        }
         for (Map.Entry<String, Widget> stringWidgetEntry : getWidgets().entrySet()) {
             var entry = stringWidgetEntry.getValue();
+            if(ignoreInvisibles) {
+                lastStates.add(entry.isVisible());
+                if(!entry.isVisible()) continue;
+            }
+
 
             entryWidth = entry.getBoxWidth() * entry.getSize();
             entryHeight = entry.getBoxHeight() * entry.getSize();
@@ -87,6 +101,31 @@ public class AlignedContainer extends Container {
 
     }
 
+    public void lookForUpdates() {
+        if(!ignoreInvisibles || lastStates == null) return;
+
+        var entrySet = getWidgets().entrySet();
+        if(entrySet.size() != lastStates.size()) {
+            fit();
+        }
+
+        int index = 0;
+        for (Map.Entry<String, Widget> stringWidgetEntry : entrySet) {
+            if(stringWidgetEntry.getValue().isVisible() != lastStates.get(index)) {
+                fit();
+            }
+            index++;
+        }
+    }
+
+    @Override
+    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        if(lookForVisibilityChanges) {
+            lookForUpdates();
+        }
+        super.draw(matrices, mouseX, mouseY, delta);
+    }
+
     public void setDynamicClose(boolean b) {
         dynamicClose = b;
     }
@@ -95,7 +134,15 @@ public class AlignedContainer extends Container {
         return dynamicClose;
     }
 
-/*
+    public void setIgnoreInvisibles(boolean ignoreInvisibles) {
+        this.ignoreInvisibles = ignoreInvisibles;
+    }
+
+    public void setLookForVisibilityChanges(boolean lookForVisibilityChanges) {
+        this.lookForVisibilityChanges = lookForVisibilityChanges;
+    }
+
+    /*
     @Override
     protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
         DrawUtils.drawHorizontalGradient(matrices, getX(), getY(), getX() + getBoxWidth()*getSize(), getY() + getBoxHeight() * getSize(), 0, 1, 1, 0.5f, 0.5f);
