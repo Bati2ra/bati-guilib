@@ -8,6 +8,7 @@ import net.bati.guilib.utils.Vec2;
 import net.minecraft.client.util.math.MatrixStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -30,9 +31,13 @@ public class AlignedContainer extends Container {
 
     protected boolean ignoreInvisibles;
     protected ArrayList<Boolean> lastStates;
+
+    protected HashMap<String, Vec2> offsets = new HashMap<>();
     protected boolean lookForVisibilityChanges;
 
     protected boolean dynamicClose = true;
+
+    protected boolean withOffsets = false;
 
 
 
@@ -62,6 +67,9 @@ public class AlignedContainer extends Container {
         if(ignoreInvisibles) {
             lastStates = new ArrayList<>();
         }
+        int entryOffsetX = 0;
+        int entryOffsetY = 0;
+
         for (Map.Entry<String, Widget> stringWidgetEntry : getWidgets().entrySet()) {
             var entry = stringWidgetEntry.getValue();
             if(ignoreInvisibles) {
@@ -77,16 +85,26 @@ public class AlignedContainer extends Container {
             pivotOffsetX = entry.getPivot().getX( entryWidth);
             pivotOffsetY = entry.getPivot().getY( entryHeight);
 
-            if (align.equals(Orientation.HORIZONTAL)) {
-                entry.setOffsetPosition(new Vec2((int) (tempWidth + pivotOffsetX), (int) pivotOffsetY));
 
-                tempHeight = Math.max(tempHeight, entryHeight);
+            // Widget.offsetPosition pasa a ser utilizado como offset dentro del AlignedContainer siempre y cuando este activado.
+            if(withOffsets) {
+                if (!offsets.containsKey(entry.getIdentifier())) {
+                    offsets.put(entry.getIdentifier(), entry.getOffsetPosition());
+                }
+                entryOffsetX = offsets.get(entry.getIdentifier()).getX();
+                entryOffsetY = offsets.get(entry.getIdentifier()).getY();
+            }
+
+            if (align.equals(Orientation.HORIZONTAL)) {
+                entry.setOffsetPosition(new Vec2((int) (tempWidth + pivotOffsetX + entryOffsetX), (int) pivotOffsetY + entryOffsetY));
+
+                tempHeight = Math.max(tempHeight, entryHeight + entryOffsetY);
 
                 tempWidth = entry.getX() + entryWidth + spacing;
             } else {
-                entry.setOffsetPosition(new Vec2((int) pivotOffsetX, (int) (tempHeight + pivotOffsetY)));
+                entry.setOffsetPosition(new Vec2((int) pivotOffsetX + entryOffsetX, (int) (tempHeight + pivotOffsetY + entryOffsetY)));
 
-                tempWidth = Math.max(tempWidth, entryWidth);
+                tempWidth = Math.max(tempWidth, entryWidth + entryOffsetX);
 
                 tempHeight = entry.getY() + entryHeight + spacing;
             }
@@ -98,6 +116,7 @@ public class AlignedContainer extends Container {
         }
         setBoxHeight((int) tempHeight);
         setBoxWidth((int) tempWidth);
+
 
     }
 
@@ -140,6 +159,10 @@ public class AlignedContainer extends Container {
 
     public void setLookForVisibilityChanges(boolean lookForVisibilityChanges) {
         this.lookForVisibilityChanges = lookForVisibilityChanges;
+    }
+
+    public void withOffsets(boolean b) {
+        this.withOffsets = b;
     }
 
     /*

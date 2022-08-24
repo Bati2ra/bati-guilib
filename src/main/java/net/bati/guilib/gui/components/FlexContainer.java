@@ -37,6 +37,9 @@ public class FlexContainer extends AlignedContainer{
         var actualWidth = 0.0;
         var actualHeight = 0.0;
 
+        var entryOffsetX = 0;
+        var entryOffsetY = 0;
+
         if(ignoreInvisibles) {
             lastStates = new ArrayList<>();
         }
@@ -56,9 +59,19 @@ public class FlexContainer extends AlignedContainer{
             pivotOffsetX = entry.getPivot().getX( entryWidth);
             pivotOffsetY = entry.getPivot().getY( entryHeight);
 
+            // Widget.offsetPosition pasa a ser utilizado como offset dentro del AlignedContainer siempre y cuando este activado.
+            if(withOffsets) {
+                if (!offsets.containsKey(entry.getIdentifier())) {
+                    offsets.put(entry.getIdentifier(), entry.getOffsetPosition());
+                }
+                entryOffsetX = offsets.get(entry.getIdentifier()).getX();
+                entryOffsetY = offsets.get(entry.getIdentifier()).getY();
+            }
+
+
             if (align.equals(Orientation.HORIZONTAL)) {
 
-                entry.setOffsetPosition(new Vec2((int) (((index != 0 && (index) % breakLine == 0) ? 0 : tempWidth) + pivotOffsetX), (int) (pivotOffsetY + (entryHeight + spacing) * jump)));
+                entry.setOffsetPosition(new Vec2((int) (((index != 0 && (index) % breakLine == 0) ? 0 : tempWidth) + pivotOffsetX + entryOffsetX), (int) (pivotOffsetY + entryOffsetY + (entryHeight + spacing) * jump)));
                 tempHeight = Math.max(tempHeight, (entryHeight * (jump + 1)) + (spacing * jump));
 
                 tempWidth = entry.getX() +  entryWidth + spacing;
@@ -68,7 +81,7 @@ public class FlexContainer extends AlignedContainer{
                 }
 
             } else {
-                entry.setOffsetPosition(new Vec2((int) (pivotOffsetX + (entryWidth + spacing) * jump), (int) (((index != 0 && (index) % breakLine == 0) ? 0 : tempHeight) + pivotOffsetY)));
+                entry.setOffsetPosition(new Vec2((int) (pivotOffsetX + entryOffsetX + (entryWidth + spacing) * jump), (int) (((index != 0 && (index) % breakLine == 0) ? 0 : tempHeight) + pivotOffsetY + entryOffsetY)));
                 tempWidth = Math.max(tempWidth, (entryWidth * (jump + 1)) + (spacing * jump));
 
                 tempHeight = entry.getY() +  entryHeight + spacing;

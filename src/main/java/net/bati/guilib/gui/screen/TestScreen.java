@@ -70,6 +70,7 @@ public class TestScreen extends AdvancedScreen{
         alignedContainer.setBreakLine(4);
         alignedContainer.setHide(false);
         alignedContainer.setZ(-20);
+        alignedContainer.withOffsets(true);
         alignedContainer.setShowArea(true);
         alignedContainer.setIgnoreInvisibles(true);
         alignedContainer.setLookForVisibilityChanges(true);
@@ -91,6 +92,10 @@ public class TestScreen extends AdvancedScreen{
                         alignedContainer.getWidget("testx"+4).setVisible(true);
                     })
                     .build();
+
+            if(i==2) {
+                button.setOffsetPosition(new Vec2(40, -10));
+            }
             alignedContainer.addWidget(button);
         }
 
@@ -138,6 +143,8 @@ public class TestScreen extends AdvancedScreen{
         container.setAlign(Orientation.VERTICAL);
         container.setIgnoreBox(false);
         container.setShowArea(true);
+        container.withOffsets(true);
+        container.setOffsetPosition(new Vec2(20, 0));
         container.setOnUpdate(widget -> {
             widget.getParent().setBoxWidth(widget.getBoxWidth());
             widget.getParent().setBoxHeight(widget.getBoxHeight());
@@ -146,9 +153,15 @@ public class TestScreen extends AdvancedScreen{
 
         Accordion accordion;
         Button button;
-        for( int i=0; i<8; i++) {
+        for( int i=0; i<5; i++) {
             accordion = new Accordion("accordion" + i);
             accordion.setZ(5*i);
+            if(i==1) {
+                accordion.setOffsetPosition(new Vec2(10, 2));
+            }
+            if(i==4) {
+                accordion.setOffsetPosition(new Vec2(-2, 20));
+            }
 
             button = Button.builder("test-accordion"+i).boxWidth(30).boxHeight(30).z(-4 * i).onClick((w,a,b,c) -> System.out.println("A")).build();
             Slider slider = Slider.builder().identifier("aaa"+i).min(0).max(1).boxWidth(100).boxHeight(4).build();
