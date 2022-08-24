@@ -117,6 +117,11 @@ public abstract class Widget implements Element {
 
     private boolean lastTickHovered;
 
+    /**
+     * Indica cuando puede comenzar a usarse el Widget, ya que debido a que algunos fields se calculan en un momento específico del método render,
+     * pueden provocarse "errores" al cambiar la visibilidad del Widget y que interprete como si debería hacer clic. Es un caso MUY concreto.
+     */
+    @Builder.Default protected boolean canBeUsed = true;
     public Widget(String identifier, int boxWidth, int boxHeight) {
         this();
         setIdentifier(identifier);
@@ -130,6 +135,7 @@ public abstract class Widget implements Element {
         setAttach(Pivot.LEFT_TOP);
         setOffsetPosition(new Vec2(0,0));
         setRenderType(RENDER.PLACEHOLDER);
+        canBeUsed = true;
     }
     public Widget() {
         randomColor = (int) (Math.random()*16777215);
@@ -137,6 +143,11 @@ public abstract class Widget implements Element {
 
     public boolean hasParent() {
         return getParent() != null;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+        canBeUsed = false;
     }
 
     public int getOffsetX() {
@@ -286,6 +297,9 @@ public abstract class Widget implements Element {
     }
 
     public void preRender(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+
         updateLastTick(mouseX, mouseY);
     }
     public void updateMouseAppearance() {
@@ -303,8 +317,9 @@ public abstract class Widget implements Element {
             onUpdate.accept(this);
 
         if(!visible) return;
-        this.mouseX = mouseX;
-        this.mouseY = mouseY;
+
+        canBeUsed = true;
+
         calculatePositionCallback();
         drawBoxArea(matrices);
 
@@ -342,6 +357,7 @@ public abstract class Widget implements Element {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         if(!isEnabled()) return false;
+        if(!canBeUsed) return false;
 
         if(isFocused() && onClick != null) {
             onClick.call(this,mouseX, mouseY, mouseButton);
@@ -354,6 +370,7 @@ public abstract class Widget implements Element {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int state) {
         if(!isEnabled()) return false;
+        if(!canBeUsed) return false;
 
         if(isFocused() && onReleaseClick != null) {
             onReleaseClick.call(this, mouseX, mouseY, state);

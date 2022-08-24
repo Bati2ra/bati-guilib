@@ -115,8 +115,8 @@ public class Accordion extends Container {
      * Añade {@link Accordion#minHeight} a la detección
      */
     public boolean isHoveringAccordion(double mouseX, double mouseY) {
-
-        return isIgnoreBox() || (mouseX >= getRecursiveX() && mouseX <= getRecursiveX()+getBoxWidth()* getRecursiveSize() && mouseY >= getRecursiveY() && mouseY <= getRecursiveY()+minHeight* getRecursiveSize());
+        boolean parent = !hasParent() || getParent().isHovered();
+        return parent && (isIgnoreBox() || (mouseX >= getRecursiveX() && mouseX <= getRecursiveX()+getBoxWidth()* getRecursiveSize() && mouseY >= getRecursiveY() && mouseY <= getRecursiveY()+minHeight* getRecursiveSize()));
     }
 
     @Override

@@ -151,6 +151,7 @@ public class ScrollContainer extends Container {
     }
     @Override
     public void onMouseScroll(double mouseX, double mouseY, double amount) {
+        if(!canBeUsed) return;
         if (amount == 0 || !isHovered()) return;
 
         this.scrollDistance += -amount * getScrollAmount();
@@ -163,6 +164,7 @@ public class ScrollContainer extends Container {
     @Override
     public void onMouseRelease(double mouseX, double mouseY, int state) {
         this.scrolling = false;
+        if(!canBeUsed) return;
         if (this.isEnabled() && this.isHovered()) {
             getWidgets().forEach((key, value) -> {
                 if (value.isVisible()) {
@@ -175,6 +177,8 @@ public class ScrollContainer extends Container {
 
     @Override
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if(!canBeUsed) return;
+
         if (isEnabled() && scrolling) {
             int maxScroll = getBoxHeight() - getBarHeight();
             double moved = deltaY / maxScroll;
@@ -193,6 +197,8 @@ public class ScrollContainer extends Container {
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
+        if(!canBeUsed) return;
+
         if (isEnabled() && isHovered()) {
             double ps = getRecursiveX()+getBoxWidth()* getRecursiveSize();
             this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-4 && mouseX < ps : mouseX >= getRecursiveX() && mouseX <= getRecursiveX() + barWidth);

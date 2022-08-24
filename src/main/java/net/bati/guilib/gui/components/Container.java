@@ -52,6 +52,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseClick(double mouseX, double mouseY, int mouseButton) {
+        if(!canBeUsed) return;
         if(!isEnabled() || !isHovered()) return;
 
         widgets.forEach((key, value) ->  {
@@ -65,6 +66,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if(!canBeUsed) return;
         if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) ->  {
             if(value.isVisible())
@@ -74,6 +76,7 @@ public class Container extends Widget implements IWidgetsStorage {
 
     @Override
     public void onMouseRelease(double mouseX, double mouseY, int state) {
+        if(!canBeUsed) return;
         if(!isEnabled() || !isHovered()) return;
         widgets.forEach((key, value) -> {
             if(value.isVisible())
