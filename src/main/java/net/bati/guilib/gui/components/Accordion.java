@@ -18,18 +18,20 @@ import net.minecraft.util.math.MathHelper;
  * @see AlignedContainer
  */
 public class Accordion extends Container {
-    private boolean show = false;
+    protected boolean show = false;
 
     // minHeight determina el tamaño del acordeón cerrado
-    private int minHeight;
-    private String displayName;
+    protected int minHeight;
+    protected String displayName;
 
-    private int contentHeight;
-    private double animProgress;
-    private float prevPosX;
-    private float prevPosY;
+    protected int contentHeight;
+    protected double animProgress;
+    protected float prevPosX;
+    protected float prevPosY;
 
-    private int heightAddition;
+    protected int heightAddition;
+
+    private boolean hoveredAccordion;
 
     public Accordion(String identifier) {
         super(identifier);
@@ -72,8 +74,8 @@ public class Accordion extends Container {
         prevPosX = MathHelper.lerp(delta * 0.5F, prevPosX, (float)this.getOffsetX());
         prevPosY = MathHelper.lerp(delta * 0.5F, prevPosY, (float)this.getOffsetY());
         DrawHelper.drawWithPivot(matrices, prevPosX, prevPosY, (float)this.getBoxWidth(), (float)this.getBoxHeight(), this.getSize(), delta, this.getPivot(), () -> {
-            boolean hovered = isHoveringAccordion(mouseX, mouseY);
-            DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), minHeight, 0, hovered ? 16777215 : 1, hovered ? 16777215 : 1, 0.5f, 0.5f);
+            hoveredAccordion = isHoveringAccordion(mouseX, mouseY);
+            DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), minHeight, 0, hoveredAccordion ? 16777215 : 1, hoveredAccordion ? 16777215 : 1, 0.5f, 0.5f);
 
             TextUtils.drawText(displayName, 2, 3, 0.5f, 16777215, false, false, matrices);
             TextUtils.drawText((show) ? "▲" : "▼", getBoxWidth() - 6, 3, 0.6f, 16777215, false, false, matrices);
@@ -124,7 +126,7 @@ public class Accordion extends Container {
         if(show) {
             super.onMouseClick(mouseX, mouseY, mouseButton);
         }
-        if(isHoveringAccordion(mouseX, mouseY)) {
+        if(hoveredAccordion) {
             show = !show;
             fit();
             if(hasParent() && getParent() instanceof AlignedContainer alignedContainer) {

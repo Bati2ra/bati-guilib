@@ -9,6 +9,7 @@ import net.bati.guilib.utils.Mouse;
 import net.bati.guilib.utils.WindowOptions;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -38,7 +39,7 @@ public abstract class AdvancedScreen extends Screen {
 
     protected AdvancedScreen(@Nullable Text title) {
         super((title == null) ? new LiteralText("") : title);
-        options = new WindowOptions(MinecraftClient.getInstance());
+        options = new WindowOptions(this, MinecraftClient.getInstance());
         build();
 
         widgets = sort(widgets);
@@ -46,6 +47,14 @@ public abstract class AdvancedScreen extends Screen {
     }
 
     public abstract void build();
+
+    public float mediaWidth(Window window) {
+        return 1;
+    }
+
+    public float mediaHeight(Window window) {
+        return 1;
+    }
 
     public void printRecursive(HashMap<String,Widget> map) {
         for (Map.Entry<String, Widget> entry : map.entrySet()) {
