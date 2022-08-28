@@ -31,7 +31,7 @@ public class Accordion extends Container {
 
     protected int heightAddition;
 
-    private boolean hoveredAccordion;
+    protected boolean hoveredAccordion;
 
     public Accordion(String identifier) {
         super(identifier);
@@ -134,12 +134,14 @@ public class Accordion extends Container {
                 prevPosY = getOffsetY();
 
                 // Cierra todos los acordeones a excepción del activado siempre y cuando la dynamicClose este activo y se intente abrir el acordeón
-                if(alignedContainer.shouldDynamicClose() && show) {
+                if(alignedContainer.shouldDynamicClose()) {
                     alignedContainer.getWidgets().forEach((key, value) -> {
                         if (value instanceof Accordion accordion) {
                             if (key.contentEquals(getIdentifier())) return;
-                            accordion.show = false;
-                            accordion.fit();
+                            if(accordion.show) {
+                                accordion.show = false;
+                                accordion.fit();
+                            }
                         }
                     });
                 }
