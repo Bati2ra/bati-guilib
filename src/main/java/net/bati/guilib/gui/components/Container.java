@@ -36,7 +36,12 @@ public class Container extends Widget implements IWidgetsStorage {
                 getSize(),
                 delta,
                 getPivot(),
-                () -> renderWidgets(matrices, mouseX, mouseY, delta)
+                () -> {
+                    if(getDrawInside() != null) {
+                        getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
+                    }
+                    renderWidgets(matrices, mouseX, mouseY, delta);
+                }
         );
         RenderSystem.setShaderColor(1,1,1, 1);
         matrices.pop();

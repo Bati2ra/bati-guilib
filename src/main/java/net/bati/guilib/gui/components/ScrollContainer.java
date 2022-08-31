@@ -238,6 +238,9 @@ public class ScrollContainer extends Container {
                 getPivot(),
                 () -> {
 
+                    if(getDrawInside() != null) {
+                        getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
+                    }
                     int color = 1;
 
                     // DpzDrawHelper.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), getBoxHeight(), 0, color, color, 0.4f, 0.4f);

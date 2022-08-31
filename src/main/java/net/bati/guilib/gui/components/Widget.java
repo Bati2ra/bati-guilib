@@ -82,7 +82,7 @@ public abstract class Widget implements Element {
      * @param callback Lambda expression.
      * @return callback.
      */
-    private Callback.Drawable onPreDraw, onPostDraw, onDraw;
+    private Callback.Drawable onPreDraw, onPostDraw, onDraw, drawInside;
 
     /**
      * Updates every tick inclusive when the widget is not visible
