@@ -7,6 +7,9 @@ import net.bati.guilib.utils.font.TextUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+
 import java.util.function.BiFunction;
 
 public class Checkbox extends Button {
@@ -19,6 +22,8 @@ public class Checkbox extends Button {
     private float                                   textSize = 1;
     private boolean                                 ignoreTextArea;
     private boolean                                 alignRight = true;
+
+    private Vec2f                                   displayTextOffset = new Vec2f(0, 0);
 
     public Checkbox(String identifier) {
         super(identifier, 1, 1);
@@ -57,8 +62,9 @@ public class Checkbox extends Button {
             DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), getBoxHeight(), 0, getPlaceHolderColor(), getPlaceHolderColor(), 0.5F * getRecursiveOpacityLastTick(), 0.5F * getRecursiveOpacityLastTick());
 
             float z = MinecraftClient.getInstance().textRenderer.getWidth(displayText) * textSize;
-            TextUtils.drawText(new LiteralText(displayText), (alignRight) ? getBoxWidth() + 2 : - z - 2, getBoxHeight() * 0.5F - 4F * textSize, textSize, checkColor, false, false, matrices);
-
+            if(displayText != null) {
+                TextUtils.drawText(new LiteralText(displayText), displayTextOffset == null ? (alignRight) ? getBoxWidth() + 2 : -z - 2 : displayTextOffset.x, displayTextOffset == null ? getBoxHeight() * 0.5F - 4F * textSize : displayTextOffset.y, textSize, checkColor, false, false, matrices);
+            }
             if(checkType.equals(CHECK_TYPE.BOX)) {
                 float gapX = getBoxWidth() * 0.2F;
                 float gapY = getBoxHeight() * 0.2F;
@@ -69,6 +75,9 @@ public class Checkbox extends Button {
                     float s = getBoxHeight()/15F;
                     TextUtils.drawText(new LiteralText("x"), getBoxWidth() * 0.5F, getBoxHeight() * 0.5F - 4F * s, s, checkColor, false, true, matrices);
                 }
+            }
+            if(getDrawInside() != null) {
+                getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
             }
         });
     }
