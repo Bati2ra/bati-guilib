@@ -23,7 +23,7 @@ public class Checkbox extends Button {
     private boolean                                 ignoreTextArea;
     private boolean                                 alignRight = true;
 
-    private Vec2f                                   displayTextOffset = new Vec2f(0, 0);
+    private Vec2f                                   displayTextOffset;
 
     public Checkbox(String identifier) {
         super(identifier, 1, 1);
@@ -100,6 +100,14 @@ public class Checkbox extends Button {
                 }
             }
         }
+    }
+
+    public void setDisplayTextOffset(Vec2f displayTextOffset) {
+        this.displayTextOffset = displayTextOffset;
+    }
+
+    public Vec2f getDisplayTextOffset() {
+        return displayTextOffset;
     }
 
     public enum CHECK_TYPE {

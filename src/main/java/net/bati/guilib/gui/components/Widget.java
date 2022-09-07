@@ -9,8 +9,10 @@ import net.bati.guilib.utils.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.HashMap;
 import java.util.function.Consumer;
 
 @Getter
@@ -116,6 +118,11 @@ public abstract class Widget implements Element {
     private float recursiveOpacityLastTick;
 
     private boolean lastTickHovered;
+
+    private long animationProgress = 0L;
+    private Animation animationType;
+    private long animationSpeed = 1;
+    private Consumer<Widget> overrideAnimationUpdate;
 
     /**
      * Indica cuando puede comenzar a usarse el Widget, ya que debido a que algunos fields se calculan en un momento específico del método render,
@@ -316,6 +323,8 @@ public abstract class Widget implements Element {
         if(onUpdate != null)
             onUpdate.accept(this);
 
+        tickAnimation();
+
         if(!visible) return;
 
         canBeUsed = true;
@@ -337,6 +346,41 @@ public abstract class Widget implements Element {
             onPostDraw.draw(this, matrices, mouseX, mouseY, delta);
 
         postDraw(matrices, mouseX, mouseY, delta);
+    }
+
+
+    public void fireAnimation(Animation animation) {
+        animationType = animation;
+        animationProgress = Util.getMeasuringTimeMs();
+    }
+
+
+    public void stopAnimation() {
+        animationType = null;
+        animationProgress = 0L;
+    }
+
+    public void tickAnimation() {
+        if(overrideAnimationUpdate != null) {
+            overrideAnimationUpdate.accept(this);
+            return;
+        }
+        if(getAnimationType() == null) return;
+
+        if(getAnimationType().equals(Animation.IN)) {
+            setHide(false);
+        } else {
+            if(getAnimationProgress(1) >= 1) {
+                setHide(true);
+
+            }
+        }
+
+    }
+
+
+    public float getAnimationProgress(float speed) {
+        return MathHelper.clamp((float) ((Util.getMeasuringTimeMs() - animationProgress) / 1000.0F * speed), 0, 1);
     }
 
     /** This method will be executed after all the widgets are rendered, (can be useful to draw tooltips)
