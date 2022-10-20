@@ -107,12 +107,18 @@ public class ScrollContainer extends Container {
     }
 
     public void fit() {
+        var prevScrollDistance = scrollDistance;
+        scrollDistance = 0;
+        smoothScrollDistance = 0;
+        setContentHeight(1);
         getWidgets().forEach((key, value) -> {
             if((value.getY() - scrollDistance) + value.getBoxHeight()*value.getSize() > contentHeight) {
                 contentHeight = (int) ((value.getY() - scrollDistance) + value.getBoxHeight()*value.getSize());
             }
 
         });
+        scrollDistance = prevScrollDistance;
+        smoothScrollDistance = scrollDistance;
     }
 
     public void disableObjectCulling() {

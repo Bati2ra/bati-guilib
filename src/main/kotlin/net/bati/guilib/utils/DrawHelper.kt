@@ -47,6 +47,7 @@ object DrawHelper {
             .texture(minU.toFloat(), maxV.toFloat()).next()
         bufferBuilder.end()
         BufferRenderer.draw(bufferBuilder)
+        RenderSystem.disableDepthTest()
         RenderSystem.disableBlend()
     }
 

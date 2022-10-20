@@ -63,12 +63,12 @@ public class TextUtils {
     }
 
     public static void drawText(Text text, float x, float y, float size, int color, boolean shadow, boolean centered, MatrixStack matrix) {
-        matrix.scale(size, size, size);
+        matrix.scale(size, size, 1);
         float mSize = (float)Math.pow(size,-1);
         float newX = Math.round(x/size);
         float newY = Math.round(y/size);
         draw(text, centered ? newX - MinecraftClient.getInstance().textRenderer.getWidth(text)/2 : newX, newY, color, matrix, shadow);
-        matrix.scale(mSize, mSize, mSize);
+        matrix.scale(mSize, mSize, 1);
     }
 
     public static int draw(Text text, float x, float y, int color, MatrixStack matrix, boolean shadow) {
@@ -76,10 +76,12 @@ public class TextUtils {
             return 0;
         } else {
             RenderSystem.enableBlend();
+            RenderSystem.enableDepthTest();
             VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
             int i = (MinecraftClient.getInstance()).textRenderer.draw(text, x, y, color, shadow, matrix.peek().getPositionMatrix(), immediate, false, 0, 15728880);
 
             immediate.draw();
+            RenderSystem.disableDepthTest();
             RenderSystem.disableBlend();
             return i;
         }

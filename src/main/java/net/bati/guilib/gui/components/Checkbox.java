@@ -113,4 +113,12 @@ public class Checkbox extends Button {
     public enum CHECK_TYPE {
         CROSS, BOX
     }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
 }

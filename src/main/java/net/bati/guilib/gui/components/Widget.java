@@ -123,6 +123,7 @@ public abstract class Widget implements Element {
     private Animation animationType;
     private long animationSpeed = 1;
     private Consumer<Widget> overrideAnimationUpdate;
+    private Consumer<Widget> onAnimationOutEnd, onAnimationInStart;
 
     /**
      * Indica cuando puede comenzar a usarse el Widget, ya que debido a que algunos fields se calculan en un momento específico del método render,
@@ -369,10 +370,15 @@ public abstract class Widget implements Element {
 
         if(getAnimationType().equals(Animation.IN)) {
             setHide(false);
+            if(onAnimationInStart != null) {
+                onAnimationInStart.accept(this);
+            }
         } else {
             if(getAnimationProgress(1) >= 1) {
                 setHide(true);
-
+                if(onAnimationOutEnd != null) {
+                    onAnimationOutEnd.accept(this);
+                }
             }
         }
 
