@@ -207,7 +207,7 @@ public class ScrollContainer extends Container {
 
         if (isEnabled() && isHovered()) {
             double ps = getRecursiveX()+getBoxWidth()* getRecursiveSize();
-            this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-4 && mouseX < ps : mouseX >= getRecursiveX() && mouseX <= getRecursiveX() + barWidth);
+            this.scrolling = mouseButton == 0 &&  (barPosition.equals(BAR.RIGHT) ? mouseX >= ps-barWidth && mouseX < ps : mouseX >= getRecursiveX() && mouseX <= getRecursiveX() + barWidth);
             if (this.scrolling) {
                 this.scrollDistance = getMaxScroll() * (float) ((mouseY - getRecursiveY()) / (getBoxHeight()* getRecursiveSize()));
                 onScroll();
