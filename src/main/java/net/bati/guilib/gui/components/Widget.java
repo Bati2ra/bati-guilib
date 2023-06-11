@@ -13,7 +13,9 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Getter
 @Setter
@@ -106,6 +108,7 @@ public abstract class Widget implements Element {
      */
     private Callback.ScreenPosition positionListener;
     private Consumer<Widget> onInit;
+    private BiFunction<Widget, Boolean, Boolean> onChangeState;
 
     private double mouseX, mouseY;
 
@@ -239,9 +242,22 @@ public abstract class Widget implements Element {
      * @param s
      */
     public void setHide(boolean s) {
+
+        if(onChangeState != null && s != isVisible()) {
+            var a = onChangeState.apply(this, s);
+            if(!a) {
+                updateState(s);
+            }
+            System.out.println("Cambiando estado");
+        } else {
+            updateState(s);
+        }
+    }
+    private void updateState(boolean s) {
         setVisible(!s);
         setEnabled(!s);
     }
+
 
     public boolean isHovered() {
         return lastTickHovered;
@@ -395,6 +411,9 @@ public abstract class Widget implements Element {
         updateMouseAppearance();
     }
 
+    public void renderFirst(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+
+    }
     public void onMouseClick(double mouseX, double mouseY, int mouseButton){}
     public void onMouseRelease(double mouseX, double mouseY, int state){}
     public void onKeyPress(int keyCode, int scanCode, int modifiers){}

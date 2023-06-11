@@ -100,6 +100,8 @@ public abstract class AdvancedScreen extends Screen {
 
         update();
 
+        getWidgets().forEach((key, value) -> value.renderFirst(matrices, mouseX, mouseY, delta));
+
         ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
 
         getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
