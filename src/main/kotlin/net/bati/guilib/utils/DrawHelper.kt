@@ -45,8 +45,7 @@ object DrawHelper {
         bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), z).texture(minU.toFloat(), minV.toFloat()).next()
         bufferBuilder.vertex(matrix, x.toFloat(), (y + scale * height).toFloat(), z)
             .texture(minU.toFloat(), maxV.toFloat()).next()
-        bufferBuilder.end()
-        BufferRenderer.draw(bufferBuilder)
+        BufferRenderer.drawWithShader(bufferBuilder.end())
         RenderSystem.disableDepthTest()
         RenderSystem.disableBlend()
     }
@@ -84,8 +83,7 @@ object DrawHelper {
         bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), 0f).texture(minU.toFloat(), minV.toFloat()).next()
         bufferBuilder.vertex(matrix, x.toFloat(), (y + scaley * height).toFloat(), 0f)
             .texture(minU.toFloat(), maxV.toFloat()).next()
-        bufferBuilder.end()
-        BufferRenderer.draw(bufferBuilder)
+        BufferRenderer.drawWithShader(bufferBuilder.end())
         RenderSystem.disableBlend()
     }
 

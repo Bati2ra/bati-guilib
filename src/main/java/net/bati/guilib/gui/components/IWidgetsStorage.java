@@ -1,6 +1,6 @@
 package net.bati.guilib.gui.components;
 
-import net.bati.guilib.CommonInitializer;
+import net.bati.guilib.ClientInitializer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public interface IWidgetsStorage {
 
     default void addWidget(Widget widget) {
         if(getWidgets().containsKey(widget.getIdentifier())) {
-            CommonInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
+            ClientInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
             return;
         }
         widget.init();

@@ -6,9 +6,8 @@ import net.bati.guilib.utils.Sound;
 import net.bati.guilib.utils.font.TextUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.function.BiFunction;
 
@@ -63,7 +62,7 @@ public class Checkbox extends Button {
 
             float z = MinecraftClient.getInstance().textRenderer.getWidth(displayText) * textSize;
             if(displayText != null) {
-                TextUtils.drawText(new LiteralText(displayText), displayTextOffset == null ? (alignRight) ? getBoxWidth() + 2 : -z - 2 : displayTextOffset.x, displayTextOffset == null ? getBoxHeight() * 0.5F - 4F * textSize : displayTextOffset.y, textSize, checkColor, false, false, matrices);
+                TextUtils.drawText(Text.literal(displayText), displayTextOffset == null ? (alignRight) ? getBoxWidth() + 2 : -z - 2 : displayTextOffset.x, displayTextOffset == null ? getBoxHeight() * 0.5F - 4F * textSize : displayTextOffset.y, textSize, checkColor, false, false, matrices);
             }
             if(checkType.equals(CHECK_TYPE.BOX)) {
                 float gapX = getBoxWidth() * 0.2F;
@@ -73,7 +72,7 @@ public class Checkbox extends Button {
             } else {
                 if(checked) {
                     float s = getBoxHeight()/15F;
-                    TextUtils.drawText(new LiteralText("x"), getBoxWidth() * 0.5F, getBoxHeight() * 0.5F - 4F * s, s, checkColor, false, true, matrices);
+                    TextUtils.drawText(Text.literal("x"), getBoxWidth() * 0.5F, getBoxHeight() * 0.5F - 4F * s, s, checkColor, false, true, matrices);
                 }
             }
             if(getDrawInside() != null) {

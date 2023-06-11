@@ -13,7 +13,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +68,7 @@ public class Button extends Widget {
                     RenderSystem.defaultBlendFunc();
                     RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
-                    if(getRenderType().equals(RENDER.PLACEHOLDER)) {
+                    if(getRenderType().equals(RenderType.PLACEHOLDER)) {
                         DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), getBoxHeight(), 0, isFocused() ? 16777215 : getPlaceHolderColor(), isFocused() ? 16777215 : getPlaceHolderColor(), getRecursiveOpacityLastTick(), getRecursiveOpacityLastTick());
                     } else {
                         DrawHelper.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() * 0.5, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
@@ -108,8 +108,8 @@ public class Button extends Widget {
     private void drawText(MatrixStack matrices) {
         if(textComponent == null) return;
 
-        int moveX = textComponent.isCentered() ? Math.round(getBoxWidth() / 2) :  Math.round(textComponent.getOffsetPosition().getX());
-        int moveY = textComponent.isCentered() ? Math.round((getBoxHeight() / 2 - ((textComponent.hasStyle() ? textComponent.getStyle().getHeight() : TextUtils.font.fontHeight)* textComponent.getSize())/2)) : Math.round(textComponent.getOffsetPosition().getY());
+        int moveX = textComponent.isCentered() ? Math.round(getBoxWidth() / 2F) :  Math.round(textComponent.getOffsetPosition().getX());
+        int moveY = textComponent.isCentered() ? Math.round((getBoxHeight() / 2F - ((textComponent.hasStyle() ? textComponent.getStyle().getHeight() : TextUtils.font.fontHeight)* textComponent.getSize())/2)) : Math.round(textComponent.getOffsetPosition().getY());
 
         String buttonText = textComponent.getText();
         int strWidth = (int) (MinecraftClient.getInstance().textRenderer.getWidth(buttonText)*textComponent.getSize());
@@ -126,16 +126,16 @@ public class Button extends Widget {
             matrices.push();
             matrices.translate(0,0,1);
             if(textComponent.getStyle() == null)
-                TextUtils.drawTextOutline(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(Text.literal(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
             else
-                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), Text.literal(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
             matrices.translate(0,0,-1);
             matrices.pop();
         } else {
             if(textComponent.getStyle() == null)
-                TextUtils.drawText(new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(Text.literal(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
             else
-                TextUtils.drawText(textComponent.getStyle().getIdentifier(), new LiteralText(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(textComponent.getStyle().getIdentifier(), Text.literal(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
         }
     }
     

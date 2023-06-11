@@ -1,6 +1,6 @@
 package net.bati.guilib.gui.screen;
 
-import net.bati.guilib.CommonInitializer;
+import net.bati.guilib.ClientInitializer;
 import net.bati.guilib.gui.components.Button;
 import net.bati.guilib.gui.components.Container;
 import net.bati.guilib.gui.components.Widget;
@@ -11,7 +11,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +37,7 @@ public abstract class AdvancedScreen extends Screen {
 
 
     protected AdvancedScreen(@Nullable Text title) {
-        super((title == null) ? new LiteralText("") : title);
+        super((title == null) ? Text.literal("") : title);
         options = new WindowOptions(this, MinecraftClient.getInstance());
         build();
 
@@ -192,7 +191,7 @@ public abstract class AdvancedScreen extends Screen {
 
     public void clear() {
         widgets.clear();
-        CommonInitializer.LOGGER.info("[{}] Widgets map cleared.", this);
+        ClientInitializer.LOGGER.info("[{}] Widgets map cleared.", this);
     }
     @Override
     public void close() {
@@ -283,7 +282,7 @@ public abstract class AdvancedScreen extends Screen {
 
     public void addWidget(Widget widget) {
         if(widgets.containsKey(widget.getIdentifier())) {
-            CommonInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
+            ClientInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
             return;
         }
         widget.init();

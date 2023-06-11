@@ -7,7 +7,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -29,7 +28,7 @@ public class TextUtils {
 
     }
     public static void drawTextOutline(String text, float x, float y, float size, int baseColor, int lineColor, boolean centered, MatrixStack matrix) {
-        drawTextOutline(new LiteralText(text), x, y, size, baseColor, lineColor, centered, matrix);
+        drawTextOutline(Text.literal(text), x, y, size, baseColor, lineColor, centered, matrix);
     }
 
     public static void drawTextOutline(Text text, float x, float y, float size, int baseColor, int lineColor, boolean centered, MatrixStack matrix) {
@@ -59,7 +58,7 @@ public class TextUtils {
         drawText(((MutableText)text).setStyle(text.getStyle().withFont(font)), x, y, size, color, shadow, centered, matrix);
     }
     public static void drawText(String text, float x, float y, float size, int color, boolean shadow, boolean centered, MatrixStack matrix) {
-        drawText(new LiteralText(text), x, y, size, color, shadow, centered, matrix);
+        drawText(Text.literal(text), x, y, size, color, shadow, centered, matrix);
     }
 
     public static void drawText(Text text, float x, float y, float size, int color, boolean shadow, boolean centered, MatrixStack matrix) {
@@ -100,16 +99,16 @@ public class TextUtils {
             matrices.push();
             matrices.translate(0,0,z);
             if(textComponent.getStyle() == null)
-                TextUtils.drawTextOutline(new LiteralText(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(Text.literal(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
             else
-                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), new LiteralText(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), Text.literal(content), x, y, textComponent.getSize(),color,lineColor, textComponent.isCentered(), matrices);
             matrices.translate(0,0,-z);
             matrices.pop();
         } else {
             if(textComponent.getStyle() == null)
-                TextUtils.drawText(new LiteralText(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(Text.literal(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
             else
-                TextUtils.drawText(textComponent.getStyle().getIdentifier(), new LiteralText(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(textComponent.getStyle().getIdentifier(), Text.literal(content), x, y, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
         }
     }
 

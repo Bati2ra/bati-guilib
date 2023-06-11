@@ -1,5 +1,5 @@
 package net.bati.guilib.utils;
 
-public enum RENDER {
+public enum RenderType {
     VANILLA, PLACEHOLDER, CUSTOM
 }

@@ -1,25 +1,20 @@
 {
   "schemaVersion": 1,
   "id": "bati-guilib",
-  "version": "${version}",
-  "name": "${mod_name}",
+  "version": "1.0.0",
+  "name": "Bati's GUI Library",
   "description": "${mod_description}",
   "authors": [
-    "${mod_author}"
+    "Bati"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/bati-guilib/icon.png",
 
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.bati.guilib.CommonInitializer"
-    ],
     "client": [
 	"net.bati.guilib.ClientInitializer"
 ]

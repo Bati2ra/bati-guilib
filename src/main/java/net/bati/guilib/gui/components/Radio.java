@@ -1,6 +1,6 @@
 package net.bati.guilib.gui.components;
 
-import net.bati.guilib.CommonInitializer;
+import net.bati.guilib.ClientInitializer;
 
 public class Radio extends AlignedContainer {
 
@@ -11,7 +11,7 @@ public class Radio extends AlignedContainer {
 
     public void addOption(Checkbox checkbox) {
         if(getWidgets().containsKey(checkbox.getIdentifier())) {
-            CommonInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", checkbox, checkbox.getIdentifier());
+            ClientInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", checkbox, checkbox.getIdentifier());
             return;
         }
         checkbox.init();

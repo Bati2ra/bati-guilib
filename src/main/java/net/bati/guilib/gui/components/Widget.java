@@ -12,10 +12,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Getter
 @Setter
@@ -63,7 +61,7 @@ public abstract class Widget implements Element {
     @Builder.Default private float opacity = 1F;
     @Builder.Default private boolean visible = true;
 
-    @Builder.Default private RENDER renderType = RENDER.PLACEHOLDER;
+    @Builder.Default private RenderType renderType = RenderType.PLACEHOLDER;
     private int placeHolderColor;
 
     /**
@@ -145,7 +143,7 @@ public abstract class Widget implements Element {
         setPivot(Pivot.LEFT_TOP);
         setAttach(Pivot.LEFT_TOP);
         setOffsetPosition(new Vec2(0,0));
-        setRenderType(RENDER.PLACEHOLDER);
+        setRenderType(RenderType.PLACEHOLDER);
         canBeUsed = true;
     }
     public Widget() {
