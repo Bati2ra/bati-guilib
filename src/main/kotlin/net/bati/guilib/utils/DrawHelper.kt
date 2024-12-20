@@ -1,14 +1,14 @@
 package net.bati.guilib.utils
 
 import com.mojang.blaze3d.systems.RenderSystem
-import net.bati.guilib.gui.components.Widget
 import net.minecraft.client.render.*
+import net.minecraft.client.render.VertexFormat.DrawMode
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Matrix4f
 import net.minecraft.util.math.Vec3d
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
+import org.joml.Matrix4f
 
 object DrawHelper {
     @JvmOverloads
@@ -27,25 +27,27 @@ object DrawHelper {
         matrix: Matrix4f? = null,
         z: Float = 0.0F
     ) {
-        RenderSystem.setShader { GameRenderer.getPositionTexShader() }
         RenderSystem.setShaderTexture(0, texture)
-        val bufferBuilder = Tessellator.getInstance().buffer
+        RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
         val minU = u.toDouble() / imageWidth.toDouble()
         val maxU = (u + width) / imageWidth.toDouble()
         val minV = v.toDouble() / imageHeight.toDouble()
         val maxV = (v + height) / imageHeight.toDouble()
+        val bufferBuilder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE)
+
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE)
+
         bufferBuilder.vertex(matrix, (x + scale * width).toFloat(), (y + scale * height).toFloat(), z)
-            .texture(maxU.toFloat(), maxV.toFloat()).next()
+            .texture(maxU.toFloat(), maxV.toFloat())
         bufferBuilder.vertex(matrix, (x + scale * width).toFloat(), y.toFloat(), z)
-            .texture(maxU.toFloat(), minV.toFloat()).next()
-        bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), z).texture(minU.toFloat(), minV.toFloat()).next()
+            .texture(maxU.toFloat(), minV.toFloat())
+        bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), z).texture(minU.toFloat(), minV.toFloat())
         bufferBuilder.vertex(matrix, x.toFloat(), (y + scale * height).toFloat(), z)
-            .texture(minU.toFloat(), maxV.toFloat()).next()
-        BufferRenderer.drawWithShader(bufferBuilder.end())
+            .texture(minU.toFloat(), maxV.toFloat())
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+
         RenderSystem.disableDepthTest()
         RenderSystem.disableBlend()
     }
@@ -65,25 +67,27 @@ object DrawHelper {
         imageHeight: Int,
         matrix: Matrix4f?
     ) {
-        RenderSystem.setShader { GameRenderer.getPositionTexShader() }
         RenderSystem.setShaderTexture(0, texture)
-        val bufferBuilder = Tessellator.getInstance().buffer
+        RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
         val minU = u.toDouble() / imageWidth.toDouble()
         val maxU = (u + width) / imageWidth.toDouble()
         val minV = v.toDouble() / imageHeight.toDouble()
         val maxV = (v + height) / imageHeight.toDouble()
+        val bufferBuilder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE)
+
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE)
+
         bufferBuilder.vertex(matrix, (x + scalex * width).toFloat(), (y + scaley * height).toFloat(), 0f)
-            .texture(maxU.toFloat(), maxV.toFloat()).next()
+            .texture(maxU.toFloat(), maxV.toFloat())
         bufferBuilder.vertex(matrix, (x + scalex * width).toFloat(), y.toFloat(), 0f)
-            .texture(maxU.toFloat(), minV.toFloat()).next()
-        bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), 0f).texture(minU.toFloat(), minV.toFloat()).next()
+            .texture(maxU.toFloat(), minV.toFloat())
+        bufferBuilder.vertex(matrix, x.toFloat(), y.toFloat(), 0f).texture(minU.toFloat(), minV.toFloat())
         bufferBuilder.vertex(matrix, x.toFloat(), (y + scaley * height).toFloat(), 0f)
-            .texture(minU.toFloat(), maxV.toFloat()).next()
-        BufferRenderer.drawWithShader(bufferBuilder.end())
+            .texture(minU.toFloat(), maxV.toFloat())
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+
         RenderSystem.disableBlend()
     }
 
@@ -98,17 +102,15 @@ object DrawHelper {
         a: Float,
         z: Int
     ) {
-        RenderSystem.disableTexture()
+        //RenderSystem.disableTexture()
+        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
-        RenderSystem.setShader { GameRenderer.getPositionColorShader() }
-        val tessellator = Tessellator.getInstance()
-        val bufferBuilder = tessellator.buffer
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
+        val bufferBuilder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR)
         fillGradient(matrices.peek().positionMatrix, bufferBuilder, startX, startY, endX, endY, z, colorStart, a)
-        tessellator.draw()
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
         RenderSystem.disableBlend()
-        RenderSystem.enableTexture()
+        //RenderSystem.enableTexture()
     }
 
     @JvmStatic
@@ -125,13 +127,13 @@ object DrawHelper {
     ) {
         val color = Vec3d.unpackRgb(colorStart)
         builder.vertex(matrix, endX, startY, z.toFloat())
-            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
+            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a)
         builder.vertex(matrix, startX, startY, z.toFloat())
-            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
+            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a)
         builder.vertex(matrix, startX, endY, z.toFloat())
-            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
+            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a)
         builder.vertex(matrix, endX, endY, z.toFloat())
-            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a).next()
+            .color(color.x.toFloat(), color.y.toFloat(), color.z.toFloat(), a)
     }
     @JvmStatic
     fun drawWithPivot(@NotNull matrices : MatrixStack, x : Float, y : Float, width : Float, height : Float, size : Float, delta : Float, @NotNull pivot: Pivot, @NotNull drawCallback : Callback.DrawableBasic) {

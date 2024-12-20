@@ -10,6 +10,7 @@ import net.bati.guilib.utils.*;
 import net.bati.guilib.utils.font.TextComponent;
 import net.bati.guilib.utils.font.TextUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvent;
@@ -45,7 +46,8 @@ public class Button extends Widget {
         return new ButtonBuilderImpl().identifier(identifier);
     }
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
+        var matrices = context.getMatrices();
         shouldPlaySound(mouseX, mouseY);
 
         if(textComponent == null) return;
@@ -74,7 +76,7 @@ public class Button extends Widget {
                         DrawHelper.drawRectangle(textureComponent.getResource(), 0, 0, textureComponent.getU(), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() * 0.5, getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
                         DrawHelper.drawRectangle(textureComponent.getResource(), getBoxWidth() / 2F, 0, Math.round((textureComponent.getU() + this.getBoxWidth() / 2F)), textureComponent.getV() + ((isPressed()) ? 2 : i) * getBoxHeight(), getBoxWidth() / 2F, this.getBoxHeight(), 1, textureComponent.getTextureWidth(), textureComponent.getTextureHeight(), matrices.peek().getPositionMatrix());
                     }
-                    drawText(matrices);
+                    drawText(context);
                     matrices.pop();
                 }
         );
@@ -105,7 +107,8 @@ public class Button extends Widget {
         return (!isEnabled()) ? 0 : (isHovered) ? 2 : 1;
     }
 
-    private void drawText(MatrixStack matrices) {
+    private void drawText(DrawContext context) {
+        var matrices = context.getMatrices();
         if(textComponent == null) return;
 
         int moveX = textComponent.isCentered() ? Math.round(getBoxWidth() / 2F) :  Math.round(textComponent.getOffsetPosition().getX());
@@ -126,16 +129,16 @@ public class Button extends Widget {
             matrices.push();
             matrices.translate(0,0,1);
             if(textComponent.getStyle() == null)
-                TextUtils.drawTextOutline(Text.literal(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(Text.literal(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), context);
             else
-                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), Text.literal(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), matrices);
+                TextUtils.drawTextOutline(textComponent.getStyle().getIdentifier(), Text.literal(buttonText), moveX, moveY, textComponent.getSize(),color,lineColor,textComponent.isCentered(), context);
             matrices.translate(0,0,-1);
             matrices.pop();
         } else {
             if(textComponent.getStyle() == null)
-                TextUtils.drawText(Text.literal(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(Text.literal(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), context);
             else
-                TextUtils.drawText(textComponent.getStyle().getIdentifier(), Text.literal(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), matrices);
+                TextUtils.drawText(textComponent.getStyle().getIdentifier(), Text.literal(buttonText), moveX, moveY, textComponent.getSize(), color, textComponent.hasShadow(), textComponent.isCentered(), context);
         }
     }
     

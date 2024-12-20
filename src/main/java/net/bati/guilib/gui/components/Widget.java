@@ -7,6 +7,7 @@ import lombok.experimental.SuperBuilder;
 import net.bati.guilib.gui.screen.AdvancedScreen;
 import net.bati.guilib.utils.*;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Util;
@@ -262,7 +263,7 @@ public abstract class Widget implements Element {
     }
 
     /**
-     * Solo se utiliza una vez por iteración de {@link Widget#render(MatrixStack, float, float, float)}, para ahorrar llamados a métodos que
+     * Solo se utiliza una vez por iteración de {@link Widget#render(DrawContext, float, float, float)}, para ahorrar llamados a métodos que
      * utilizan recursividad.
      *
      * Un Widget se considera en estado "hovered" siempre y cuando el mouse se encuentre dentro de la hitbox del mismo y en caso de tener un
@@ -282,11 +283,11 @@ public abstract class Widget implements Element {
     /**
      * If you want to draw something for the widget, use this method instead of render (which is used to handle other listeners)
      */
-    protected  void draw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
+    protected  void draw(DrawContext context, float mouseX, float mouseY, float delta){};
 
-    protected  void postDraw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
+    protected  void postDraw(DrawContext context, float mouseX, float mouseY, float delta){};
 
-    protected  void preDraw(MatrixStack matrices, float mouseX, float mouseY, float delta){};
+    protected  void preDraw(DrawContext context, float mouseX, float mouseY, float delta){};
 
     private void calculatePositionCallback() {
         if(positionListener == null)
@@ -334,7 +335,7 @@ public abstract class Widget implements Element {
             }
         }
     }
-    public void render(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    public void render(DrawContext context, float mouseX, float mouseY, float delta) {
         if(onUpdate != null)
             onUpdate.accept(this);
 
@@ -345,22 +346,22 @@ public abstract class Widget implements Element {
         canBeUsed = true;
 
         calculatePositionCallback();
-        drawBoxArea(matrices);
+        drawBoxArea(context.getMatrices());
 
         if(onPreDraw != null)
-            onPreDraw.draw(this, matrices, mouseX, mouseY, delta);
+            onPreDraw.draw(this, context.getMatrices(), mouseX, mouseY, delta);
 
-        preDraw(matrices, mouseX, mouseY, delta);
+        preDraw(context, mouseX, mouseY, delta);
 
         if(onDraw != null)
-            onDraw.draw(this, matrices, mouseX, mouseY, delta);
+            onDraw.draw(this, context.getMatrices(), mouseX, mouseY, delta);
         else
-            draw(matrices, mouseX, mouseY, delta);
+            draw(context, mouseX, mouseY, delta);
 
         if(onPostDraw != null)
-            onPostDraw.draw(this, matrices, mouseX, mouseY, delta);
+            onPostDraw.draw(this, context.getMatrices(), mouseX, mouseY, delta);
 
-        postDraw(matrices, mouseX, mouseY, delta);
+        postDraw(context, mouseX, mouseY, delta);
     }
 
 
@@ -481,10 +482,10 @@ public abstract class Widget implements Element {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if(!isEnabled()) return false;
 
-        onMouseScroll(mouseX, mouseY, amount);
+        onMouseScroll(mouseX, mouseY, verticalAmount);
         return true;
     }
 

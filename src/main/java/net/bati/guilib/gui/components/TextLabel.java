@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import net.bati.guilib.utils.Callback;
 import net.bati.guilib.utils.font.TextComponent;
 import net.bati.guilib.utils.font.TextUtils;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 @Getter
 @Setter
@@ -15,12 +16,12 @@ public class TextLabel extends Widget {
     private Callback.Text callback;
 
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
         if(textComponent == null)
             return;
 
 
-        TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), matrices, getOffsetX(), getOffsetY(), getRecursiveZ(), getRecursiveOpacity());
+        TextUtils.drawTextComponent(textComponent, (callback == null) ? null : callback.get(), context, getOffsetX(), getOffsetY(), getRecursiveZ(), getRecursiveOpacity());
     }
 
 

@@ -31,7 +31,7 @@ public class TestScreen extends AdvancedScreen{
             checkbox.setCheckColor(16777215);
             checkbox.setDisplayText("Textura por defecto " + i, 0.5F);
             checkbox.setAlignRight(true);
-            checkbox.setClickEnabledSound(SoundEvents.UI_BUTTON_CLICK);
+            checkbox.setClickEnabledSound(SoundEvents.UI_BUTTON_CLICK.value());
             checkbox.setOnChange((check, action) -> Sound.ENABLED);
             radio.addOption(checkbox);
         }

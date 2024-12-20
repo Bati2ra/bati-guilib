@@ -8,6 +8,7 @@ import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.Mouse;
 import net.bati.guilib.utils.WindowOptions;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
@@ -58,10 +59,10 @@ public abstract class AdvancedScreen extends Screen {
     public void printRecursive(HashMap<String,Widget> map) {
         for (Map.Entry<String, Widget> entry : map.entrySet()) {
             if(entry.getValue() instanceof Container) {
-                System.out.println(String.format("container: %s, %s", entry.getKey(), entry.getValue().getZ()));
+                System.out.printf("container: %s, %s%n", entry.getKey(), entry.getValue().getZ());
                 printRecursive(((Container) entry.getValue()).getWidgets());
             } else {
-                System.out.println(String.format("%s, %s", entry.getKey(), entry.getValue().getZ()));
+                System.out.printf("%s, %s%n", entry.getKey(), entry.getValue().getZ());
             }
         }
     }
@@ -91,25 +92,23 @@ public abstract class AdvancedScreen extends Screen {
     public abstract void update();
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        //super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         mouseState = "idle";
 
-        preUpdate(matrices, mouseX, mouseY, delta);
+        preUpdate(context.getMatrices(), mouseX, mouseY, delta);
 
         update();
 
-        getWidgets().forEach((key, value) -> value.renderFirst(matrices, mouseX, mouseY, delta));
+        getWidgets().forEach((key, value) -> value.renderFirst(context.getMatrices(), mouseX, mouseY, delta));
 
-        ScreenUtils.renderWidgets(getWidgets(), matrices, mouseX, mouseY, delta);
+        ScreenUtils.renderWidgets(getWidgets(), context, mouseX, mouseY, delta);
 
-        getWidgets().forEach((key, value) -> value.lastRender(matrices, mouseX, mouseY, delta));
+        getWidgets().forEach((key, value) -> value.lastRender(context.getMatrices(), mouseX, mouseY, delta));
 
         updateMouseTexture();
 
         drawMouse(mouseX, mouseY);
     }
-
 
     public void preUpdate(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         options.update();
@@ -263,12 +262,12 @@ public abstract class AdvancedScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         widgets.forEach((key, value) -> {
-            if(value.isVisible())
-                value.mouseScrolled(mouseX, mouseY, amount);
+            if(value.isVisible()) // wtf, xq ignora el valor que retorna? no recuerdo xd
+                value.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         });
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     public HashMap<String, Widget> getWidgets() {

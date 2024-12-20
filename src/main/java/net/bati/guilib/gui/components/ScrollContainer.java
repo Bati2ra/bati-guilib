@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.DrawUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
@@ -224,9 +225,9 @@ public class ScrollContainer extends Container {
     }
 
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
         boolean canScroll = ((getContentHeight() + border) - getBoxHeight()) > 0;
-
+        var matrices = context.getMatrices();
         matrices.push();
         smoothScrollDistance = canScroll ? MathHelper.clamp((float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance), 0, getMaxScroll()) : 0;
         //smoothScrollDistance =(float) MathHelper.lerp(delta*0.5, smoothScrollDistance, scrollDistance);
@@ -256,7 +257,7 @@ public class ScrollContainer extends Container {
 
                     RenderSystem.enableScissor((int) (getRecursiveX()*scaleFactor), (int) (MinecraftClient.getInstance().getWindow().getFramebufferHeight() - (getRecursiveY()+getBoxHeight()* getRecursiveSize())*scaleFactor), (int)((getBoxWidth()* getRecursiveSize())*scaleFactor), (int)((getBoxHeight()* getRecursiveSize())*scaleFactor));
 
-                    renderWidgets(matrices, mouseX, (mouseY + smoothScrollDistance* getRecursiveSize()), delta);
+                    renderWidgets(context, mouseX, (mouseY + smoothScrollDistance* getRecursiveSize()), delta);
                     RenderSystem.disableScissor();
 
                     matrices.translate(0, smoothScrollDistance, 0);
@@ -297,12 +298,12 @@ public class ScrollContainer extends Container {
     }
 
     /**
-     * Variante de {@link net.bati.guilib.gui.screen.ScreenUtils#renderWidgets(HashMap, MatrixStack, float, float, float)}, determina que Widgets se encuentran en el
+     * Variante de {@link net.bati.guilib.gui.screen.ScreenUtils#renderWidgets(HashMap, DrawContext, float, float, float)}, determina que Widgets se encuentran en el
      * campo de "visión" basándonos en el tamaño y escala y deja de dibujarlos.
      */
-    public void renderWidgets(MatrixStack matrices, float x, float y, float delta) {
+    public void renderWidgets(DrawContext context, float x, float y, float delta) {
 
-        getWidgets().forEach((key, value) -> value.preRender(matrices, x, y, delta));
+        getWidgets().forEach((key, value) -> value.preRender(context.getMatrices(), x, y, delta));
 
         Optional<Map.Entry<String, Widget>> widgetEntry = getWidgets().entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
@@ -326,7 +327,7 @@ public class ScrollContainer extends Container {
                 value.setVisible(calculateHovered(value.getRecursiveX(), v));
             }
 
-            value.render(matrices, x, y, delta);
+            value.render(context, x, y, delta);
 
         });
     }

@@ -3,7 +3,7 @@ package net.bati.guilib.utils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
 
 
 public class DrawUtils {
@@ -14,17 +14,15 @@ public class DrawUtils {
         drawGradient(matrices, startX, startY, endX, endY, z, color1, color1, color2, color2, a1, a1, a2, a2);
     }
     public static void drawGradient(MatrixStack matrices, float startX, float startY, float endX, float endY, float z, int color1, int color2, int color3, int color4, float a1, float a2, float a3, float a4) {
-        RenderSystem.disableTexture();
+        //RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        var tessellator = Tessellator.getInstance();
-        var bufferBuilder = tessellator.getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        var bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         drawGradientWithColors(matrices.peek().getPositionMatrix(), bufferBuilder, startX, startY, endX, endY, z, color1, color2, color3, color4, a1, a2, a3, a4);
-        tessellator.draw();
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
         RenderSystem.disableBlend();
-        RenderSystem.enableTexture();
+        //RenderSystem.enableTexture();
     }
 
     private static void drawGradientWithColors(Matrix4f matrix, BufferBuilder builder, float startX, float startY, float endX, float endY, float z, int color1, int color2, int color3, int color4, float a1, float a2, float a3, float a4) {
@@ -37,7 +35,7 @@ public class DrawUtils {
     }
     private static void vertex(Matrix4f matrix, BufferBuilder builder, float x, float y, float z, int color, float a) {
         float[] rgb = ColorUtils.convertToRGB(color);
-        builder.vertex(matrix, x, y, z).color(rgb[0], rgb[1], rgb[2], a).next();
+        builder.vertex(matrix, x, y, z).color(rgb[0], rgb[1], rgb[2], a);
 
     }
 }

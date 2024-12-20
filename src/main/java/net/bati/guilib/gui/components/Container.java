@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import net.bati.guilib.gui.screen.ScreenUtils;
 import net.bati.guilib.utils.DrawHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 
 import java.util.*;
@@ -23,7 +24,8 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
+        var matrices = context.getMatrices();
         matrices.push();
         RenderSystem.setShaderColor(1,1,1, getRecursiveOpacity());
 
@@ -40,7 +42,7 @@ public class Container extends Widget implements IWidgetsStorage {
                     if(getDrawInside() != null) {
                         getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
                     }
-                    renderWidgets(matrices, mouseX, mouseY, delta);
+                    renderWidgets(context, mouseX, mouseY, delta);
                 }
         );
         RenderSystem.setShaderColor(1,1,1, 1);
@@ -143,9 +145,9 @@ public class Container extends Widget implements IWidgetsStorage {
     }
 
 
-    public void renderWidgets(MatrixStack matrices, float x, float y, float delta) {
+    public void renderWidgets(DrawContext context, float x, float y, float delta) {
 
-        widgets.forEach((key, value) -> value.preRender(matrices, x, y, delta));
+        widgets.forEach((key, value) -> value.preRender(context.getMatrices(), x, y, delta));
 
         Optional<Map.Entry<String, Widget>> widgetEntry = widgets.entrySet().stream().filter((entry) -> entry.getValue().isVisible() && entry.getValue().isHovered() && !entry.getValue().isIgnoreBox()).max(Comparator.comparingInt(current -> current.getValue().getRecursiveZ()));
 
@@ -163,7 +165,7 @@ public class Container extends Widget implements IWidgetsStorage {
             }
 
 
-            value.render(matrices, x, y, delta);
+            value.render(context, x, y, delta);
 
         });
     }

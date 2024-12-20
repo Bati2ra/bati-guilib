@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.DrawUtils;
 import net.bati.guilib.utils.Orientation;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 
@@ -30,7 +31,8 @@ public class Slider extends Widget {
         orientation = Orientation.HORIZONTAL;
     }
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
+        var matrices = context.getMatrices();
         matrices.push();
         var opacity = getRecursiveOpacity();
         RenderSystem.setShaderColor(1,1,1, opacity);

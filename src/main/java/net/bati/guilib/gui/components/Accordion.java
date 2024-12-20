@@ -6,6 +6,7 @@ import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.DrawUtils;
 import net.bati.guilib.utils.Pivot;
 import net.bati.guilib.utils.font.TextUtils;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 
@@ -65,7 +66,8 @@ public class Accordion extends Container {
     }
 
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
+        var matrices = context.getMatrices();
         matrices.push();
         float opacity = getOpacity();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
@@ -77,8 +79,8 @@ public class Accordion extends Container {
             hoveredAccordion = isHoveringAccordion(mouseX, mouseY);
             DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), minHeight, 0, hoveredAccordion ? 16777215 : 1, hoveredAccordion ? 16777215 : 1, 0.5f, 0.5f);
 
-            TextUtils.drawText(displayName, 2, 3, 0.5f, 16777215, false, false, matrices);
-            TextUtils.drawText((show) ? "▲" : "▼", getBoxWidth() - 6, 3, 0.6f, 16777215, false, false, matrices);
+            TextUtils.drawText(displayName, 2, 3, 0.5f, 16777215, false, false, context);
+            TextUtils.drawText((show) ? "▲" : "▼", getBoxWidth() - 6, 3, 0.6f, 16777215, false, false, context);
 
             if(animProgress > 0.1) {
                 DrawHelper.drawWithPivot(matrices, getBoxWidth()/2F, minHeight, (float) this.getBoxWidth(), (float) this.getBoxHeight() - minHeight, this.getSize(), delta, Pivot.MIDDLE_TOP, () -> {
@@ -86,7 +88,7 @@ public class Accordion extends Container {
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, getRecursiveOpacity());
                     DrawUtils.drawVerticalGradient(matrices, 0, 0, getBoxWidth(), (float)((contentHeight + heightAddition)*animProgress), 0, 1, 1, 0.25f, 0.25f);
 
-                    renderWidgets(matrices, mouseX, mouseY - minHeight, delta);
+                    renderWidgets(context, mouseX, mouseY - minHeight, delta);
                 }, () -> matrices.scale(1, (float)animProgress, 1));
                 setOpacity(opacity);
             }

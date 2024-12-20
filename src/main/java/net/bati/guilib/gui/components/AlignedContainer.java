@@ -5,6 +5,7 @@ import lombok.Setter;
 import net.bati.guilib.utils.DrawUtils;
 import net.bati.guilib.utils.Orientation;
 import net.bati.guilib.utils.Vec2;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 
 import java.util.ArrayList;
@@ -138,11 +139,11 @@ public class AlignedContainer extends Container {
     }
 
     @Override
-    protected void draw(MatrixStack matrices, float mouseX, float mouseY, float delta) {
+    protected void draw(DrawContext context, float mouseX, float mouseY, float delta) {
         if(lookForVisibilityChanges) {
             lookForUpdates();
         }
-        super.draw(matrices, mouseX, mouseY, delta);
+        super.draw(context, mouseX, mouseY, delta);
     }
 
     public void setDynamicClose(boolean b) {
