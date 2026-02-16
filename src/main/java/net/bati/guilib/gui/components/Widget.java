@@ -160,8 +160,8 @@ public abstract class Widget implements Element {
         canBeUsed = false;
     }
 
-    public int getOffsetX() {
-        return  offsetPosition.getX() + (int)calculateXAttachedValue();
+    public float getOffsetX() {
+        return  offsetPosition.getX() + calculateXAttachedValue();
     }
 
     private float calculateXAttachedValue() {
@@ -180,8 +180,8 @@ public abstract class Widget implements Element {
         return getOffsetX() - pivot.getX(getBoxWidth() * getSize());
     }
 
-    public int getOffsetY() {
-        return offsetPosition.getY() + (int)calculateYAttachedValue();
+    public float getOffsetY() {
+        return offsetPosition.getY() + calculateYAttachedValue();
     }
 
     private float calculateYAttachedValue() {
@@ -293,7 +293,7 @@ public abstract class Widget implements Element {
         if(positionListener == null)
             return;
 
-        setOffsetPosition(positionListener.get(this, MinecraftClient.getInstance().getWindow()));
+        setOffsetPosition(positionListener.get(this, offsetPosition, MinecraftClient.getInstance().getWindow()));
     }
 
     protected void drawBoxArea(MatrixStack matrices) {
@@ -349,17 +349,17 @@ public abstract class Widget implements Element {
         drawBoxArea(context.getMatrices());
 
         if(onPreDraw != null)
-            onPreDraw.draw(this, context.getMatrices(), mouseX, mouseY, delta);
+            onPreDraw.draw(this, context, mouseX, mouseY, delta);
 
         preDraw(context, mouseX, mouseY, delta);
 
         if(onDraw != null)
-            onDraw.draw(this, context.getMatrices(), mouseX, mouseY, delta);
+            onDraw.draw(this, context, mouseX, mouseY, delta);
         else
             draw(context, mouseX, mouseY, delta);
 
         if(onPostDraw != null)
-            onPostDraw.draw(this, context.getMatrices(), mouseX, mouseY, delta);
+            onPostDraw.draw(this, context, mouseX, mouseY, delta);
 
         postDraw(context, mouseX, mouseY, delta);
     }

@@ -26,13 +26,15 @@ public class TextUtils {
 
     public static void drawTextOutline(Text text, float x, float y, float size, int baseColor, int lineColor, boolean centered, DrawContext context) {
         context.getMatrices().push();
-        context.getMatrices().translate(0, 0, -0.01f);
         drawText(text, x- size, y, size, lineColor, false, centered, context);
         drawText(text, x+ size, y, size, lineColor, false, centered, context);
         drawText(text, x, y+ size, size, lineColor, false, centered, context);
         drawText(text, x, y- size, size, lineColor, false, centered, context);
         context.getMatrices().pop();
+        context.getMatrices().push();
+        context.getMatrices().translate(0, 0, 0.01f);
         drawText(text, x, y, size, baseColor, false, centered, context);
+        context.getMatrices().pop();
     }
 
     public static void drawText(Identifier font, Text text, float x, float y, float size, int color, boolean shadow, boolean centered, DrawContext context) {
@@ -56,10 +58,9 @@ public class TextUtils {
             return 0;
         } else {
             RenderSystem.disableDepthTest();
-            int i = (MinecraftClient.getInstance()).textRenderer.draw(text, (float)x, (float)y, color, shadow, context.getMatrices().peek().getPositionMatrix(), context.getVertexConsumers(), TextRenderer.TextLayerType.NORMAL, 0, 15728880);
-            context.getVertexConsumers().draw();
+            context.draw((vertexConsumerProvider -> (MinecraftClient.getInstance()).textRenderer.draw(text, (float)x, (float)y, color, shadow, context.getMatrices().peek().getPositionMatrix(), vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL, 0, 15728880)));
             RenderSystem.enableDepthTest();
-            return i;
+            return 0;
         }
     }
 

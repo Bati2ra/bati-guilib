@@ -6,6 +6,7 @@ import net.bati.guilib.utils.Pivot;
 import net.bati.guilib.utils.Sound;
 import net.bati.guilib.utils.Vec2;
 import net.bati.guilib.utils.font.TextComponent;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -174,7 +175,7 @@ public class TestScreen extends AdvancedScreen{
         return container;
     }
     @Override
-    public void update() {
+    public void update(DrawContext context, int mouseX, int mouseY, float delta) {
         
     }
 

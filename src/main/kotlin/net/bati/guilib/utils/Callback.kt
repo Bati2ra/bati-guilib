@@ -1,13 +1,14 @@
 package net.bati.guilib.utils
 
 import net.bati.guilib.gui.components.Widget
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.util.Window
 import net.minecraft.client.util.math.MatrixStack
 import org.jetbrains.annotations.Nullable
 
 class Callback {
     interface Drawable {
-        fun draw(@Nullable widget: Widget?,matrices: MatrixStack?, x: Float, y: Float, delta: Float)
+        fun draw(@Nullable widget: Widget?, context: DrawContext, x: Float, y: Float, delta: Float)
     }
     interface DrawableBasic {
         fun draw()
@@ -22,7 +23,7 @@ class Callback {
         fun call(widget : Widget, keyCode : Int, scanCode : Int, modifiers : Int)
     }
     interface ScreenPosition {
-        fun get(widget : Widget, window : Window) : Vec2
+        fun get(widget : Widget, currentPos: Vec2, window : Window) : Vec2
     }
     interface Text {
         fun get() : String

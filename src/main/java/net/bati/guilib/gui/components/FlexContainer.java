@@ -37,8 +37,8 @@ public class FlexContainer extends AlignedContainer{
         var actualWidth = 0.0;
         var actualHeight = 0.0;
 
-        var entryOffsetX = 0;
-        var entryOffsetY = 0;
+        float entryOffsetX = 0;
+        float entryOffsetY = 0;
 
         if(ignoreInvisibles) {
             lastStates = new ArrayList<>();

@@ -40,7 +40,7 @@ public class Container extends Widget implements IWidgetsStorage {
                 getPivot(),
                 () -> {
                     if(getDrawInside() != null) {
-                        getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
+                        getDrawInside().draw(this, context, mouseX, mouseY, delta);
                     }
                     renderWidgets(context, mouseX, mouseY, delta);
                 }

@@ -1,6 +1,8 @@
 package net.bati.guilib.utils
 
 import com.mojang.blaze3d.systems.RenderSystem
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.ShaderProgramKeys
 import net.minecraft.client.render.*
 import net.minecraft.client.render.VertexFormat.DrawMode
 import net.minecraft.client.util.math.MatrixStack
@@ -28,7 +30,7 @@ object DrawHelper {
         z: Float = 0.0F
     ) {
         RenderSystem.setShaderTexture(0, texture)
-        RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX)
         val minU = u.toDouble() / imageWidth.toDouble()
         val maxU = (u + width) / imageWidth.toDouble()
         val minV = v.toDouble() / imageHeight.toDouble()
@@ -68,7 +70,7 @@ object DrawHelper {
         matrix: Matrix4f?
     ) {
         RenderSystem.setShaderTexture(0, texture)
-        RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX)
         val minU = u.toDouble() / imageWidth.toDouble()
         val maxU = (u + width) / imageWidth.toDouble()
         val minV = v.toDouble() / imageHeight.toDouble()
@@ -103,7 +105,7 @@ object DrawHelper {
         z: Int
     ) {
         //RenderSystem.disableTexture()
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR)
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         val bufferBuilder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR)

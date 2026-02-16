@@ -1,6 +1,7 @@
 package net.bati.guilib.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
@@ -17,7 +18,7 @@ public class DrawUtils {
         //RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         var bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         drawGradientWithColors(matrices.peek().getPositionMatrix(), bufferBuilder, startX, startY, endX, endY, z, color1, color2, color3, color4, a1, a2, a3, a4);
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());

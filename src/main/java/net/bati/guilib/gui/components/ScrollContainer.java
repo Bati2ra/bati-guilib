@@ -246,7 +246,7 @@ public class ScrollContainer extends Container {
                 () -> {
 
                     if(getDrawInside() != null) {
-                        getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
+                        getDrawInside().draw(this, context, mouseX, mouseY, delta);
                     }
                     int color = 1;
 

@@ -89,7 +89,7 @@ public abstract class AdvancedScreen extends Screen {
         return temp;
     }
 
-    public abstract void update();
+    public abstract void update(DrawContext context, int mouseX, int mouseY, float delta);
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -97,7 +97,7 @@ public abstract class AdvancedScreen extends Screen {
 
         preUpdate(context.getMatrices(), mouseX, mouseY, delta);
 
-        update();
+        update(context, mouseX, mouseY, delta);
 
         getWidgets().forEach((key, value) -> value.renderFirst(context.getMatrices(), mouseX, mouseY, delta));
 

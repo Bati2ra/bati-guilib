@@ -68,8 +68,8 @@ public class AlignedContainer extends Container {
         if(ignoreInvisibles) {
             lastStates = new ArrayList<>();
         }
-        int entryOffsetX = 0;
-        int entryOffsetY = 0;
+        float entryOffsetX = 0;
+        float entryOffsetY = 0;
 
         for (Map.Entry<String, Widget> stringWidgetEntry : getWidgets().entrySet()) {
             var entry = stringWidgetEntry.getValue();

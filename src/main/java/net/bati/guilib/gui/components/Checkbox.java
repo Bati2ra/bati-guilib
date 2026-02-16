@@ -78,7 +78,7 @@ public class Checkbox extends Button {
                 }
             }
             if(getDrawInside() != null) {
-                getDrawInside().draw(this, matrices, mouseX, mouseY, delta);
+                getDrawInside().draw(this, context, mouseX, mouseY, delta);
             }
         });
     }

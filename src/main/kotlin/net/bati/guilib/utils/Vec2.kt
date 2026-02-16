@@ -1,8 +1,9 @@
 package net.bati.guilib.utils
 
-class Vec2(val x: Int, val y: Int) {
-    fun getVec(x: Int, y: Int): Vec2 {
-        return Vec2(x, y)
+class Vec2(var x: Float, var y: Float) {
+    fun update(x: Float, y: Float): Vec2 {
+        this.x = x;
+        this.y = y;
+        return this;
     }
-
 }
