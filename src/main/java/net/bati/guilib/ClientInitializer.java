@@ -1,9 +1,9 @@
 package net.bati.guilib;
 
-import net.bati.guilib.gui.screen.TestScreen;
+import net.bati.guilib.examples.ExampleScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +14,8 @@ public class ClientInitializer implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
-            if(MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-                MinecraftClient.getInstance().setScreen(new TestScreen(null));
+            if(Minecraft.getInstance().options.keyShift.isDown()) {
+                Minecraft.getInstance().setScreen(new ExampleScreen());
             }
         });
     }

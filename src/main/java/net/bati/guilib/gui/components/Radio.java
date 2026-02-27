@@ -14,7 +14,7 @@ public class Radio extends AlignedContainer {
             ClientInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", checkbox, checkbox.getIdentifier());
             return;
         }
-        checkbox.init();
+
 
         checkbox.setParent(this);
         this.getWidgets().put(checkbox.getIdentifier(), checkbox);
@@ -25,13 +25,4 @@ public class Radio extends AlignedContainer {
 
     }
 
-    public void updateWidgets(String exception) {
-        getWidgets().forEach((key, value) -> {
-            if(key.contentEquals(exception)) return;
-
-            if( ((Checkbox)value).checked) {
-                ((Checkbox) value).checked = false;
-            }
-        });
-    }
 }

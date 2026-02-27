@@ -1,14 +1,13 @@
 package net.bati.guilib.utils
 
 import net.bati.guilib.gui.components.Widget
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.util.Window
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.gui.GuiGraphics
 import org.jetbrains.annotations.Nullable
+import java.awt.Window
 
 class Callback {
     interface Drawable {
-        fun draw(@Nullable widget: Widget?, context: DrawContext, x: Float, y: Float, delta: Float)
+        fun draw(@Nullable widget: Widget?, context: GuiGraphics, x: Float, y: Float, delta: Float)
     }
     interface DrawableBasic {
         fun draw()

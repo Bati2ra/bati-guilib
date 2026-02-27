@@ -19,7 +19,7 @@ public interface IWidgetsStorage {
             ClientInitializer.LOGGER.warn("[{}] Widget name [{}] is repeated, skipping....", widget, widget.getIdentifier());
             return;
         }
-        widget.init();
+//        widget.init();
 
         widget.setParent(this instanceof Widget ? (Widget)this : null);
         this.getWidgets().put(widget.getIdentifier(), widget);

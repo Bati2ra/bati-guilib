@@ -1,11 +1,9 @@
 package net.bati.guilib.utils;
 
 import net.bati.guilib.gui.screen.AdvancedScreen;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.Window;
 
 public class WindowOptions {
-    double scaleX;
+    /*double scaleX;
     double scaleY;
     MinecraftClient client;
 
@@ -36,6 +34,6 @@ public class WindowOptions {
     public Window getWindow() {
         return client.getWindow();
     }
-
+    */
 
 }

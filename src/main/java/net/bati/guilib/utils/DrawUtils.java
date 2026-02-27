@@ -1,14 +1,11 @@
 package net.bati.guilib.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 
 
 public class DrawUtils {
-    public static void drawHorizontalGradient(MatrixStack matrices, float startX, float startY, float endX, float endY, float z, int color1, int color2, float a1, float a2) {
+  /*  public static void drawHorizontalGradient(MatrixStack matrices, float startX, float startY, float endX, float endY, float z, int color1, int color2, float a1, float a2) {
         drawGradient(matrices, startX, startY, endX, endY, z, color1, color2, color1, color2, a1, a2, a1, a2);
     }
     public static void drawVerticalGradient(MatrixStack matrices, float startX, float startY, float endX, float endY, float z, int color1, int color2, float a1, float a2) {
@@ -38,5 +35,5 @@ public class DrawUtils {
         float[] rgb = ColorUtils.convertToRGB(color);
         builder.vertex(matrix, x, y, z).color(rgb[0], rgb[1], rgb[2], a);
 
-    }
+    }*/
 }

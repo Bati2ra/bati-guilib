@@ -1,19 +1,10 @@
 package net.bati.guilib.utils
 
 import com.mojang.blaze3d.systems.RenderSystem
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.ShaderProgramKeys
-import net.minecraft.client.render.*
-import net.minecraft.client.render.VertexFormat.DrawMode
-import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.Vec3d
-import org.jetbrains.annotations.NotNull
-import org.jetbrains.annotations.Nullable
 import org.joml.Matrix4f
 
 object DrawHelper {
-    @JvmOverloads
+   /* @JvmOverloads
     @JvmStatic
     fun drawRectangle(
         texture: Identifier?,
@@ -165,5 +156,5 @@ object DrawHelper {
         matrices.pop()
         matrices.pop()
 
-    }
+    }*/
 }

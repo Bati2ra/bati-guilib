@@ -1,5 +1,6 @@
 package net.bati.guilib.gui.screen;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.bati.guilib.ClientInitializer;
 import net.bati.guilib.gui.components.Button;
 import net.bati.guilib.gui.components.Container;
@@ -7,13 +8,12 @@ import net.bati.guilib.gui.components.Widget;
 import net.bati.guilib.utils.DrawHelper;
 import net.bati.guilib.utils.Mouse;
 import net.bati.guilib.utils.WindowOptions;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -21,11 +21,14 @@ import java.util.*;
 
 
 public abstract class AdvancedScreen extends Screen {
-    protected HashMap<String, Widget> widgets = new HashMap<>();
+    protected AdvancedScreen(Component component) {
+        super(component);
+    }
+/*    protected HashMap<String, Widget> widgets = new HashMap<>();
     private Screen parent;
     private Mouse mouse = new Mouse();
     private float partialTicks;
-    private MatrixStack matrix;
+    private PoseStack matrix;
 
     private WindowOptions options;
 
@@ -37,9 +40,9 @@ public abstract class AdvancedScreen extends Screen {
 
 
 
-    protected AdvancedScreen(@Nullable Text title) {
-        super((title == null) ? Text.literal("") : title);
-        options = new WindowOptions(this, MinecraftClient.getInstance());
+    protected AdvancedScreen(@Nullable Component title) {
+        super((title == null) ? Component.literal("") : title);
+        options = new WindowOptions(this, Minecraft.getInstance());
         build();
 
         widgets = sort(widgets);
@@ -89,10 +92,10 @@ public abstract class AdvancedScreen extends Screen {
         return temp;
     }
 
-    public abstract void update(DrawContext context, int mouseX, int mouseY, float delta);
+    public abstract void update(GuiGraphics context, int mouseX, int mouseY, float delta);
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         mouseState = "idle";
 
         preUpdate(context.getMatrices(), mouseX, mouseY, delta);
@@ -297,5 +300,5 @@ public abstract class AdvancedScreen extends Screen {
         if(!widgets.containsKey(widgetIdentifier)) return;
         widgets.remove(widgetIdentifier);
     }
-
+*/
 }

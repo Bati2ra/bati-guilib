@@ -1,7 +1,7 @@
 package net.bati.guilib.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.util.math.Vec3d;
+import org.joml.Vector3d;
 
 public class ColorUtils {
 /*
@@ -21,7 +21,7 @@ public class ColorUtils {
         var h2 = (color >> 16 & 0xff) / 255.0F;
         var h3 = (color >> 8 & 0xff) / 255.0f;
         var h4 = (color & 0xff) / 255.0f;
-        RenderSystem.setShaderColor(h2, h3, h4, alpha);
+        //RenderSystem.setShaderColor(h2, h3, h4, alpha);
     }
 
     public static float[] convertToRGB(int color, float alpha) {
@@ -47,11 +47,11 @@ public class ColorUtils {
         return convertToHex((int)(r * 255), (int)(g * 255), (int)(b * 255), (int)(a * 255));
     }
 
-    public static int convertToHex(Vec3d color, float alpha) {
+    public static int convertToHex(Vector3d color, float alpha) {
         return convertToHex((float)color.x, (float)color.y, (float)color.z, alpha);
     }
 
-    public static int convertToHex(Vec3d color) {
+    public static int convertToHex(Vector3d color) {
         return convertToHex((float)color.x, (float)color.y, (float)color.z, 1F);
     }
     public static int convertToHex(int color, float a) {

@@ -1,5 +1,6 @@
 package net.bati.guilib.utils.font
 
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
+
 
 class Font(val identifier : Identifier, val height : Int)
