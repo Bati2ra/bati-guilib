@@ -1,277 +1,262 @@
 package net.bati.guilib.examples;
 
-import net.bati.guilib.layout.BoxModel;
-import net.bati.guilib.layout.FlexConstraints;
+import net.bati.guilib.layout.*;
 import net.bati.guilib.layout.flex.FlexLayout;
-import net.bati.guilib.layout.LayoutConstraints;
-import net.bati.guilib.navigation.PageRouter;
-import net.bati.guilib.rendering.NineSlice;
+import net.bati.guilib.rendering.Background;
 import net.bati.guilib.screen.ModernScreen;
 import net.bati.guilib.widget.*;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
+/**
+ * Demonstrates the UI system with a complex nested layout:
+ *
+ *  ┌─────────────────────────────────────────────┐
+ *  │  HEADER ROW: [Title]   [spacer]   [Close]  │
+ *  ├─────────────────────────────────────────────┤
+ *  │  CONTENT ROW                                │
+ *  │  ┌──────────────┐  ┌───────────────────┐   │
+ *  │  │  SIDEBAR     │  │  MAIN PANEL       │   │
+ *  │  │  (column)    │  │  (scroll + flex)  │   │
+ *  │  │  [Nav btn 1] │  │  [Card 1]         │   │
+ *  │  │  [Nav btn 2] │  │  [Card 2]         │   │
+ *  │  │  [Nav btn 3] │  │  ...              │   │
+ *  │  └──────────────┘  └───────────────────┘   │
+ *  ├─────────────────────────────────────────────┤
+ *  │  FOOTER ROW: [Status label]  [Action btn]  │
+ *  └─────────────────────────────────────────────┘
+ */
 public class ExampleScreen extends ModernScreen {
-
     public ExampleScreen() {
-        super(Component.literal("Modern UI Example"));
+        super(Component.literal("ModernUI Example"));
     }
 
     @Override
-    protected void buildUI() {
-        // Example 1: Simple button with padding
-        Button simpleButton = new Button("simple-button", Component.literal("DAFUCK YA SAYIN"));
-        simpleButton.setConstraints(
-                LayoutConstraints.builder()
-                        .alignment(LayoutConstraints.Alignment.TOP_CENTER)
-                        .offsetY(20)
-                        .width(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
-        simpleButton.getEventHandlers().onClick(widget -> {
-            System.out.println("Button clicked!");
-        });
-      //  addWidget(simpleButton);
-
-        // Example 2: Flex container with multiple buttons
-        FlexContainer buttonRow = FlexContainer.row("button-row");
-        buttonRow.setBackgroundColor(-1);
-        buttonRow.setPadding(BoxModel.Insets.all(6));
-        buttonRow.gap(10)
-                .justifyContent(FlexLayout.JustifyContent.SPACE_BETWEEN)
-                .alignItems(FlexLayout.AlignItems.CENTER).direction(FlexLayout.FlexDirection.COLUMN);
-
-
-        buttonRow.setConstraints(
-                LayoutConstraints.builder()
-                        .alignment(LayoutConstraints.Alignment.TOP_CENTER)
-                        .offsetY(60)
-                        .width(LayoutConstraints.SizeConstraint.percentage(0.8f))
-                        .height(LayoutConstraints.SizeConstraint.auto())
-                        .build()
-        );
-
-        // Add buttons to the row
-        for (int i = 1; i <= 3; i++) {
-            Button btn = new Button("btn-" + i, Component.literal("Button " + i));
-            btn.setPadding(BoxModel.Insets.symmetric(6, 16));
-            btn.getEventHandlers().onClick(widget -> {
-                System.out.println("Button clicked! " + btn.getId());
-            });
-            buttonRow.addChild(btn);
-
-        }
-        FlexContainer testRow = FlexContainer.row("button-row");
-        testRow.setBackgroundColor(-5000);
-        testRow.gap(10)
-                .justifyContent(FlexLayout.JustifyContent.CENTER)
-                .alignItems(FlexLayout.AlignItems.CENTER);
-        testRow.setConstraints(LayoutConstraints.builder().width(LayoutConstraints.SizeConstraint.fillParent()).build());
-
-        for (int i = 1; i <= 2; i++) {
-            Button btn = new Button("btn-b" + i, Component.literal("Buttonb " + i));
-            btn.setPadding(BoxModel.Insets.symmetric(6, 16));
-
-            testRow.addChild(btn);
-
-        }
-        buttonRow.addChild(testRow);
-
-     //   addWidget(buttonRow);
-
-
-/*
-        // Example 3: Panel with padding and children
-        Panel infoPanel = new Panel("info-panel");
-        infoPanel.setConstraints(
-                LayoutConstraints.builder()
-                        .alignment(LayoutConstraints.Alignment.MIDDLE_CENTER)
-                        .width(LayoutConstraints.SizeConstraint.fixed(300))
-                        .height(LayoutConstraints.SizeConstraint.fixed(200))
-                        .build()
-        );
-        infoPanel.setPadding(BoxModel.Insets.all(16));
-
-        // Add content to panel using flex layout
-        FlexContainer panelContent = FlexContainer.column("panel-content");
-        panelContent.gap(8)
-                .alignItems(FlexLayout.AlignItems.STRETCH);
-
-        panelContent.setConstraints(
-                LayoutConstraints.builder()
-                        .width(LayoutConstraints.SizeConstraint.fillParent())
-                        .height(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
-
-        // Add labels to panel
-        Label title = new Label("title", Component.literal("Information Panel"));
-        title.withColor(0xFFFF00).withAlignment(Label.TextAlignment.CENTER);
-        panelContent.addChild(title);
-
-        Label description = new Label("desc", Component.literal("This demonstrates the new layout system"));
-        panelContent.addChild(description);
-
-        infoPanel.addChild(panelContent);
-*/      //  addWidget(infoPanel);
-
-        // Example 4: Complex layout with flexbox
-        createComplexLayout();
+    protected void init() {
+        super.init();
+        setRoot(buildRoot());
     }
 
-    private void createComplexLayout() {
-        // Create a sidebar-content layout
-        FlexContainer mainLayout = FlexContainer.row("main-layout");
-        mainLayout.gap(0)
-                .justifyContent(FlexLayout.JustifyContent.SPACE_BETWEEN)
+    private Widget buildRoot() {
+        // Root: full-screen dark panel
+        Panel root = new Panel("root");
+        root.setConstraints(LayoutConstraints.fillParent());
+        root.setBackground(Background.color(0xFF1A1A2E));
+
+        // Main layout: vertical flex column — STRETCH so all children fill width
+        FlexContainer mainCol = FlexContainer.column("main_col")
+                .gap(0)
                 .alignItems(FlexLayout.AlignItems.STRETCH);
+        mainCol.setConstraints(LayoutConstraints.fillParent());
 
-        mainLayout.setConstraints(
-                LayoutConstraints.builder()
-                        .alignment(LayoutConstraints.Alignment.BOTTOM_LEFT)
-                        .width(LayoutConstraints.SizeConstraint.fillParent())
-                        .height(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
+        // ── HEADER ─────────────────────────────────────────────────────────────
+        FlexContainer header = buildHeader();
+        header.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fillParent())
+                .withHeight(SizeConstraint.fixed(28)));
 
-        PageRouter router = new PageRouter();
-        router.registerPage(new DashboardPage());
-        router.registerPage(new SettingsPage());
+        // ── CONTENT AREA ───────────────────────────────────────────────────────
+        FlexContainer content = buildContent();
+        content.setFlex(content.getFlexConstraints().withFlexGrow(1f));
+        content.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fillParent()));
 
-        // Sidebar (25% width)
-        Panel sidebar = new Panel("sidebar");
-        sidebar.setConstraints(
-                LayoutConstraints.builder()
-                        .width(LayoutConstraints.SizeConstraint.percentage(0.15f))
-                        .height(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
-        Identifier GUI_TEXTURE = Identifier.withDefaultNamespace("textures/gui/sprites/container/inventory/effect_background.png");
+        // ── FOOTER ─────────────────────────────────────────────────────────────
+        FlexContainer footer = buildFooter();
+        footer.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fillParent())
+                .withHeight(SizeConstraint.fixed(24)));
 
-        NineSlice inventoryBackground = NineSlice.uniform(
-                GUI_TEXTURE,
-                0,      // u - posición X en la textura
-                0,      // v - posición Y en la textura
-                32,    // width - ancho de la región en la textura
-                32,    // height - alto de la región en la textura
-                7,       // slice - tamaño de las esquinas (7px para GUI vanilla)
-                32,
-                32
-        );
-        sidebar.setBackground(inventoryBackground);
+        mainCol.add(header).add(Separator.horizontal("sep1").setColor(0xFF3A3A5C))
+                .add(content)
+                .add(Separator.horizontal("sep2").setColor(0xFF3A3A5C))
+                .add(footer);
 
-        // Sidebar content
-        FlexContainer sidebarContent = FlexContainer.column("sidebar-content");
-        sidebarContent.gap(4)
-                .setConstraints(
-                        LayoutConstraints.builder()
-                                .width(LayoutConstraints.SizeConstraint.fillParent())
-                                .height(LayoutConstraints.SizeConstraint.fillParent())
-                                .build()
-                );
+        root.addChild(mainCol);
+        return root;
+    }
 
-        for (int i = 1; i <= 5; i++) {
-            Button sidebarBtn = new Button("sidebar-btn-" + i, Component.literal("Option " + i));
-            sidebarBtn.setPadding(BoxModel.Insets.symmetric(4, 8));
-            sidebarBtn.setConstraints(
-                    LayoutConstraints.builder()
-                            .width(LayoutConstraints.SizeConstraint.fillParent())
-                            .build()
-            );
-            if(i == 1) {
-                sidebarBtn.getEventHandlers().onClick(widget -> {
-                    router.navigateTo("dashboard");
-                });
-            } else if(i == 2) {
-                sidebarBtn.getEventHandlers().onClick(widget -> {
-                    router.navigateTo("settings");
-                });
-            }
-            sidebarContent.addChild(sidebarBtn);
-        }
+    // ── Header ──────────────────────────────────────────────────────────────
 
-        sidebar.addChild(sidebarContent);
-        mainLayout.addChild(sidebar);
-
-        // Content area (75% width)
-        Panel content = new Panel ("content");
-        content.setConstraints(
-                LayoutConstraints.builder()
-                        .width(LayoutConstraints.SizeConstraint.percentage(0.85f))
-                        .height(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
-        router.setInitialPage("dashboard");
-        content.setPadding(BoxModel.Insets.all(16));
-
-        // Content layout
-        FlexContainer contentLayout = FlexContainer.column("content-layout");
-        contentLayout.gap(12)
-                .setConstraints(
-                        LayoutConstraints.builder()
-                                .width(LayoutConstraints.SizeConstraint.fillParent())
-                                .height(LayoutConstraints.SizeConstraint.fillParent())
-                                .build()
-                );
-        contentLayout.justifyContent(FlexLayout.JustifyContent.SPACE_BETWEEN);
-
-        // Header row with title and button
-        FlexContainer header = FlexContainer.row("header");
-        header.justifyContent(FlexLayout.JustifyContent.SPACE_BETWEEN)
+    private FlexContainer buildHeader() {
+        FlexContainer header = FlexContainer.row("header")
+                .justifyContent(FlexLayout.JustifyContent.SPACE_BETWEEN)
                 .alignItems(FlexLayout.AlignItems.CENTER)
-                .setConstraints(
-                        LayoutConstraints.builder()
-                                .width(LayoutConstraints.SizeConstraint.fillParent())
-                                .build()
-                );
+                .gap(8);
+        header.setBackground(Background.color(0xFF16213E));
+        header.setPadding(EdgeInsets.symmetric(0, 10));
 
-        Label contentTitle = new Label("content-title", Component.literal("Main Content"));
-        contentTitle.withColor(0xFFFFFFFF);
-        header.addChild(contentTitle);
+        Label title = new Label("title", Component.literal("§b§lModernUI §r§7Demo"))
+                .setColor(0xFFCCCCCC);
+        title.setMargin(EdgeInsets.only(0, 0, 0, 4));
 
-        Button actionBtn = new Button("action-btn", Component.literal("Action"));
-        actionBtn.setPadding(BoxModel.Insets.symmetric(4, 12));
-        header.addChild(actionBtn);
+        Spacer spacer = Spacer.grow("header_spacer");
 
-        contentLayout.addChild(header);
+        Button closeBtn = new Button("close", Component.literal("§c✕"))
+                .setColors(0xFF8B0000, 0xFFCC0000)
+                .useVanillaStyle(false);
+        closeBtn.setConstraints(LayoutConstraints.DEFAULT.withWidth(SizeConstraint.fixed(16)));
+        closeBtn.onClick(() -> Minecraft.getInstance().setScreen(null));
 
-        // Add spacer to push footer to bottom
-       // Spacer spacer = Spacer.flexible("spacer");
-        PageContainer pageContainer = new PageContainer("page-content", router);
-        pageContainer.setConstraints(
-                LayoutConstraints.builder()
-                        .width(LayoutConstraints.SizeConstraint.fillParent())
-                        .height(LayoutConstraints.SizeConstraint.percentage(0.7f))
-                        .build()
-        );
-        pageContainer.setBackgroundColor(-5000);
-        contentLayout.addChild(pageContainer);
-
-        // Footer
-        Label footer = new Label("footer", Component.literal("Footer Text"));
-        footer.withColor(0xFF808080).withAlignment(Label.TextAlignment.CENTER);
-        footer.setConstraints(
-                LayoutConstraints.builder()
-                        .width(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
-        contentLayout.addChild(footer);
-
-        content.addChild(contentLayout);
-        mainLayout.addChild(content);
-
-        addWidget(mainLayout);
+        return header.add(title).add(spacer).add(closeBtn);
     }
-    @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
 
+    // ── Content (sidebar + main) ─────────────────────────────────────────────
 
+    private FlexContainer buildContent() {
+        FlexContainer row = FlexContainer.row("content")
+                .alignItems(FlexLayout.AlignItems.STRETCH)
+                .gap(0);
+
+        // Sidebar
+        FlexContainer sidebar = buildSidebar();
+        sidebar.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fixed(80)));
+
+        // Main area
+        Widget main = buildMain();
+        main.setFlex(main.getFlexConstraints().withFlexGrow(1f));
+
+        return row.add(sidebar).add(Separator.vertical("vsep").setColor(0xFF3A3A5C)).add(main);
     }
-    @Override
-    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        // Custom gradient background
-        //context.fillGradient(0, 0, width, height, 0xFF1a1a2e, 0xFF16213e);
+
+    private FlexContainer buildSidebar() {
+        FlexContainer col = FlexContainer.column("sidebar")
+                .justifyContent(FlexLayout.JustifyContent.FLEX_START)
+                .gap(4);
+        col.setBackground(Background.color(0xFF162032));
+        col.setPadding(EdgeInsets.all(8));
+
+        String[] sections = { "§eGeneral", "§aItems", "§bStats", "§6Settings" };
+        for (int i = 0; i < sections.length; i++) {
+            final int idx = i;
+            Button btn = new Button("nav_" + i, Component.literal(sections[i]))
+                    .setColors(0xFF2A2A4A, 0xFF3A3A6A)
+                    .useVanillaStyle(false);
+            btn.setConstraints(LayoutConstraints.DEFAULT
+                    .withWidth(SizeConstraint.fillParent())
+                    .withHeight(SizeConstraint.fixed(18)));
+            btn.onClick(() -> System.out.println("Navigate to section " + idx));
+            col.add(btn);
+        }
+
+        return col;
+    }
+
+    private Widget buildMain() {
+        // Scrollable list of cards
+        FlexContainer cardList = FlexContainer.row("card_list")
+                .gap(8)
+                .wrap(FlexLayout.FlexWrap.WRAP);
+        cardList.setPadding(EdgeInsets.all(10));
+
+        for (int i = 1; i <= 8; i++) {
+            Button btn = new Button("asd"+i, "asd"+i);
+            btn.setFlex(FlexConstraints.builder().flexGrow(1).build());
+            btn.setConstraints(LayoutConstraints.DEFAULT.withAspectRatio(1f));
+            cardList.add(btn);
+        }
+
+        ScrollContainer scroll = new ScrollContainer("main_scroll");
+        scroll.add(cardList);
+        return scroll;
+    }
+
+    /** A card: row with icon area + info column + action button. */
+    private FlexContainer buildCard(String title, String desc) {
+        FlexContainer card = FlexContainer.row("card_" + title.replace(" ", "_"))
+                .alignItems(FlexLayout.AlignItems.CENTER)
+                .gap(8);
+        card.setBackground(Background.color(0xFF1E2D50));
+        card.setPadding(EdgeInsets.symmetric(6, 8));
+        card.setConstraints(LayoutConstraints.DEFAULT
+                .withHeight(SizeConstraint.fixed(40)));
+        card.setMargin(EdgeInsets.vertical(0));
+
+        // Icon placeholder
+        Panel icon = new Panel("icon_" + title);
+        icon.setBackground(Background.color(0xFF2563EB));
+        icon.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fixed(28))
+                .withHeight(SizeConstraint.fixed(28)));
+
+        // Info column (title + description)
+        FlexContainer info = FlexContainer.column("info_" + title)
+                .justifyContent(FlexLayout.JustifyContent.CENTER)
+                .gap(2);
+        info.setFlex(info.getFlexConstraints().withFlexGrow(1f));
+
+        Label titleLabel = new Label("title_" + title, Component.literal("§b" + title))
+                .setColor(0xFFFFFFFF)
+                .setShadow(true);
+        Label descLabel = new Label("desc_" + title, Component.literal("§7" + desc))
+                .setColor(0xFFAAAAAA)
+                .setShadow(false);
+
+        info.add(titleLabel).add(descLabel);
+
+        // Action button
+        Button action = new Button("act_" + title, Component.literal("§aOpen"))
+                .setColors(0xFF166534, 0xFF15803D)
+                .useVanillaStyle(false);
+        action.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fixed(40))
+                .withHeight(SizeConstraint.fixed(16)));
+        action.onClick(() -> System.out.println("Action: " + title));
+
+        return card.add(icon).add(info).add(action);
+    }
+
+    // ── Footer ──────────────────────────────────────────────────────────────
+
+    private FlexContainer buildFooter() {
+        FlexContainer footer = FlexContainer.row("footer")
+                .justifyContent(FlexLayout.JustifyContent.SPACE_BETWEEN)
+                .alignItems(FlexLayout.AlignItems.CENTER);
+        footer.setBackground(Background.color(0xFF16213E));
+        footer.setPadding(EdgeInsets.symmetric(0, 10));
+
+        Label status = new Label("status", Component.literal("§7ModernUI v1.0 | Minecraft 1.21.11 Fabric"))
+                .setColor(0xFF888888);
+
+        Button openModal = new Button("modal_btn", Component.literal("Show Modal"))
+                .setColors(0xFF7C3AED, 0xFF9F67FF)
+                .useVanillaStyle(false);
+        openModal.setConstraints(LayoutConstraints.DEFAULT.withWidth(SizeConstraint.fixed(80)));
+        openModal.onClick(() -> {
+            Widget dialog = buildModalDialog();
+            // Find root to attach modal
+            Widget root = this.getRoot();
+            if (root != null) ModalLayer.show(root, dialog);
+        });
+
+        return footer.add(status).add(openModal);
+    }
+
+    private Widget buildModalDialog() {
+        FlexContainer dialog = FlexContainer.column("dialog")
+                .gap(10)
+                .justifyContent(FlexLayout.JustifyContent.FLEX_START);
+        dialog.setBackground(Background.color(0xFF1A1A2E));
+        dialog.setPadding(EdgeInsets.all(16));
+        dialog.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fixed(200))
+                .withHeight(SizeConstraint.fixed(120)));
+
+        Label title = new Label("dialog_title", Component.literal("§b§lDialog"))
+                .setColor(0xFFFFFFFF);
+
+        Label body = new Label("dialog_body", Component.literal("§7This is a modal dialog.\nClick outside to dismiss."))
+                .setColor(0xFFCCCCCC);
+
+        Button ok = new Button("dialog_ok", Component.literal("OK"))
+                .setColors(0xFF2563EB, 0xFF3B82F6)
+                .useVanillaStyle(false);
+        ok.setConstraints(LayoutConstraints.DEFAULT
+                .withWidth(SizeConstraint.fixed(60))
+                .withAlignment(Alignment.TOP_CENTER));
+
+        dialog.add(title).add(Separator.horizontal("dsep").setColor(0xFF3A3A5C)).add(body).add(ok);
+        return dialog;
     }
 }

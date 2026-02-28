@@ -1,39 +1,54 @@
 package net.bati.guilib.layout;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.With;
+/**
+ * CSS-like box model: margin > border > padding > content
+ */
+public final class BoxModel {
+    public static final BoxModel EMPTY = new BoxModel(
+            EdgeInsets.ZERO, EdgeInsets.ZERO, EdgeInsets.ZERO, 0f, 0f
+    );
 
-@Getter
-@Builder
-@With
-public class BoxModel {
-    @Builder.Default private final float contentWidth  = 0;
-    @Builder.Default private final float contentHeight = 0;
+    private final EdgeInsets margin;
+    private final EdgeInsets border;
+    private final EdgeInsets padding;
+    private final float contentWidth;
+    private final float contentHeight;
 
-    @Builder.Default private final Insets padding = Insets.ZERO;
-    @Builder.Default private final Insets border  = Insets.ZERO;
-    @Builder.Default private final Insets margin  = Insets.ZERO;
-
-    public float getBorderBoxWidth()  { return contentWidth  + padding.horizontal() + border.horizontal(); }
-    public float getBorderBoxHeight() { return contentHeight + padding.vertical()   + border.vertical();   }
-    public float getTotalWidth()      { return getBorderBoxWidth()  + margin.horizontal(); }
-    public float getTotalHeight()     { return getBorderBoxHeight() + margin.vertical();   }
-
-    @Getter
-    @Builder
-    public static final class Insets {
-        public static final Insets ZERO = new Insets(0, 0, 0, 0);
-
-        private final float top, right, bottom, left;
-
-        public static Insets all(float v)                         { return new Insets(v, v, v, v); }
-        public static Insets symmetric(float vertical, float horizontal) { return new Insets(vertical, horizontal, vertical, horizontal); }
-        public static Insets horizontal(float v)                  { return new Insets(0, v, 0, v); }
-        public static Insets vertical(float v)                    { return new Insets(v, 0, v, 0); }
-        public static Insets of(float top, float right, float bottom, float left) { return new Insets(top, right, bottom, left); }
-
-        public float horizontal() { return left + right; }
-        public float vertical()   { return top + bottom; }
+    private BoxModel(EdgeInsets margin, EdgeInsets border, EdgeInsets padding,
+                     float contentWidth, float contentHeight) {
+        this.margin  = margin;
+        this.border  = border;
+        this.padding = padding;
+        this.contentWidth  = contentWidth;
+        this.contentHeight = contentHeight;
     }
+
+    // ─── Fluent builders ──────────────────────────────────────────────────────
+
+    public static BoxModel of(EdgeInsets margin, EdgeInsets border, EdgeInsets padding) {
+        return new BoxModel(margin, border, padding, 0f, 0f);
+    }
+
+    public BoxModel withContentWidth(float w)  { return new BoxModel(margin, border, padding, w, contentHeight); }
+    public BoxModel withContentHeight(float h) { return new BoxModel(margin, border, padding, contentWidth, h); }
+    public BoxModel withMargin(EdgeInsets m)   { return new BoxModel(m, border, padding, contentWidth, contentHeight); }
+    public BoxModel withBorder(EdgeInsets b)   { return new BoxModel(margin, b, padding, contentWidth, contentHeight); }
+    public BoxModel withPadding(EdgeInsets p)  { return new BoxModel(margin, border, p, contentWidth, contentHeight); }
+
+    // ─── Accessors ────────────────────────────────────────────────────────────
+
+    public EdgeInsets getMargin()  { return margin; }
+    public EdgeInsets getBorder()  { return border; }
+    public EdgeInsets getPadding() { return padding; }
+
+    public float getContentWidth()  { return contentWidth; }
+    public float getContentHeight() { return contentHeight; }
+
+    // border-box (content + padding + border)
+    public float getBorderBoxWidth()  { return contentWidth  + padding.horizontal() + border.horizontal(); }
+    public float getBorderBoxHeight() { return contentHeight + padding.vertical()   + border.vertical(); }
+
+    // total (border-box + margin)
+    public float getTotalWidth()  { return getBorderBoxWidth()  + margin.horizontal(); }
+    public float getTotalHeight() { return getBorderBoxHeight() + margin.vertical(); }
 }

@@ -2,97 +2,78 @@ package net.bati.guilib.navigation;
 
 import lombok.Getter;
 import net.bati.guilib.widget.Widget;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 /**
- * Manages page navigation and history.
- * Similar to React Router or Android Navigation Component.
+ * Manages navigation between registered {@link Page}s.
  */
-public class PageRouter {
+public final class PageRouter {
 
-    private final Map<String, Page> pages = new LinkedHashMap<>();
-    private final Deque<String> history = new ArrayDeque<>();
-    private final PageContext context;
-
-    @Getter
-    private String currentPageId;
-
-    @Getter
-    private Widget currentPageWidget;
-
-    private NavigationListener listener;
-
-    public PageRouter() {
-        this.context = new PageContext(this);
-    }
-
-    /** Register a page */
-    public void registerPage(Page page) {
-        pages.put(page.getId(), page);
-    }
-
-    /** Set initial page */
-    public void setInitialPage(String pageId) {
-        if (currentPageId == null) {
-            navigateTo(pageId, false);
-        }
-    }
-
-    /** Navigate to a page */
-    public void navigateTo(String pageId) {
-        navigateTo(pageId, true);
-    }
-
-    private void navigateTo(String pageId, boolean addToHistory) {
-        Page page = pages.get(pageId);
-        if (page == null) {
-            throw new IllegalArgumentException("Page not found: " + pageId);
-        }
-
-        // Cleanup current page
-        if (currentPageId != null) {
-            Page currentPage = pages.get(currentPageId);
-            if (currentPage != null) currentPage.onHide();
-            if (addToHistory) history.push(currentPageId);
-        }
-
-        // Build and show new page
-        currentPageId = pageId;
-        currentPageWidget = page.build(context);
-        page.onShow();
-
-        // Notify listener
-        if (listener != null) {
-            listener.onNavigate(pageId, currentPageWidget);
-        }
-    }
-
-    /** Go back to previous page */
-    public void goBack() {
-        if (!history.isEmpty()) {
-            String previousPageId = history.pop();
-            navigateTo(previousPageId, false);
-        }
-    }
-
-    /** Check if can go back */
-    public boolean canGoBack() {
-        return !history.isEmpty();
-    }
-
-    /** Set navigation listener (typically the container widget) */
-    public void setNavigationListener(NavigationListener listener) {
-        this.listener = listener;
-    }
-
-    /** Get all registered pages (for building nav menus) */
-    public Collection<Page> getAllPages() {
-        return pages.values();
-    }
-
-    @FunctionalInterface
     public interface NavigationListener {
         void onNavigate(String pageId, Widget pageWidget);
     }
+
+    private final Map<String, Page> pages         = new LinkedHashMap<>();
+    private final Deque<String>     history        = new ArrayDeque<>();
+    private @Nullable String        currentPageId  = null;
+    private @Nullable NavigationListener listener  = null;
+
+    private final PageContext context = new PageContext(this);
+
+    // ─── Registration ─────────────────────────────────────────────────────────
+
+    public PageRouter register(Page page) {
+        pages.put(page.getId(), page);
+        return this;
+    }
+
+    public PageRouter setListener(NavigationListener l) {
+        this.listener = l;
+        return this;
+    }
+
+    // ─── Navigation ───────────────────────────────────────────────────────────
+
+    public void navigateTo(String pageId) {
+        Page page = pages.get(pageId);
+        if (page == null) throw new IllegalArgumentException("Unknown page: " + pageId);
+
+        // Hide current
+        if (currentPageId != null) {
+            Page current = pages.get(currentPageId);
+            if (current != null) current.onHide();
+            history.push(currentPageId);
+        }
+
+        currentPageId = pageId;
+        Widget widget = page.build(context);
+        page.onShow();
+
+        if (listener != null) listener.onNavigate(pageId, widget);
+    }
+
+    public void goBack() {
+        if (history.isEmpty()) return;
+        String prev = history.pop();
+        // Don't push to history again
+        Page current = currentPageId != null ? pages.get(currentPageId) : null;
+        if (current != null) current.onHide();
+
+        currentPageId = prev;
+        Page page = pages.get(prev);
+        if (page != null) {
+            Widget widget = page.build(context);
+            page.onShow();
+            if (listener != null) listener.onNavigate(prev, widget);
+        }
+    }
+
+    public boolean canGoBack()                         { return !history.isEmpty(); }
+    public @Nullable String getCurrentPageId()         { return currentPageId; }
+    public @Nullable Page   getPage(String id)         { return pages.get(id); }
+    public Collection<Page> getPages()                 { return Collections.unmodifiableCollection(pages.values()); }
 }
+
+

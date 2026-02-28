@@ -2,48 +2,41 @@ package net.bati.guilib.widget;
 
 import lombok.Getter;
 import net.bati.guilib.layout.LayoutConstraints;
+import net.bati.guilib.layout.MeasureResult;
 import net.bati.guilib.navigation.PageRouter;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Container widget that displays the current page from a router.
+ * A widget that hosts the active page's widget tree.
+ * Registers itself as the router's navigation listener.
  */
-@Getter
-public class PageContainer extends Widget implements PageRouter.NavigationListener {
+public class PageContainer extends Panel
+        implements PageRouter.NavigationListener {
 
     private final PageRouter router;
-    private Widget currentPage;
+    private @Nullable Widget currentPage;
 
     public PageContainer(String id, PageRouter router) {
         super(id);
         this.router = router;
-        this.router.setNavigationListener(this);
+        router.setListener(this);
     }
 
     @Override
     public void onNavigate(String pageId, Widget pageWidget) {
         // Remove old page
-        if (currentPage != null) {
-            removeChild(currentPage);
-        }
+        if (currentPage != null) removeChild(currentPage);
 
-        // Add new page
         currentPage = pageWidget;
-
-        // Make page fill the container
-        currentPage.setConstraints(
-                LayoutConstraints.builder()
-                        .width(LayoutConstraints.SizeConstraint.fillParent())
-                        .height(LayoutConstraints.SizeConstraint.fillParent())
-                        .build()
-        );
-
         addChild(currentPage);
+
+        // If already laid out, lay out the new child immediately
+        layoutNewChild(currentPage);
     }
 
     @Override
-    protected Size measureContent(float availableWidth, float availableHeight) {
-        // Container sizes to its constraints, not content
-        //return super.measureContent(availableWidth, availableHeight);
-        return new Size(0, 0);
+    protected MeasureResult measureContent(float aw, float ah) {
+        if (currentPage == null) return new MeasureResult(aw, ah);
+        return super.measureContent(aw, ah);
     }
 }

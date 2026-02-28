@@ -1,30 +1,37 @@
 package net.bati.guilib.widget;
 
-import net.bati.guilib.layout.FlexConstraints;
-import net.bati.guilib.layout.LayoutConstraints;
-import net.minecraft.client.gui.GuiGraphics;
+
+import net.bati.guilib.layout.MeasureResult;
 
 /**
- * Spacer widget for flex layouts
+ * An invisible spacer widget.
+ * Set flexGrow=1 to fill remaining space in a flex container.
  */
 public class Spacer extends Widget {
 
-    public Spacer(String id, float width, float height) {
+    private final float fixedWidth;
+    private final float fixedHeight;
+
+    public Spacer(String id, float w, float h) {
         super(id);
-        setContentSize(width, height);
+        this.fixedWidth  = w;
+        this.fixedHeight = h;
     }
 
-    /**
-     * Create flexible spacer that grows to fill available space
-     */
-    public static Spacer flexible(String id) {
-        Spacer spacer = new Spacer(id, 0, 0);
-        spacer.setFlexConstraints(FlexConstraints.builder().flexGrow(1).build());
-        return spacer;
+    /** A spacer that grows to fill available flex space. */
+    public static Spacer grow(String id) {
+        Spacer s = new Spacer(id, 0, 0);
+        s.setFlex(s.getFlexConstraints().withFlexGrow(1f));
+        return s;
+    }
+
+    /** Fixed-size spacer. */
+    public static Spacer fixed(String id, float size) {
+        return new Spacer(id, size, size);
     }
 
     @Override
-    protected void renderContent(GuiGraphics context, float mouseX, float mouseY, float delta) {
-        // Spacers don't render anything
+    protected MeasureResult measureContent(float aw, float ah) {
+        return new MeasureResult(fixedWidth, fixedHeight);
     }
 }

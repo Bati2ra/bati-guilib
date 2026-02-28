@@ -1,178 +1,196 @@
 package net.bati.guilib.widget;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.bati.guilib.layout.ComputedLayout;
+import net.bati.guilib.layout.EdgeInsets;
 import net.bati.guilib.layout.FlexConstraints;
+import net.bati.guilib.layout.LayoutPassInfo;
+import net.bati.guilib.layout.MeasureResult;
 import net.bati.guilib.layout.flex.FlexLayout;
-import net.bati.guilib.layout.LayoutConstraints;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Container that uses Flexbox layout for its children.
- * Provides modern, web-like layout capabilities.
+ * A container that arranges its children using CSS Flexbox semantics.
+ *
+ * <p>FlexContainers can be nested arbitrarily. Each is an independent flex
+ * context – it measures its children, runs the flex algorithm, and assigns
+ * each child an absolute position and size.
  */
-@Getter
 public class FlexContainer extends Widget {
 
-    private FlexLayout flexLayout;
+    private final FlexLayout flexLayout;
+
+    // ─── Constructors ─────────────────────────────────────────────────────────
 
     public FlexContainer(String id) {
         super(id);
-        flexLayout = FlexLayout.builder().build();
+        this.flexLayout = new FlexLayout();
     }
-
-    // ----------------------------------------------------------------
-    //  Fluent configuration
-    // ----------------------------------------------------------------
-
-    public FlexContainer direction(FlexLayout.FlexDirection d) {
-        flexLayout = flexLayout.toBuilder().direction(d).build();
-        invalidateFlexLayout();
-        return this;
-    }
-
-    public FlexContainer justifyContent(FlexLayout.JustifyContent j) {
-        flexLayout = flexLayout.toBuilder().justifyContent(j).build();
-        invalidateFlexLayout();
-        return this;
-    }
-
-    public FlexContainer alignItems(FlexLayout.AlignItems a) {
-        flexLayout = flexLayout.toBuilder().alignItems(a).build();
-        invalidateFlexLayout();
-        return this;
-    }
-
-    public FlexContainer gap(float gap) {
-        flexLayout = flexLayout.toBuilder().gap(gap).build();
-        invalidateFlexLayout();
-        return this;
-    }
-
-    public FlexContainer wrap(FlexLayout.FlexWrap w) {
-        flexLayout = flexLayout.toBuilder().wrap(w).build();
-        invalidateFlexLayout();
-        return this;
-    }
-
-    private void invalidateFlexLayout() {
-        // triggers markDirty() via parent chain
-        if (getComputedLayout() != null) getChildren().forEach(c -> {});
-    }
-
-    // ----------------------------------------------------------------
-    //  Measure — natural size is the sum of children in flex direction
-    // ----------------------------------------------------------------
-
-    @Override
-    protected Size measureContent(float availableWidth, float availableHeight) {
-
-        if (getChildren().isEmpty()) return new Size(0, 0);
-
-        boolean isRow = flexLayout.getDirection() == FlexLayout.FlexDirection.ROW;
-
-        float main = 0;
-        float cross = 0;
-
-        for (Widget child : getChildren()) {
-            Size s = child.measure(availableWidth, availableHeight);
-
-            if (isRow) {
-                main += s.width();
-                cross = Math.max(cross, s.height());
-            } else {
-                main += s.height();
-                cross = Math.max(cross, s.width());
-            }
-        }
-
-        main += flexLayout.getGap() * Math.max(0, getChildren().size() - 1);
-
-        return isRow ? new Size(main, cross) : new Size(cross, main);
-    }
-
-    @Override
-    protected void layoutChildren(float scale, float opacity, int zIndex) {
-
-        if (getComputedLayout() == null) return;
-
-        ComputedLayout.Bounds content = getComputedLayout().getContentBounds();
-        float availableW = content.getWidth() / scale;
-        float availableH = content.getHeight() / scale;
-
-        boolean isRow = flexLayout.getDirection() == FlexLayout.FlexDirection.ROW;
-
-        // ✅ Paso 1: Resolver el tamaño FINAL de cada hijo (con constraints)
-        List<FlexLayout.FlexItem> items = new ArrayList<>();
-        for (Widget child : getChildren()) {
-            // Medir tamaño natural
-            Size natural = child.measure(availableW, availableH);
-
-            // ✅ Aplicar constraints del hijo para obtener tamaño final
-            float finalW = natural.width();
-            float finalH = natural.height();
-
-            if (child.getConstraints().getWidth() != null) {
-                finalW = child.getConstraints().getWidth().resolve(availableW, finalW);
-            }
-            if (child.getConstraints().getHeight() != null) {
-                finalH = child.getConstraints().getHeight().resolve(availableH, finalH);
-            }
-
-            // Flex usa el tamaño FINAL (post-constraints)
-            items.add(new FlexLayout.FlexItem(
-                    child.getId(),
-                    isRow ? finalW : finalH,
-                    isRow ? finalH : finalW,
-                    child.getFlexConstraints().getFlexGrow(),
-                    child.getFlexConstraints().getFlexShrink(),
-                    child.getFlexConstraints().getAlignSelf()
-            ));
-        }
-
-        // Paso 2: Flex calcula posiciones basándose en tamaños finales
-        List<FlexLayout.ItemLayout> layouts = flexLayout.computeLayout(items, availableW, availableH);
-
-        Map<String, FlexLayout.ItemLayout> map = new HashMap<>();
-        layouts.forEach(l -> map.put(l.getId(), l));
-
-        // Paso 3: Aplicar layout a cada hijo
-        for (Widget child : getChildren()) {
-            FlexLayout.ItemLayout il = map.get(child.getId());
-            if (il == null) continue;
-
-            child.computeLayoutAbsolute(
-                    il.getWidth(),
-                    il.getHeight(),
-                    availableW,
-                    availableH,
-                    content.getX(),
-                    content.getY(),
-                    il.getX(),
-                    il.getY(),
-                    scale, opacity, zIndex
-            );
-        }
-    }
-
-    // ----------------------------------------------------------------
-    //  Static factories
-    // ----------------------------------------------------------------
 
     public static FlexContainer row(String id) {
-        FlexContainer c = new FlexContainer(id);
-        c.flexLayout = c.flexLayout.toBuilder()
-                .direction(FlexLayout.FlexDirection.ROW)
-                .build();
-        return c;
+        return new FlexContainer(id).direction(FlexLayout.FlexDirection.ROW);
     }
 
     public static FlexContainer column(String id) {
         return new FlexContainer(id).direction(FlexLayout.FlexDirection.COLUMN);
+    }
+
+    // ─── Fluent configuration ─────────────────────────────────────────────────
+
+    public FlexContainer direction(FlexLayout.FlexDirection d)       { flexLayout.direction(d);       invalidateLayout(); return this; }
+    public FlexContainer justifyContent(FlexLayout.JustifyContent j) { flexLayout.justifyContent(j);  invalidateLayout(); return this; }
+    public FlexContainer alignItems(FlexLayout.AlignItems a)          { flexLayout.alignItems(a);      invalidateLayout(); return this; }
+    public FlexContainer wrap(FlexLayout.FlexWrap w)                  { flexLayout.wrap(w);            invalidateLayout(); return this; }
+    public FlexContainer gap(float g)                                  { flexLayout.gap(g);             invalidateLayout(); return this; }
+    public FlexContainer rowGap(float g)                               { flexLayout.rowGap(g);          invalidateLayout(); return this; }
+    public FlexContainer columnGap(float g)                            { flexLayout.columnGap(g);       invalidateLayout(); return this; }
+
+    public FlexLayout getFlexLayout() { return flexLayout; }
+
+    // ─── Fluent child helper ──────────────────────────────────────────────────
+
+    public FlexContainer add(Widget child) {
+        addChild(child);
+        return this;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 1 – MEASURE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Measure total natural content size for this flex container.
+     * <p>
+     * We measure each child, compute their base sizes (respecting their own
+     * LayoutConstraints), then apply the flex algorithm conceptually to arrive
+     * at the container's natural size.
+     */
+    @Override
+    protected MeasureResult measureContent(float availableWidth, float availableHeight) {
+        if (children.isEmpty()) return MeasureResult.ZERO;
+
+        boolean isRow = flexLayout.getDirection().isRow();
+
+        List<Float> mainSizes  = new ArrayList<>(children.size());
+        List<Float> crossSizes = new ArrayList<>(children.size());
+
+        for (Widget child : children) {
+            if (!child.isVisible()) continue;
+
+            boolean childHasGrow = child.getFlexConstraints().getFlexGrow() > 0;
+
+            float measureW = isRow ? (childHasGrow ? 0f : availableWidth)  : availableWidth;
+            float measureH = isRow ? availableHeight : (childHasGrow ? 0f : availableHeight);
+            MeasureResult natural = child.measure(measureW, measureH);
+
+            float bw, bh;
+            if (isRow) {
+                bw = childHasGrow ? natural.width()  : child.getConstraints().resolveWidth(availableWidth,   natural.width());
+                bh =                                   child.getConstraints().resolveHeight(availableHeight, natural.height());
+            } else {
+                bw =                                   child.getConstraints().resolveWidth(availableWidth,   natural.width());
+                bh = childHasGrow ? natural.height() : child.getConstraints().resolveHeight(availableHeight, natural.height());
+            }
+
+            Float basis = child.getFlexConstraints().getFlexBasis();
+            float mainBase  = isRow ? bw : bh;
+            float crossBase = isRow ? bh : bw;
+            if (basis != null) mainBase = basis;
+
+            mainSizes.add(mainBase   + (isRow ? child.getBoxModel().getMargin().horizontal()
+                    : child.getBoxModel().getMargin().vertical()));
+            crossSizes.add(crossBase + (isRow ? child.getBoxModel().getMargin().vertical()
+                    : child.getBoxModel().getMargin().horizontal()));
+        }
+
+        float main  = flexLayout.measureMainAxis(mainSizes);
+        float cross = flexLayout.measureCrossAxis(crossSizes);
+
+        return isRow ? new MeasureResult(main, cross) : new MeasureResult(cross, main);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 2 – LAYOUT CHILDREN
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @Override
+    protected void layoutChildren(LayoutPassInfo childPass) {
+        if (children.isEmpty()) return;
+
+        boolean isRow = flexLayout.getDirection().isRow();
+
+        float containerW = childPass.availableWidth;
+        float containerH = childPass.availableHeight;
+
+        // ── Step 1: build FlexItem list ───────────────────────────────────────
+        List<FlexLayout.FlexItem> items = new ArrayList<>(children.size());
+
+        for (Widget child : children) {
+            if (!child.isVisible()) continue;
+
+            boolean childHasGrow = child.getFlexConstraints().getFlexGrow() > 0;
+            boolean childHasRatio = child.getConstraints().hasAspectRatio();
+
+            float measureW = isRow ? (childHasGrow ? 0f : containerW) : containerW;
+            float measureH = isRow ? containerH : (childHasGrow ? 0f : containerH);
+            MeasureResult natural = child.measure(measureW, measureH);
+
+            float bw, bh;
+            if (isRow) {
+                bw = childHasGrow ? natural.width()  : child.getConstraints().resolveWidth(containerW,  natural.width());
+                // With aspectRatio the cross size is unknown until main is final — use 0
+                // so the algorithm doesn't over-allocate cross space at this stage.
+                bh = childHasRatio ? 0f : child.getConstraints().resolveHeight(containerH, natural.height());
+            } else {
+                bw = childHasRatio ? 0f : child.getConstraints().resolveWidth(containerW,  natural.width());
+                bh = childHasGrow ? natural.height() : child.getConstraints().resolveHeight(containerH, natural.height());
+            }
+
+            EdgeInsets margin = child.getBoxModel().getMargin();
+            float itemMainSize  = isRow ? (bw + margin.horizontal()) : (bh + margin.vertical());
+            float itemCrossSize = isRow ? (bh + margin.vertical())   : (bw + margin.horizontal());
+
+            FlexConstraints fc = child.getFlexConstraints();
+            items.add(new FlexLayout.FlexItem(
+                    child.getId(),
+                    itemMainSize,
+                    itemCrossSize,
+                    fc.getFlexGrow(),
+                    fc.getFlexShrink(),
+                    fc.getFlexBasis(),
+                    fc.getAlignSelf()
+            ));
+        }
+
+        // ── Step 2: run flex algorithm ────────────────────────────────────────
+        List<FlexLayout.ItemLayout> layouts = flexLayout.computeLayout(items, containerW, containerH);
+
+        java.util.Map<String, FlexLayout.ItemLayout> byId = new java.util.HashMap<>();
+        for (FlexLayout.ItemLayout il : layouts) byId.put(il.getId(), il);
+
+        // ── Step 3: assign computed layout to each child ──────────────────────
+        for (Widget child : children) {
+            if (!child.isVisible()) continue;
+
+            FlexLayout.ItemLayout il = byId.get(child.getId());
+            if (il == null) continue;
+
+            EdgeInsets margin = child.getBoxModel().getMargin();
+
+            float assignedW = il.getWidth()  - margin.horizontal();
+            float assignedH = il.getHeight() - margin.vertical();
+
+            // If the child has an aspectRatio, derive the cross size from the
+            // final main size now that the flex algorithm has settled it.
+            if (child.getConstraints().hasAspectRatio()) {
+                if (isRow) {
+                    assignedH = child.getConstraints().applyAspectRatio(assignedW, assignedH);
+                } else {
+                    assignedW = assignedH / child.getConstraints().getAspectRatio();
+                }
+            }
+
+            child.layoutAbsolute(childPass, assignedW, assignedH, il.getX(), il.getY());
+        }
     }
 }

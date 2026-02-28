@@ -4,36 +4,30 @@ import net.bati.guilib.widget.Widget;
 import net.minecraft.network.chat.Component;
 
 /**
- * Represents a page/view that can be displayed in a container.
- * Similar to React components or Android Fragments.
+ * A self-contained "screen page" – similar to a React component.
+ * Pages are built lazily and rebuilt on each navigation (no stale state).
  */
 public interface Page {
 
-    /**
-     * Unique identifier for this page
-     */
+    /** Unique identifier for routing. */
     String getId();
 
-    /**
-     * Display name (for navigation buttons, breadcrumbs, etc.)
-     */
+    /** Title displayed in the screen header. */
     Component getTitle();
 
     /**
      * Build the widget tree for this page.
-     * Called when the page is first shown.
+     * Called each time this page becomes visible.
+     *
+     * @param context provides routing utilities and shared state
      */
     Widget build(PageContext context);
 
-    /**
-     * Called when navigating away from this page.
-     * Use for cleanup, saving state, etc.
-     */
-    default void onHide() {}
-
-    /**
-     * Called when navigating to this page.
-     * Use for loading data, animations, etc.
-     */
+    /** Called just before the page's widget is shown. */
     default void onShow() {}
+
+    /** Called just before the page is replaced. */
+    default void onHide() {}
 }
+
+

@@ -1,123 +1,121 @@
 package net.bati.guilib.layout;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.With;
-import net.bati.guilib.utils.Vec2;
-
 /**
- * Immutable result of a single layout pass for one widget.
- *
- * All coordinates are in SCREEN SPACE (absolute pixels).
- * Calculated once per layout pass; cached until invalidated.
- *
- * Content/padding/border bounds are pre-calculated here so
- * getContentBounds() is O(1) during render.
+ * Immutable layout result for one widget. Holds absolute screen-space positions
+ * for all box model layers, pre-calculated for O(1) access during render.
  */
-@Getter
-@Builder
-public class ComputedLayout {
+public final class ComputedLayout {
 
-    // --- Position (screen space) ---
-    private final float screenX;
-    private final float screenY;
+    // Absolute screen position (top-left of the full box including margin)
+    private final float screenX, screenY;
+    // Border-box size in screen pixels (already scaled)
+    private final float scaledWidth, scaledHeight;
 
-    // --- Size (border-box: content + padding + border) ---
-    private final float width;
-    private final float height;
-
-    // --- Pre-calculated inner bounds (screen space) ---
-    // Avoids repeated arithmetic during render
-    private final Bounds borderBounds;   // screenX + margin offset
+    // Pre-calculated layer bounds (already in screen space)
+    private final Bounds borderBounds;   // inside margin
     private final Bounds paddingBounds;  // inside border
     private final Bounds contentBounds;  // inside padding
 
-    // --- Transformations (inherited from parent chain) ---
-    @Builder.Default private final float scale   = 1.0f;
-    @Builder.Default private final float opacity = 1.0f;
+    private final float scale;
+    private final float opacity;
+    private final int   computedZIndex;
 
-    // --- Stacking ---
-    @Builder.Default private final int computedZIndex = 0;
-
-    /** Hit-test: is the screen-space point inside this widget's border-box? */
-    public boolean contains(float x, float y) {
-        return x >= screenX && x <= screenX + width
-                && y >= screenY && y <= screenY + height;
+    private ComputedLayout(float screenX, float screenY,
+                           float scaledWidth, float scaledHeight,
+                           Bounds borderBounds, Bounds paddingBounds, Bounds contentBounds,
+                           float scale, float opacity, int computedZIndex) {
+        this.screenX       = screenX;
+        this.screenY       = screenY;
+        this.scaledWidth   = scaledWidth;
+        this.scaledHeight  = scaledHeight;
+        this.borderBounds  = borderBounds;
+        this.paddingBounds = paddingBounds;
+        this.contentBounds = contentBounds;
+        this.scale         = scale;
+        this.opacity       = opacity;
+        this.computedZIndex = computedZIndex;
     }
-
-    // ----------------------------------------------------------------
-    //  Factory — called by Widget.computeLayout()
-    // ----------------------------------------------------------------
 
     /**
-     * Build a ComputedLayout given final screen position, size, and the
-     * inherited transformations from the parent chain.
+     * Build a ComputedLayout by applying the box model layers.
+     *
+     * @param screenX      absolute screen X (including margin)
+     * @param screenY      absolute screen Y (including margin)
+     * @param borderBoxW   unscaled border-box width
+     * @param borderBoxH   unscaled border-box height
+     * @param boxModel     the widget's box model
+     * @param scale        accumulated scale
+     * @param opacity      accumulated opacity
+     * @param zIndex       final z-index
      */
-    public static ComputedLayout create(
-            float screenX, float screenY,
-            float width, float height,
-            BoxModel boxModel,
-            float inheritedScale,
-            float inheritedOpacity,
-            int   computedZIndex
-    ) {
-        float s = inheritedScale;
+    public static ComputedLayout create(float screenX, float screenY,
+                                        float borderBoxW, float borderBoxH,
+                                        BoxModel boxModel,
+                                        float scale, float opacity, int zIndex) {
+        EdgeInsets margin  = boxModel.getMargin();
+        EdgeInsets border  = boxModel.getBorder();
+        EdgeInsets padding = boxModel.getPadding();
 
-        // border-box starts outside margin
-        float bx = screenX + boxModel.getMargin().getLeft() * s;
-        float by = screenY + boxModel.getMargin().getTop()  * s;
-        float bw = boxModel.getBorderBoxWidth()  * s;
-        float bh = boxModel.getBorderBoxHeight() * s;
+        float bx = screenX + margin.getLeft()  * scale;
+        float by = screenY + margin.getTop()   * scale;
+        float bw = borderBoxW * scale;
+        float bh = borderBoxH * scale;
 
-        // padding-box starts inside border
-        float px = bx + boxModel.getBorder().getLeft() * s;
-        float py = by + boxModel.getBorder().getTop()  * s;
-        float pw = (boxModel.getBorderBoxWidth()  - boxModel.getBorder().horizontal()) * s;
-        float ph = (boxModel.getBorderBoxHeight() - boxModel.getBorder().vertical())   * s;
+        float px = bx + border.getLeft()  * scale;
+        float py = by + border.getTop()   * scale;
+        float pw = bw - border.horizontal() * scale;
+        float ph = bh - border.vertical()   * scale;
 
-        // content-box starts inside padding
-        float cx = px + boxModel.getPadding().getLeft() * s;
-        float cy = py + boxModel.getPadding().getTop()  * s;
-        float cw = boxModel.getContentWidth()  * s;
-        float ch = boxModel.getContentHeight() * s;
+        float cx = px + padding.getLeft()  * scale;
+        float cy = py + padding.getTop()   * scale;
+        float cw = pw - padding.horizontal() * scale;
+        float ch = ph - padding.vertical()   * scale;
 
-        return ComputedLayout.builder()
-                .screenX(screenX)
-                .screenY(screenY)
-                .width(width * s)
-                .height(height * s)
-                .borderBounds (new Bounds(bx, by, bw, bh))
-                .paddingBounds(new Bounds(px, py, pw, ph))
-                .contentBounds(new Bounds(cx, cy, cw, ch))
-                .scale(inheritedScale)
-                .opacity(inheritedOpacity)
-                .computedZIndex(computedZIndex)
-                .build();
+        return new ComputedLayout(
+                screenX, screenY,
+                bw, bh,
+                new Bounds(bx, by, bw, bh),
+                new Bounds(px, py, pw, ph),
+                new Bounds(cx, cy, cw, ch),
+                scale, opacity, zIndex
+        );
     }
 
-    // ----------------------------------------------------------------
+    // ─── Accessors ────────────────────────────────────────────────────────────
 
-    @Getter
+    public float  getScreenX()        { return screenX; }
+    public float  getScreenY()        { return screenY; }
+    public float  getScaledWidth()    { return scaledWidth; }
+    public float  getScaledHeight()   { return scaledHeight; }
+    public Bounds getBorderBounds()   { return borderBounds; }
+    public Bounds getPaddingBounds()  { return paddingBounds; }
+    public Bounds getContentBounds()  { return contentBounds; }
+    public float  getScale()          { return scale; }
+    public float  getOpacity()        { return opacity; }
+    public int    getComputedZIndex() { return computedZIndex; }
+
+    public boolean containsPoint(float px, float py) {
+        return borderBounds.contains(px, py);
+    }
+
+    // ─── Bounds ───────────────────────────────────────────────────────────────
+
     public static final class Bounds {
         private final float x, y, width, height;
 
         public Bounds(float x, float y, float width, float height) {
-            this.x = x; this.y = y;
-            this.width = width; this.height = height;
+            this.x = x; this.y = y; this.width = width; this.height = height;
         }
+
+        public float getX()      { return x; }
+        public float getY()      { return y; }
+        public float getWidth()  { return width; }
+        public float getHeight() { return height; }
+        public float getRight()  { return x + width; }
+        public float getBottom() { return y + height; }
 
         public boolean contains(float px, float py) {
             return px >= x && px <= x + width && py >= y && py <= y + height;
         }
-
-        public boolean intersects(Bounds o) {
-            return !(o.x > x + width || o.x + o.width < x
-                    || o.y > y + height || o.y + o.height < y);
-        }
-
-        public float right()  { return x + width;  }
-        public float bottom() { return y + height; }
-        public float centerX(){ return x + width  / 2; }
-        public float centerY(){ return y + height / 2; }
     }
 }

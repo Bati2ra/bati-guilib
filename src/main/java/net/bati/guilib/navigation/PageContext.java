@@ -1,41 +1,31 @@
 package net.bati.guilib.navigation;
 
-import lombok.Getter;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Context passed to pages, allowing them to:
- * - Navigate to other pages
- * - Share data between pages
- * - Access screen-level services
+ * Context provided to a {@link Page} when it builds its widget tree.
  */
-@Getter
-public class PageContext {
-    private final PageRouter router;
-    private final Map<String, Object> sharedData = new HashMap<>();
+public final class PageContext {
 
-    public PageContext(PageRouter router) {
+    private final PageRouter router;
+
+    PageContext(PageRouter router) {
         this.router = router;
     }
 
-    /** Navigate to another page */
+    public PageRouter getRouter() { return router; }
+
+    /** Navigate to a different page by ID. */
     public void navigateTo(String pageId) {
         router.navigateTo(pageId);
     }
 
-    /** Navigate back */
+    /** Navigate back to the previous page. */
     public void goBack() {
         router.goBack();
     }
 
-    /** Share data between pages */
-    public void putData(String key, Object value) {
-        sharedData.put(key, value);
-    }
-
-    public <T> T getData(String key, Class<T> type) {
-        return type.cast(sharedData.get(key));
+    public boolean canGoBack() {
+        return router.canGoBack();
     }
 }
+
+

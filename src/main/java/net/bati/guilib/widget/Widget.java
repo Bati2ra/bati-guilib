@@ -1,561 +1,442 @@
 package net.bati.guilib.widget;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import net.bati.guilib.event.EventHandlers;
 import net.bati.guilib.layout.*;
-import net.bati.guilib.rendering.NineSlice;
+import net.bati.guilib.rendering.Background;
+import net.bati.guilib.rendering.RenderPassInfo;
 import net.minecraft.client.gui.GuiGraphics;
-import org.joml.Matrix3x2fStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-@Getter
-@Setter
+/**
+ * Base class for every UI element.
+ *
+ * <p>Layout is a three-phase pipeline:
+ * <ol>
+ *   <li>{@link #measure(float, float)} – report natural border-box size</li>
+ *   <li>{@link #layout(LayoutPassInfo)} – compute absolute screen positions</li>
+ *   <li>{@link #render(RenderPassInfo)} – draw using computed positions</li>
+ * </ol>
+ */
 public abstract class Widget {
 
-    // === IDENTITY ===
+    // ─── Identity ─────────────────────────────────────────────────────────────
+
     private final String id;
 
-    // === HIERARCHY ===
-    private Widget parent;
-    private final List<Widget> children = new ArrayList<>();
+    // ─── State ────────────────────────────────────────────────────────────────
 
-    // === LAYOUT ===
-    @Setter(AccessLevel.NONE)
-    private BoxModel boxModel;
+    protected boolean visible  = true;
+    protected boolean enabled  = true;
+    protected boolean hovered  = false;
+    protected boolean focused  = false;
 
-    private LayoutConstraints constraints;
-    private FlexConstraints   flexConstraints;
+    // ─── Layout config ────────────────────────────────────────────────────────
 
-    // Set exclusively by the layout engine — never call directly
-    @Getter @Setter(AccessLevel.PACKAGE)
-    private ComputedLayout computedLayout;
+    protected BoxModel boxModel     = BoxModel.EMPTY;
+    protected LayoutConstraints constraints = LayoutConstraints.DEFAULT;
+    protected FlexConstraints flex         = FlexConstraints.DEFAULT;
+
+    // ─── Render config ────────────────────────────────────────────────────────
+
+    protected Background background = Background.none();
+
+    // ─── Debug ────────────────────────────────────────────────────────────────
+
+    protected boolean debugBounds = false;
+
+    // ─── Computed (output of layout) ──────────────────────────────────────────
+
+    protected @Nullable ComputedLayout computedLayout;
+
+    // ─── Hierarchy ────────────────────────────────────────────────────────────
+
+    protected @Nullable Widget       parent;
+    protected final List<Widget> children = new ArrayList<>();
+
+    // ─── Events ───────────────────────────────────────────────────────────────
+
+    protected final EventHandlers events = new EventHandlers();
+
+    // ─── Dirty flag ───────────────────────────────────────────────────────────
 
     private boolean layoutDirty = true;
 
-    // === STATE ===
-    private boolean     enabled = true;
-    private boolean     visible = true;
-    private WidgetState state   = WidgetState.IDLE;
-
-    // === RENDERING ===
-    private NineSlice background;
-    private int       backgroundColor = 0;
-
-    // === EVENTS ===
-    private final WidgetEventHandlers eventHandlers = new WidgetEventHandlers();
-
-    // === LIFECYCLE ===
-    private boolean initialized = false;
-
-    // ----------------------------------------------------------------
+    // ─── Constructor ──────────────────────────────────────────────────────────
 
     protected Widget(String id) {
-        this.id              = id;
-        this.boxModel        = BoxModel.builder().build();
-        this.constraints     = LayoutConstraints.builder().build();
-        this.flexConstraints = FlexConstraints.builder().build();
+        this.id = id;
     }
 
-    // ================================================================
-    // HIERARCHY
-    // ================================================================
-
-    public void addChild(Widget child) {
-        if (children.contains(child)) return;
-        if (child.parent != null) child.parent.removeChild(child);
-        children.add(child);
-        child.parent = this;
-        if (computedLayout != null) {
-            applyLayoutToNewChild(child);
-        }
-        markDirty();
-    }
-
-    public void removeChild(Widget child) {
-        if (children.remove(child)) {
-            child.parent = null;
-            markDirty();
-        }
-    }
-
-    public Optional<Widget> findChild(String id) {
-        for (Widget child : children) {
-            if (child.id.equals(id)) return Optional.of(child);
-            Optional<Widget> found = child.findChild(id);
-            if (found.isPresent()) return found;
-        }
-        return Optional.empty();
-    }
-
-    // ================================================================
-    // LAYOUT API  (public setters invalidate layout)
-    // ================================================================
-
-    public void setContentSize(float width, float height) {
-        boxModel = boxModel.withContentWidth(width).withContentHeight(height);
-        markDirty();
-    }
-
-    public void setPadding(BoxModel.Insets padding) {
-        boxModel = boxModel.withPadding(padding);
-        markDirty();
-    }
-
-    public void setMargin(BoxModel.Insets margin) {
-        boxModel = boxModel.withMargin(margin);
-        markDirty();
-    }
-
-    public void setBorder(BoxModel.Insets border) {
-        boxModel = boxModel.withBorder(border);
-        markDirty();
-    }
-
-    public void setConstraints(LayoutConstraints constraints) {
-        this.constraints = constraints;
-        markDirty();
-    }
-
-    public void setFlexConstraints(FlexConstraints fc) {
-        this.flexConstraints = fc;
-        markDirty();
-    }
-    void applyFlexSize(float width, float height) {
-        this.boxModel = boxModel.withContentWidth(width).withContentHeight(height);
-        // intentionally no markDirty()
-    }
-    /**
-     * Propagates dirty flag up to the root so ModernScreen knows
-     * a layout pass is needed next frame.
-     */
-    private void markDirty() {
-        layoutDirty = true;
-        if (parent != null) parent.markDirty();
-    }
-
-    public boolean isLayoutDirty() { return layoutDirty; }
-
-    // ================================================================
-    // LAYOUT ENGINE  (called exclusively by the layout engine)
-    // ================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 1 – MEASURE
+    // ═══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Phase 1 — Measure.
-     * Returns the natural (content) size of this widget.
-     * Subclasses override to report text width, image size, etc.
+     * Measure the natural content size (without padding/border/margin).
+     * Available space hints may be used by containers that need to measure their
+     * children proportionally (e.g. text wrapping), but they are NOT constraints.
      */
-    protected Size measureContent(float availableWidth, float availableHeight) {
-        return new Size(boxModel.getContentWidth(), boxModel.getContentHeight());
+    protected abstract MeasureResult measureContent(float availableWidth, float availableHeight);
+
+    /**
+     * Public measure entry-point. Returns the natural border-box size.
+     * (content + padding + border; margin is NOT included in the returned value
+     *  because the parent is responsible for positioning with margin.)
+     */
+    public final MeasureResult measure(float availableWidth, float availableHeight) {
+        MeasureResult content = measureContent(availableWidth, availableHeight);
+
+        // Update boxModel content size so getTotalWidth/Height are correct
+        boxModel = boxModel
+                .withContentWidth(content.width())
+                .withContentHeight(content.height());
+
+        return new MeasureResult(boxModel.getBorderBoxWidth(), boxModel.getBorderBoxHeight());
     }
 
-    public final Size measure(float availableWidth, float availableHeight) {
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 2 – LAYOUT
+    // ═══════════════════════════════════════════════════════════════════════════
 
-        Size content = measureContent(availableWidth, availableHeight);
-
-        float contentW = content.width();
-        float contentH = content.height();
-
-        BoxModel measuredModel = boxModel
-                .withContentWidth(contentW)
-                .withContentHeight(contentH);
-
-        return new Size(
-                measuredModel.getTotalWidth(),
-                measuredModel.getTotalHeight()
-        );
+    /**
+     * Layout this widget using the context from its parent.
+     * Computes {@link #computedLayout} and calls {@link #layoutChildren}.
+     */
+    public void layout(LayoutPassInfo pass) {
+        internalLayout(pass, null, null);
     }
 
     /**
-     * Phase 2 — Layout.
-     *
-     * Called top-down by the parent. The parent passes:
-     *   parentWidth/Height  → available space inside parent's content area
-     *   parentScreenX/Y     → absolute screen position of parent's content area
-     *   inheritedScale      → cumulative scale from ancestor chain
-     *   inheritedOpacity    → cumulative opacity from ancestor chain
-     *   inheritedZ          → cumulative z-index from ancestor chain
-     *
-     * This method:
-     *   1. Resolves final width/height (constraints + measure)
-     *   2. Resolves position relative to the parent's content area
-     *   3. Converts to absolute screen coordinates
-     *   4. Builds an immutable ComputedLayout
-     *   5. Calls layoutChildren() with the content area coords
+     * Called by FlexContainer to override position (the flex algorithm already
+     * computed exactly where this widget goes).
      */
-
-    // --- Reemplazar computeLayout existente por esto ---
-    public void computeLayout(
-            float assignedWidth,
-            float assignedHeight,
-            float parentAvailableWidth,
-            float parentAvailableHeight,
-            float parentScreenX,
-            float parentScreenY,
-            float scale,
-            float opacity,
-            int zIndex
-    ) {
-        // ------------------------------------------------------------
-        // 1) Measure natural size (border-box natural)
-        // ------------------------------------------------------------
-
-        Size measured = measure(parentAvailableWidth, parentAvailableHeight);
-
-        float borderBoxW = assignedWidth;
-        float borderBoxH = assignedHeight;
-
-        // Si el padre no asigna tamaño explícito → usar natural
-        if (borderBoxW <= 0) borderBoxW = measured.width();
-        if (borderBoxH <= 0) borderBoxH = measured.height();
-
-        // ------------------------------------------------------------
-        // 2) Resolve SizeConstraints (FIX CRÍTICO)
-        // ------------------------------------------------------------
-
-        if (constraints.getWidth() != null) {
-            borderBoxW = constraints.getWidth().resolve(parentAvailableWidth, borderBoxW);
-        }
-
-        if (constraints.getHeight() != null) {
-            borderBoxH = constraints.getHeight().resolve(parentAvailableHeight, borderBoxH);
-        }
-
-        // ------------------------------------------------------------
-        // 3) Derive content size from FINAL border-box
-        // ------------------------------------------------------------
-
-        float contentW = Math.max(0,
-                borderBoxW
-                        - boxModel.getPadding().horizontal()
-                        - boxModel.getBorder().horizontal()
-        );
-
-        float contentH = Math.max(0,
-                borderBoxH
-                        - boxModel.getPadding().vertical()
-                        - boxModel.getBorder().vertical()
-        );
-
-        boxModel = boxModel.withContentWidth(contentW)
-                .withContentHeight(contentH);
-
-        // ------------------------------------------------------------
-        // 4) Resolve LOCAL position against PARENT SPACE (correct)
-        // ------------------------------------------------------------
-
-        float localX = resolveLocalX(parentAvailableWidth, borderBoxW);
-        float localY = resolveLocalY(parentAvailableHeight, borderBoxH);
-
-        float screenX = parentScreenX + localX * scale;
-        float screenY = parentScreenY + localY * scale;
-
-        // ------------------------------------------------------------
-        // 5) Build computed layout
-        // ------------------------------------------------------------
-
-        computedLayout = ComputedLayout.create(
-                screenX,
-                screenY,
-                borderBoxW,
-                borderBoxH,
-                boxModel,
-                scale,
-                opacity,
-                zIndex + constraints.getZIndex()
-        );
-
-        layoutDirty = false;
-
-        layoutChildren(scale, opacity, zIndex + constraints.getZIndex());
+    public void layoutAbsolute(LayoutPassInfo pass,
+                               float assignedW, float assignedH,
+                               float localX,   float localY) {
+        internalLayout(pass, new float[]{assignedW, assignedH}, new float[]{localX, localY});
     }
 
-// --- Nuevo método: computeLayoutAbsolute (usado por contenedores que colocan hijos) ---
-    /**
-     * Variante que permite forzar la posición local del hijo dentro del área de contenido del padre.
-     * - assignedWidth/Height: border-box para el hijo (unscaled)
-     * - parentAvailableWidth/Height: espacio disponible del padre (unscaled)
-     * - parentScreenX/Y: coordenada absoluta del origen del content area del padre (screen coords)
-     * - forcedLocalX/Y: posición local (unscaled) dentro del parent content area
-     */
-    public void computeLayoutAbsolute(
-            float assignedWidth,
-            float assignedHeight,
-            float parentAvailableWidth,
-            float parentAvailableHeight,
-            float parentScreenX,
-            float parentScreenY,
-            float forcedLocalX,
-            float forcedLocalY,
-            float scale,
-            float opacity,
-            int zIndex
-    ) {
-        // Measure natural
-        Size measured = measure(parentAvailableWidth, parentAvailableHeight);
+    private void internalLayout(LayoutPassInfo pass,
+                                float @Nullable [] assignedSize,
+                                float @Nullable [] forcedLocal) {
+        if (!visible) { computedLayout = null; return; }
 
-        float borderBoxW = assignedWidth > 0 ? assignedWidth : measured.width();
-        float borderBoxH = assignedHeight > 0 ? assignedHeight : measured.height();
+        // ── Measure ───────────────────────────────────────────────────────────
+        MeasureResult natural = measure(pass.availableWidth, pass.availableHeight);
 
-        // ✅ Aplicar constraints sobre el assignedWidth (para fillParent, etc.)
-        if (constraints.getWidth() != null) {
-            borderBoxW = constraints.getWidth().resolve(parentAvailableWidth, borderBoxW);
-        }
-        if (constraints.getHeight() != null) {
-            borderBoxH = constraints.getHeight().resolve(parentAvailableHeight, borderBoxH);
+        // ── Resolve border-box size ───────────────────────────────────────────
+        float borderBoxW, borderBoxH;
+
+        if (assignedSize != null) {
+            // Size was decided by the flex algorithm
+            borderBoxW = assignedSize[0];
+            borderBoxH = assignedSize[1];
+        } else {
+            borderBoxW = constraints.resolveWidth(pass.availableWidth, natural.width());
+            borderBoxH = constraints.resolveHeight(pass.availableHeight, natural.height());
         }
 
-        // Derive content
+        // ── Apply aspect ratio (always after width is final) ──────────────────
+        // aspectRatio derives height from the resolved width, so it works correctly
+        // regardless of whether the width came from flex, fixed, percentage, etc.
+        borderBoxH = constraints.applyAspectRatio(borderBoxW, borderBoxH);
+
+        // ── Update boxModel content size from final border-box ────────────────
         float contentW = Math.max(0, borderBoxW
                 - boxModel.getPadding().horizontal()
                 - boxModel.getBorder().horizontal());
         float contentH = Math.max(0, borderBoxH
                 - boxModel.getPadding().vertical()
                 - boxModel.getBorder().vertical());
-
         boxModel = boxModel.withContentWidth(contentW).withContentHeight(contentH);
 
-        // ✅ CRÍTICO: usar forcedLocalX/Y sin modificar por alignment
-        // Flex ya calculó la posición correcta teniendo en cuenta justifyContent/alignItems
-        float screenX = parentScreenX + forcedLocalX * scale;
-        float screenY = parentScreenY + forcedLocalY * scale;
+        // ── Resolve local position ────────────────────────────────────────────
+        float localX, localY;
+        if (forcedLocal != null) {
+            // Flex: position already calculated (border-box includes margin offset)
+            // Account for own margin inside the forced position
+            localX = forcedLocal[0] + boxModel.getMargin().getLeft();
+            localY = forcedLocal[1] + boxModel.getMargin().getTop();
+        } else {
+            Alignment align = constraints.getAlignment();
+            localX = align.resolveX(pass.availableWidth,  borderBoxW + boxModel.getMargin().horizontal(), constraints.getOffsetX())
+                    + boxModel.getMargin().getLeft();
+            localY = align.resolveY(pass.availableHeight, borderBoxH + boxModel.getMargin().vertical(),   constraints.getOffsetY())
+                    + boxModel.getMargin().getTop();
+        }
+
+        // ── Screen space ──────────────────────────────────────────────────────
+        float screenX = pass.contentScreenX + localX * pass.scale;
+        float screenY = pass.contentScreenY + localY * pass.scale;
 
         computedLayout = ComputedLayout.create(
                 screenX, screenY,
                 borderBoxW, borderBoxH,
-                boxModel, scale, opacity,
-                zIndex + constraints.getZIndex()
+                boxModel,
+                pass.scale, pass.opacity,
+                pass.zIndex + constraints.getZIndex()
         );
 
         layoutDirty = false;
-        layoutChildren(scale, opacity, zIndex + constraints.getZIndex());
-    }
 
-    protected void layoutChildren(float scale, float opacity, int zIndex) {
-        if (computedLayout == null || children.isEmpty()) return;
-
-        ComputedLayout.Bounds content = computedLayout.getContentBounds();
-
-        // parentAvailableWidth/Height deben ser en unidades "unscaled"
-        float parentAvailableW = content.getWidth() / scale;
-        float parentAvailableH = content.getHeight() / scale;
-
-        for (Widget child : children) {
-            // Child decide su tamaño natural (measure), en espacio unscaled
-            Widget.Size measured = child.measure(parentAvailableW, parentAvailableH);
-
-            // Assigned width/height son los border-box que medimos (total)
-            float assignedW = measured.width();
-            float assignedH = measured.height();
-
-            child.computeLayout(
-                    assignedW,
-                    assignedH,
-                    parentAvailableW,
-                    parentAvailableH,
-                    content.getX(),
-                    content.getY(),
-                    scale,
-                    opacity,
-                    zIndex
-            );
+        // ── Layout children ───────────────────────────────────────────────────
+        if (!children.isEmpty()) {
+            LayoutPassInfo childPass = pass.deriveForChild(computedLayout);
+            layoutChildren(childPass);
         }
     }
-    private void applyLayoutToNewChild(Widget child) {
-        ComputedLayout.Bounds content = computedLayout.getContentBounds();
-        float scale = computedLayout.getScale();
 
-        Size measured = child.measure(
-                content.getWidth() / scale,
-                content.getHeight() / scale
-        );
+    /**
+     * Layout direct children. Override in container classes.
+     * Default: each child independently lays out inside the content box.
+     */
+    protected void layoutChildren(LayoutPassInfo childPass) {
+        for (Widget child : children) {
+            child.layout(childPass);
+        }
+    }
 
-        child.computeLayout(
-                measured.width(),
-                measured.height(),
-                content.getWidth() / scale,
-                content.getHeight() / scale,
-                content.getX(),
-                content.getY(),
-                scale,
+    /** Layout a newly-added child immediately (for dynamic insertion). */
+    public void layoutNewChild(Widget child) {
+        if (computedLayout == null) return;
+        LayoutPassInfo pass = new LayoutPassInfo(
+                computedLayout.getContentBounds().getWidth()  / computedLayout.getScale(),
+                computedLayout.getContentBounds().getHeight() / computedLayout.getScale(),
+                computedLayout.getContentBounds().getX(),
+                computedLayout.getContentBounds().getY(),
+                computedLayout.getScale(),
                 computedLayout.getOpacity(),
                 computedLayout.getComputedZIndex()
         );
-
-        child.init();
-    }
-    // ----------------------------------------------------------------
-
-    private float resolveLocalX(float parentWidth, float selfWidth) {
-        float offset = constraints.getOffsetX();
-
-        return switch (constraints.getAlignment()) {
-            case TOP_CENTER, MIDDLE_CENTER, BOTTOM_CENTER, CENTER ->
-                    (parentWidth - selfWidth) / 2f + offset;
-
-            case TOP_RIGHT, MIDDLE_RIGHT, BOTTOM_RIGHT, RIGHT ->
-                    parentWidth - selfWidth + offset;
-
-            default -> offset;
-        };
+        child.layout(pass);
     }
 
-    private float resolveLocalY(float parentHeight, float selfHeight) {
-        float offset = constraints.getOffsetY();
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 3 – RENDER
+    // ═══════════════════════════════════════════════════════════════════════════
 
-        return switch (constraints.getAlignment()) {
-            case MIDDLE_LEFT, MIDDLE_CENTER, MIDDLE_RIGHT, MIDDLE ->
-                    (parentHeight - selfHeight) / 2f + offset;
-
-            case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT, BOTTOM ->
-                    parentHeight - selfHeight + offset;
-
-            default -> offset;
-        };
-    }
-
-    // ================================================================
-    // STATE
-    // ================================================================
-
-    /** Called by ModernScreen — sets HOVERED or IDLE without overriding PRESSED. */
-    public void setHovered(boolean hovered) {
-        if (!enabled) { state = WidgetState.DISABLED; return; }
-        if (state == WidgetState.PRESSED) return;
-        state = hovered ? WidgetState.HOVERED : WidgetState.IDLE;
-    }
-
-    public boolean isHovered(float mouseX, float mouseY) {
-        return visible && enabled && computedLayout != null
-                && computedLayout.contains(mouseX, mouseY);
-    }
-
-    // ================================================================
-    // RENDER
-    // ================================================================
-
-    public final void render(GuiGraphics gfx, float mouseX, float mouseY, float delta) {
+    public final void render(RenderPassInfo rp) {
         if (!visible || computedLayout == null) return;
 
-        Matrix3x2fStack pose = gfx.pose();
-        pose.pushMatrix();
+        GuiGraphics gfx = rp.graphics;
+        gfx.pose().pushMatrix();
 
-        applyTransformations(pose);
-        renderBackground(gfx);
-        renderContent(gfx, mouseX, mouseY, delta);
-        renderChildren(gfx, mouseX, mouseY, delta);
-        renderForeground(gfx);
+        renderBackground(rp);
+        renderContent(rp);
+        renderChildren(rp);
+        renderForeground(rp);
 
-        pose.popMatrix();
-
-        if (shouldShowDebugBounds()) renderDebugBounds(gfx);
+        gfx.pose().popMatrix();
+        debugBounds = true;
+        if (debugBounds) renderDebugBounds(rp);
     }
 
-    protected void applyTransformations(Matrix3x2fStack pose) {
-        if (computedLayout == null || computedLayout.getScale() == 1.0f) return;
-        float cx = computedLayout.getScreenX() + computedLayout.getWidth()  / 2;
-        float cy = computedLayout.getScreenY() + computedLayout.getHeight() / 2;
-        pose.translate(cx, cy);
-        pose.scale(computedLayout.getScale(), computedLayout.getScale());
-        pose.translate(-cx, -cy);
+    protected void renderBackground(RenderPassInfo rp) {
+        background.render(rp.graphics, computedLayout);
     }
 
-    protected void renderBackground(GuiGraphics gfx) {
+    /** Override to draw custom widget content (text, images…). */
+    protected void renderContent(RenderPassInfo rp) {}
+
+    protected void renderChildren(RenderPassInfo rp) {
+        // Render in z-index order
+        List<Widget> sorted = new ArrayList<>(children);
+        sorted.sort((a, b) -> {
+            int az = a.computedLayout != null ? a.computedLayout.getComputedZIndex() : 0;
+            int bz = b.computedLayout != null ? b.computedLayout.getComputedZIndex() : 0;
+            return Integer.compare(az, bz);
+        });
+        for (Widget child : sorted) child.render(rp);
+    }
+
+    protected void renderForeground(RenderPassInfo rp) {}
+
+    private void renderDebugBounds(RenderPassInfo rp) {
         if (computedLayout == null) return;
-        if (background != null) {
-            background.render(gfx,
-                    computedLayout.getScreenX(), computedLayout.getScreenY(),
-                    computedLayout.getWidth(),   computedLayout.getHeight(),
-                    computedLayout.getOpacity());
-        } else if (backgroundColor != 0) {
-            gfx.fill(
-                    (int) computedLayout.getScreenX(),
-                    (int) computedLayout.getScreenY(),
-                    (int)(computedLayout.getScreenX() + computedLayout.getWidth()),
-                    (int)(computedLayout.getScreenY() + computedLayout.getHeight()),
-                    backgroundColor);
-        }
+        GuiGraphics gfx = rp.graphics;
+        drawBorderRect(gfx, computedLayout.getBorderBounds(),  0xFFFF0000); // red  = border box
+        drawBorderRect(gfx, computedLayout.getContentBounds(), 0xFF0000FF); // blue = content box
     }
 
-    protected void renderContent(GuiGraphics gfx, float mouseX, float mouseY, float delta) {}
-
-    protected void renderChildren(GuiGraphics gfx, float mouseX, float mouseY, float delta) {
-        for (Widget child : children) child.render(gfx, mouseX, mouseY, delta);
+    private static void drawBorderRect(GuiGraphics gfx, ComputedLayout.Bounds b, int color) {
+        int x  = (int) b.getX();
+        int y  = (int) b.getY();
+        int x2 = (int) b.getRight();
+        int y2 = (int) b.getBottom();
+        gfx.fill(x,      y,      x2,     y  + 1, color); // top
+        gfx.fill(x,      y2 - 1, x2,     y2,     color); // bottom
+        gfx.fill(x,      y,      x  + 1, y2,     color); // left
+        gfx.fill(x2 - 1, y,      x2,     y2,     color); // right
     }
 
-    protected void renderForeground(GuiGraphics gfx) {}
+    // ═══════════════════════════════════════════════════════════════════════════
+    // EVENT HANDLING
+    // ═══════════════════════════════════════════════════════════════════════════
 
-    protected boolean shouldShowDebugBounds() { return true; }
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (!visible || !enabled || computedLayout == null) return false;
 
-    protected void renderDebugBounds(GuiGraphics gfx) {
-        if (computedLayout == null) return;
-
-        int x = (int) computedLayout.getScreenX(), y = (int) computedLayout.getScreenY();
-        int w = (int) computedLayout.getWidth(),   h = (int) computedLayout.getHeight();
-
-        if(w == 0 || h == 0) return;
-
-        int c = 0xFF00FF00, t = 1;
-        gfx.fill(x,         y,         x + w,     y + t,     c);
-        gfx.fill(x,         y + h - t, x + w,     y + h,     c);
-        gfx.fill(x,         y,         x + t,     y + h,     c);
-        gfx.fill(x + w - t, y,         x + w,     y + h,     c);
-    }
-
-    // ================================================================
-    // EVENTS
-    // ================================================================
-
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!enabled || !visible || computedLayout == null) return false;
-
-        for (int i = children.size() - 1; i >= 0; i--) {
-            if (children.get(i).mouseClicked(mouseX, mouseY, button)) return true;
+        // Children first (deepest = topmost, reverse z-order)
+        List<Widget> sorted = new ArrayList<>(children);
+        sorted.sort((a, b) -> {
+            int az = a.computedLayout != null ? a.computedLayout.getComputedZIndex() : 0;
+            int bz = b.computedLayout != null ? b.computedLayout.getComputedZIndex() : 0;
+            return Integer.compare(bz, az); // descending
+        });
+        for (Widget child : sorted) {
+            if (child.mouseClicked(mx, my, button)) return true;
         }
 
-        if (state == WidgetState.HOVERED) {
-            state = WidgetState.PRESSED;
-            return eventHandlers.onClick((float) mouseX, (float) mouseY, button, this);
+        if (computedLayout.containsPoint((float)mx, (float)my)) {
+            return events.fireClick(mx, my, button);
         }
         return false;
     }
 
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (!enabled || !visible) return false;
-
+    public boolean mouseReleased(double mx, double my, int button) {
+        if (!visible || !enabled || computedLayout == null) return false;
         for (int i = children.size() - 1; i >= 0; i--) {
-            if (children.get(i).mouseReleased(mouseX, mouseY, button)) return true;
+            if (children.get(i).mouseReleased(mx, my, button)) return true;
         }
-
-        if (state == WidgetState.PRESSED) {
-            state = isHovered((float) mouseX, (float) mouseY) ? WidgetState.HOVERED : WidgetState.IDLE;
-            return eventHandlers.onRelease((float) mouseX, (float) mouseY, button, this);
+        if (computedLayout.containsPoint((float)mx, (float)my)) {
+            return events.fireRelease(mx, my, button);
         }
         return false;
     }
 
-    // ================================================================
-    // LIFECYCLE
-    // ================================================================
-
-    public final void init() {
-        if (!initialized) {
-            onInit();
-            children.forEach(Widget::init);
-            initialized = true;
+    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+        if (!visible || !enabled) return false;
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (children.get(i).mouseDragged(mx, my, button, dx, dy)) return true;
         }
+        return events.fireDrag(mx, my, button, dx, dy);
     }
 
-    protected void onInit() {}
+    public boolean mouseScrolled(double mx, double my, double amount) {
+        if (!visible || !enabled || computedLayout == null) return false;
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (children.get(i).mouseScrolled(mx, my, amount)) return true;
+        }
+        if (computedLayout.containsPoint((float)mx, (float)my)) {
+            return events.fireScroll(mx, my, amount);
+        }
+        return false;
+    }
 
-    // ================================================================
-    // HELPERS
-    // ================================================================
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (!visible || !enabled) return false;
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (children.get(i).keyPressed(keyCode, scanCode, modifiers)) return true;
+        }
+        return events.fireKey(keyCode, scanCode, modifiers);
+    }
 
-    public record Size(float width, float height) {}
+    public boolean charTyped(char c, int modifiers) {
+        if (!visible || !enabled) return false;
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (children.get(i).charTyped(c, modifiers)) return true;
+        }
+        return events.fireChar(c, modifiers);
+    }
 
-    public enum WidgetState { IDLE, HOVERED, PRESSED, FOCUSED, DISABLED }
+    // ─── Hover management ─────────────────────────────────────────────────────
+
+    public boolean isUnderMouse(float mx, float my) {
+        return computedLayout != null && computedLayout.containsPoint(mx, my);
+    }
+
+    public void setHovered(boolean h) {
+        if (this.hovered == h) return;
+        this.hovered = h;
+        events.fireHover(h);
+    }
+
+    public void setFocused(boolean f) {
+        if (this.focused == f) return;
+        this.focused = f;
+        events.fireFocus(f);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HIERARCHY
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public Widget addChild(Widget child) {
+        child.parent = this;
+        children.add(child);
+        invalidateLayout();
+        return this;
+    }
+
+    public Widget removeChild(Widget child) {
+        if (children.remove(child)) {
+            child.parent = null;
+            invalidateLayout();
+        }
+        return this;
+    }
+
+    public void clearChildren() {
+        for (Widget c : children) c.parent = null;
+        children.clear();
+        invalidateLayout();
+    }
+
+    public List<Widget> getChildren() { return Collections.unmodifiableList(children); }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DIRTY / INVALIDATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public void invalidateLayout() {
+        layoutDirty = true;
+        if (parent != null) parent.invalidateLayout();
+    }
+
+    public boolean isLayoutDirty() { return layoutDirty; }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FLUENT SETTERS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public Widget setVisible(boolean v)           { this.visible = v;      invalidateLayout(); return this; }
+    public Widget setEnabled(boolean e)           { this.enabled = e;      return this; }
+    public Widget setBackground(Background bg)    { this.background = bg;  return this; }
+    public Widget setDebugBounds(boolean d)       { this.debugBounds = d;  return this; }
+
+    public Widget setConstraints(LayoutConstraints c) { this.constraints = c; invalidateLayout(); return this; }
+    public Widget setFlex(FlexConstraints f)          { this.flex = f;        invalidateLayout(); return this; }
+    public Widget setBoxModel(BoxModel bm)            { this.boxModel = bm;   invalidateLayout(); return this; }
+
+    public Widget setPadding(EdgeInsets p)  { boxModel = boxModel.withPadding(p); invalidateLayout(); return this; }
+    public Widget setMargin(EdgeInsets m)   { boxModel = boxModel.withMargin(m);  invalidateLayout(); return this; }
+    public Widget setBorder(EdgeInsets b)   { boxModel = boxModel.withBorder(b);  invalidateLayout(); return this; }
+
+    public Widget setPadding(float all)     { return setPadding(EdgeInsets.all(all)); }
+    public Widget setMargin(float all)      { return setMargin(EdgeInsets.all(all)); }
+
+    // ─── Event shorthand ──────────────────────────────────────────────────────
+
+    public Widget onClick(Runnable action)    { events.onClick(action);    return this; }
+    public Widget onHover(EventHandlers.HoverHandler h) { events.onHover(h); return this; }
+
+    // ─── Accessors ────────────────────────────────────────────────────────────
+
+    public String              getId()             { return id; }
+    public boolean             isVisible()         { return visible; }
+    public boolean             isEnabled()         { return enabled; }
+    public boolean             isHovered()         { return hovered; }
+    public boolean             isFocused()         { return focused; }
+    public LayoutConstraints   getConstraints()    { return constraints; }
+    public FlexConstraints     getFlexConstraints(){ return flex; }
+    public BoxModel            getBoxModel()       { return boxModel; }
+    public EventHandlers       getEvents()         { return events; }
+    public @Nullable Widget    getParent()         { return parent; }
+    public @Nullable ComputedLayout getComputedLayout() { return computedLayout; }
 }
+
+
