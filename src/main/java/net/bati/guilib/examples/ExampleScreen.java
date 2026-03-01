@@ -1,7 +1,10 @@
 package net.bati.guilib.examples;
 
-import net.bati.guilib.layout.*;
+import net.bati.guilib.layout.Alignment;
+import net.bati.guilib.layout.EdgeInsets;
+import net.bati.guilib.layout.SizeConstraint;
 import net.bati.guilib.layout.flex.FlexLayout;
+import net.bati.guilib.layout.LayoutConstraints;
 import net.bati.guilib.rendering.Background;
 import net.bati.guilib.screen.ModernScreen;
 import net.bati.guilib.widget.*;
@@ -145,16 +148,14 @@ public class ExampleScreen extends ModernScreen {
 
     private Widget buildMain() {
         // Scrollable list of cards
-        FlexContainer cardList = FlexContainer.row("card_list")
+        FlexContainer cardList = FlexContainer.column("card_list")
                 .gap(8)
-                .wrap(FlexLayout.FlexWrap.WRAP);
+                .alignItems(FlexLayout.AlignItems.STRETCH)
+                .justifyContent(FlexLayout.JustifyContent.FLEX_START);
         cardList.setPadding(EdgeInsets.all(10));
 
         for (int i = 1; i <= 8; i++) {
-            Button btn = new Button("asd"+i, "asd"+i);
-            btn.setFlex(FlexConstraints.builder().flexGrow(1).build());
-            btn.setConstraints(LayoutConstraints.DEFAULT.withAspectRatio(1f));
-            cardList.add(btn);
+            cardList.add(buildCard("Card " + i, "Description for card number " + i));
         }
 
         ScrollContainer scroll = new ScrollContainer("main_scroll");

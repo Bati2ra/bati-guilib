@@ -129,7 +129,6 @@ public class FlexContainer extends Widget {
             if (!child.isVisible()) continue;
 
             boolean childHasGrow = child.getFlexConstraints().getFlexGrow() > 0;
-            boolean childHasRatio = child.getConstraints().hasAspectRatio();
 
             float measureW = isRow ? (childHasGrow ? 0f : containerW) : containerW;
             float measureH = isRow ? containerH : (childHasGrow ? 0f : containerH);
@@ -138,12 +137,17 @@ public class FlexContainer extends Widget {
             float bw, bh;
             if (isRow) {
                 bw = childHasGrow ? natural.width()  : child.getConstraints().resolveWidth(containerW,  natural.width());
-                // With aspectRatio the cross size is unknown until main is final — use 0
-                // so the algorithm doesn't over-allocate cross space at this stage.
-                bh = childHasRatio ? 0f : child.getConstraints().resolveHeight(containerH, natural.height());
+                bh =                                   child.getConstraints().resolveHeight(containerH, natural.height());
             } else {
-                bw = childHasRatio ? 0f : child.getConstraints().resolveWidth(containerW,  natural.width());
+                bw =                                   child.getConstraints().resolveWidth(containerW,  natural.width());
                 bh = childHasGrow ? natural.height() : child.getConstraints().resolveHeight(containerH, natural.height());
+            }
+
+            // If child has aspectRatio, natural.height() already reflects it (from measure()).
+            // Use it directly as the cross size so the algorithm allocates the right space.
+            if (child.getConstraints().hasAspectRatio()) {
+                if (isRow) bh = natural.height();
+                else       bw = natural.width();
             }
 
             EdgeInsets margin = child.getBoxModel().getMargin();
@@ -176,20 +180,11 @@ public class FlexContainer extends Widget {
             if (il == null) continue;
 
             EdgeInsets margin = child.getBoxModel().getMargin();
-
             float assignedW = il.getWidth()  - margin.horizontal();
             float assignedH = il.getHeight() - margin.vertical();
 
-            // If the child has an aspectRatio, derive the cross size from the
-            // final main size now that the flex algorithm has settled it.
-            if (child.getConstraints().hasAspectRatio()) {
-                if (isRow) {
-                    assignedH = child.getConstraints().applyAspectRatio(assignedW, assignedH);
-                } else {
-                    assignedW = assignedH / child.getConstraints().getAspectRatio();
-                }
-            }
-
+            // aspectRatio is applied inside internalLayout (via layoutAbsolute) — no
+            // special handling needed here; the correct height comes from measure().
             child.layoutAbsolute(childPass, assignedW, assignedH, il.getX(), il.getY());
         }
     }

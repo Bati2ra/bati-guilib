@@ -90,12 +90,23 @@ public abstract class Widget {
     public final MeasureResult measure(float availableWidth, float availableHeight) {
         MeasureResult content = measureContent(availableWidth, availableHeight);
 
-        // Update boxModel content size so getTotalWidth/Height are correct
         boxModel = boxModel
                 .withContentWidth(content.width())
                 .withContentHeight(content.height());
 
-        return new MeasureResult(boxModel.getBorderBoxWidth(), boxModel.getBorderBoxHeight());
+        float borderW = boxModel.getBorderBoxWidth();
+        float borderH = boxModel.getBorderBoxHeight();
+
+        // If this widget has an aspectRatio, derive height from width so the
+        // parent sees the correct size during its own measure pass.
+        // We need to resolve the width constraint first to know the actual width.
+        float resolvedW = constraints.resolveWidth(availableWidth, borderW);
+        if (constraints.hasAspectRatio()) {
+            float resolvedH = constraints.applyAspectRatio(resolvedW, borderH);
+            return new MeasureResult(borderW, resolvedH);
+        }
+
+        return new MeasureResult(borderW, borderH);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -231,7 +242,6 @@ public abstract class Widget {
         renderForeground(rp);
 
         gfx.pose().popMatrix();
-        debugBounds = true;
         if (debugBounds) renderDebugBounds(rp);
     }
 

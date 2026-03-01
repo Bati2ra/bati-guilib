@@ -1,6 +1,7 @@
 package net.bati.guilib;
 
 import net.bati.guilib.examples.ExampleScreen;
+import net.bati.guilib.examples.GridExampleScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -15,7 +16,7 @@ public class ClientInitializer implements ClientModInitializer {
     public void onInitializeClient() {
         ClientTickEvents.START_CLIENT_TICK.register((mc) -> {
             if(Minecraft.getInstance().options.keyShift.isDown()) {
-                Minecraft.getInstance().setScreen(new ExampleScreen());
+                Minecraft.getInstance().setScreen(new GridExampleScreen());
             }
         });
     }
