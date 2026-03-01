@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "bati-guilib",
+  "id": "miniui",
   "version": "1.0.0",
   "name": "Bati's GUI Library",
   "description": "",
@@ -11,16 +11,16 @@
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/bati-guilib/icon.png",
+  "icon": "assets/miniui/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "client": [
-	"net.bati.guilib.ClientInitializer"
+	"net.bati.miniui.ClientInitializer"
 ]
   },
   "mixins": [
-    "bati-guilib.mixins.json"
+    "miniui.mixins.json"
   ],
 
   "depends": {
