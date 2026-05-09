@@ -1,9 +1,12 @@
 package net.bati.miniui.widget;
 
+import net.bati.miniui.MiniUI;
 import net.bati.miniui.event.EventHandlers;
 import net.bati.miniui.layout.*;
 import net.bati.miniui.rendering.Background;
 import net.bati.miniui.rendering.RenderPassInfo;
+import net.bati.miniui.tooltip.Tooltip;
+import net.bati.miniui.tooltip.TooltipProvider;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,6 +68,35 @@ public abstract class Widget {
 
     private boolean layoutDirty = true;
 
+    /** The LayoutPassInfo last used to lay out our children. Cached so that
+     *  containers like ScrollContainer can re-layout only their subtree without
+     *  triggering a full root-level layout pass. */
+    protected @Nullable LayoutPassInfo lastChildPass;
+
+    // ─── Tooltip ──────────────────────────────────────────────────────────────
+
+    private @Nullable TooltipProvider tooltipProvider = null;
+
+    /** Attach a static tooltip to this widget. */
+    public Widget setTooltip(Tooltip tooltip) {
+        this.tooltipProvider = TooltipProvider.fixed(tooltip);
+        return this;
+    }
+
+    /** Attach a dynamic tooltip provider — evaluated each frame with mouse position. */
+    public Widget setTooltip(TooltipProvider provider) {
+        this.tooltipProvider = provider;
+        return this;
+    }
+
+    /** Remove any tooltip from this widget. */
+    public Widget clearTooltip() {
+        this.tooltipProvider = null;
+        return this;
+    }
+
+    public @Nullable TooltipProvider getTooltipProvider() { return tooltipProvider; }
+
     // ─── Constructor ──────────────────────────────────────────────────────────
 
     protected Widget(String id) {
@@ -97,13 +129,18 @@ public abstract class Widget {
         float borderW = boxModel.getBorderBoxWidth();
         float borderH = boxModel.getBorderBoxHeight();
 
-        // If this widget has an aspectRatio, derive height from width so the
-        // parent sees the correct size during its own measure pass.
-        // We need to resolve the width constraint first to know the actual width.
-        float resolvedW = constraints.resolveWidth(availableWidth, borderW);
         if (constraints.hasAspectRatio()) {
-            float resolvedH = constraints.applyAspectRatio(resolvedW, borderH);
-            return new MeasureResult(borderW, resolvedH);
+            // To derive height we need to know the final width. Use the best
+            // estimate available at measure time:
+            //   - fixed / percentage / auto → resolve normally
+            //   - fillParent or no constraint → availableWidth is the best estimate
+            //     (the real width will be assigned by the parent in layoutAbsolute,
+            //      and internalLayout will re-apply applyAspectRatio with the true value)
+            float estimatedW = constraints.getWidth() == null
+                    ? availableWidth
+                    : constraints.resolveWidth(availableWidth, borderW);
+            float derivedH = constraints.applyAspectRatio(estimatedW, borderH);
+            return new MeasureResult(borderW, derivedH);
         }
 
         return new MeasureResult(borderW, borderH);
@@ -195,11 +232,34 @@ public abstract class Widget {
         layoutDirty = false;
 
         // ── Layout children ───────────────────────────────────────────────────
-        if (!children.isEmpty()) {
-            LayoutPassInfo childPass = pass.deriveForChild(computedLayout);
-            layoutChildren(childPass);
+        // Virtual containers (e.g. VirtualGridContainer) start with an empty
+        // children list and populate it inside layoutChildren itself.
+        // alwaysLayoutChildren() lets them opt-in to always running layoutChildren.
+        if (!children.isEmpty() || alwaysLayoutChildren()) {
+            lastChildPass = pass.deriveForChild(computedLayout);
+            layoutChildren(lastChildPass);
         }
     }
+
+    /**
+     * Re-run {@link #layoutChildren} using the cached pass from the last full
+     * layout. Does NOT remeasure this widget or notify the parent — intended for
+     * containers (e.g. ScrollContainer) that only need to reposition their
+     * children without triggering a root-level layout pass.
+     *
+     * <p>No-op if this widget has never been laid out.
+     */
+    public void relayoutChildren() {
+        if (lastChildPass == null || computedLayout == null) return;
+        layoutChildren(lastChildPass);
+    }
+
+    /**
+     * Override to return {@code true} if this container needs {@code layoutChildren}
+     * called even when {@code children} is empty. Used by virtual containers that
+     * create their children pool inside {@code layoutChildren}.
+     */
+    protected boolean alwaysLayoutChildren() { return false; }
 
     /**
      * Layout direct children. Override in container classes.
@@ -242,7 +302,7 @@ public abstract class Widget {
         renderForeground(rp);
 
         gfx.pose().popMatrix();
-        if (debugBounds) renderDebugBounds(rp);
+        if (debugBounds || MiniUI.shouldShowDebugBounds()) renderDebugBounds(rp);
     }
 
     protected void renderBackground(RenderPassInfo rp) {
@@ -433,6 +493,16 @@ public abstract class Widget {
 
     public Widget onClick(Runnable action)    { events.onClick(action);    return this; }
     public Widget onHover(EventHandlers.HoverHandler h) { events.onHover(h); return this; }
+
+    /**
+     * Remove all click handlers. Use this on pool widgets before rebinding them
+     * to a new item so the old item's handler doesn't linger.
+     */
+    public Widget clearClickHandlers() { events.clearClickHandlers(); return this; }
+
+    /** Remove all handlers of all types. */
+    public Widget clearAllHandlers()   { events.clearAllHandlers();   return this; }
+
 
     // ─── Accessors ────────────────────────────────────────────────────────────
 

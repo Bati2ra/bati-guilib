@@ -157,6 +157,7 @@ public class GridExampleScreen extends ModernScreen {
         Button btn = new Button("item_" + index, Component.literal(label + "\n§7#" + (index + 1)))
                 .setColors(bg, hover)
                 .useVanillaStyle(false);
+        btn.setTooltip(SoulReaverTooltip.create(SoulReaverTooltip.dummyStats()));
 
         // No width/height constraints — GridContainer sizes each cell.
         // The only thing we declare is the aspect ratio so the button stays

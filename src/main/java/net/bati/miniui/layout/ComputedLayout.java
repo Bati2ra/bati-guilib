@@ -81,6 +81,15 @@ public final class ComputedLayout {
         );
     }
 
+    /**
+     * Create a flat {@link ComputedLayout} — no box model, all bounds equal
+     * to the given rect. Useful for tooltips and overlays.
+     */
+    public static ComputedLayout flat(float x, float y, float w, float h) {
+        Bounds b = new Bounds(x, y, w, h);
+        return new ComputedLayout(x, y, w, h, b, b, b, 1f, 1f, 0);
+    }
+
     // ─── Accessors ────────────────────────────────────────────────────────────
 
     public float  getScreenX()        { return screenX; }

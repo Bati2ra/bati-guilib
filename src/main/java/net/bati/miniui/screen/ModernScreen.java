@@ -2,6 +2,7 @@ package net.bati.miniui.screen;
 
 import net.bati.miniui.layout.LayoutPassInfo;
 import net.bati.miniui.rendering.RenderPassInfo;
+import net.bati.miniui.tooltip.TooltipRenderer;
 import net.bati.miniui.widget.Widget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -25,6 +26,8 @@ public class ModernScreen extends Screen {
     private @Nullable Widget root;
     private @Nullable Widget hoveredWidget;
     private @Nullable Widget focusedWidget;
+
+    private final TooltipRenderer tooltipRenderer = new TooltipRenderer();
 
     // Track screen dimensions for dirty detection
     private int lastWidth  = -1;
@@ -68,6 +71,11 @@ public class ModernScreen extends Screen {
         // Render
         RenderPassInfo rp = new RenderPassInfo(context, mouseX, mouseY, delta);
         root.render(rp);
+
+        // Tooltip — rendered last so it appears above everything
+        tooltipRenderer.update(hoveredWidget);
+        tooltipRenderer.render(context,
+                (float) mouseX, (float) mouseY, width, height);
     }
 
     private void doLayout() {

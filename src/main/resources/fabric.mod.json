@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "miniui",
-  "version": "1.0.0",
+  "version": "${version}",
   "name": "Bati's GUI Library",
   "description": "",
   "authors": [
@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-	"net.bati.miniui.ClientInitializer"
+      "net.bati.miniui.MiniUI"
 ]
   },
   "mixins": [

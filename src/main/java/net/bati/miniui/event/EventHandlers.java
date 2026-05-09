@@ -99,4 +99,20 @@ public final class EventHandlers {
     }
 
     public boolean hasClickHandlers() { return !clickHandlers.isEmpty(); }
+
+    /** Remove all click handlers. Useful for pool widgets that get rebound to new items. */
+    public void clearClickHandlers() { clickHandlers.clear(); }
+
+    /** Remove all handlers of all types. */
+    public void clearAllHandlers() {
+        clickHandlers.clear();
+        releaseHandlers.clear();
+        moveHandlers.clear();
+        scrollHandlers.clear();
+        dragHandlers.clear();
+        keyHandlers.clear();
+        charHandlers.clear();
+        hoverHandlers.clear();
+        focusHandlers.clear();
+    }
 }

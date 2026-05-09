@@ -1,35 +1,30 @@
 package net.bati.miniui.widget;
 
+import lombok.Getter;
 import net.bati.miniui.layout.EdgeInsets;
 import net.bati.miniui.layout.MeasureResult;
+import net.bati.miniui.rendering.ButtonAppearance;
 import net.bati.miniui.rendering.RenderPassInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 /**
  * A clickable button with label and optional hover/press states.
  */
 public class Button extends Widget {
 
-    /** Vanilla-style button texture (200×20 in widgets.png). */
-    private static final Identifier BUTTON_TEXTURE =
-            Identifier.withDefaultNamespace("textures/gui/sprites/widget/button.png");
-    private static final Identifier BUTTON_HOVER_TEXTURE =
-            Identifier.withDefaultNamespace("textures/gui/sprites/widget/button_highlighted.png");
-    private static final Identifier BUTTON_DISABLED_TEXTURE =
-            Identifier.withDefaultNamespace("textures/gui/sprites/widget/button_disabled.png");
-
+    @Getter
     private Component    label;
+    @Getter
     private int     textColor         = 0xFFFFFFFF;
+    @Getter
     private int     textColorDisabled = 0xFFA0A0A0;
+    @Getter
     private int     textColorHovered  = 0xFFFFFFA0;
-    private boolean useVanillaStyle   = true;
-    private int     bgColor           = 0xFF555555;
-    private int     bgColorHover      = 0xFF777777;
+
+    private ButtonAppearance appearance = ButtonAppearance.vanilla();
 
     public Button(String id, Component label) {
         super(id);
@@ -46,11 +41,38 @@ public class Button extends Widget {
     public Button setLabel(Component t)         { this.label = t; invalidateLayout(); return this; }
     public Button setLabel(String s)       { return setLabel(Component.literal(s)); }
     public Button setTextColor(int c)      { this.textColor = c; return this; }
-    public Button useVanillaStyle(boolean v){ this.useVanillaStyle = v; return this; }
-    public Button setColors(int bg, int bgHover) {
-        this.bgColor = bg; this.bgColorHover = bgHover;
-        this.useVanillaStyle = false;
+
+    /** Replace the full appearance. */
+    public Button setAppearance(ButtonAppearance a) {
+        this.appearance = a;
         return this;
+    }
+
+    /**
+     * Shorthand for a flat two-color appearance.
+     * Equivalent to {@code setAppearance(ButtonAppearance.flat(idle, hovered))}.
+     */
+    public Button setColors(int idle, int hovered) {
+        return setAppearance(ButtonAppearance.flat(idle, hovered));
+    }
+
+    /**
+     * Switch to (or back to) vanilla Minecraft button textures.
+     * Equivalent to {@code setAppearance(ButtonAppearance.vanilla())}.
+     */
+    public Button useVanillaStyle(boolean vanilla) {
+        if (vanilla) setAppearance(ButtonAppearance.vanilla());
+        return this;
+    }
+
+    /**
+     * Returns the current state key used to resolve the appearance.
+     * Override in subclasses to add custom states.
+     */
+    protected String resolveState() {
+        if (!enabled) return ButtonAppearance.DISABLED;
+        if (hovered)  return ButtonAppearance.HOVERED;
+        return ButtonAppearance.IDLE;
     }
 
     // ─── Measure ──────────────────────────────────────────────────────────────
@@ -66,27 +88,7 @@ public class Button extends Widget {
     @Override
     protected void renderBackground(RenderPassInfo rp) {
         if (computedLayout == null) return;
-        var b = computedLayout.getBorderBounds();
-        var gfx = rp.graphics;
-
-        if (useVanillaStyle) {
-            Identifier tex = !enabled ? BUTTON_DISABLED_TEXTURE
-                    : hovered  ? BUTTON_HOVER_TEXTURE
-                    :            BUTTON_TEXTURE;
-            // Simple stretch blit (no nine-slice for vanilla button – it has its own internal slice)
-            gfx.blit(RenderPipelines.GUI_TEXTURED, tex,
-                    (int)b.getX(), (int)b.getY(), 0f, 0f,
-                    (int)b.getWidth(), (int)b.getHeight(),
-                    (int)b.getWidth(), (int)b.getHeight(),
-                    (int)b.getWidth(), (int)b.getHeight(), -1);
-        } else {
-            int col = hovered && enabled ? bgColorHover : bgColor;
-            float op = computedLayout.getOpacity();
-            int a = (int)((col >> 24 & 0xFF) * op);
-            int filled = (a << 24) | (col & 0x00FFFFFF);
-            gfx.fill((int)b.getX(), (int)b.getY(),
-                    (int)(b.getX()+b.getWidth()), (int)(b.getY()+b.getHeight()), filled);
-        }
+        appearance.resolve(resolveState()).render(rp.graphics, computedLayout);
     }
 
     @Override

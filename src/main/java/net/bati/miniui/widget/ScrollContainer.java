@@ -1,5 +1,6 @@
 package net.bati.miniui.widget;
 
+import net.bati.miniui.event.ScrollListener;
 import net.bati.miniui.layout.LayoutPassInfo;
 import net.bati.miniui.layout.MeasureResult;
 import net.bati.miniui.rendering.RenderPassInfo;
@@ -13,6 +14,7 @@ public class ScrollContainer extends Widget {
 
     private float scrollOffset = 0f;
     private float maxScroll    = 0f;
+    private float viewportH    = 0f; // cached from last layout pass
     private float scrollSpeed  = 20f;
     private boolean showScrollbar = true;
 
@@ -35,6 +37,7 @@ public class ScrollContainer extends Widget {
     public ScrollContainer showScrollbar(boolean show){ this.showScrollbar  = show; return this; }
 
     public float getScrollOffset() { return scrollOffset; }
+    public float getViewportH()    { return viewportH; }
 
     @Override
     protected MeasureResult measureContent(float aw, float ah) {
@@ -56,7 +59,7 @@ public class ScrollContainer extends Widget {
         float contentW = showScrollbar
                 ? childPass.availableWidth - scrollbarWidth
                 : childPass.availableWidth;
-        float viewportH = childPass.availableHeight;
+        viewportH = childPass.availableHeight;
 
         // Measure content with unlimited height so we can detect overflow.
         // Use a large-but-finite value so fillParent constraints don't go infinite.
@@ -158,14 +161,12 @@ public class ScrollContainer extends Widget {
         return super.mouseReleased(mx, my, button);
     }
 
-
     @Override
     public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
         if (!visible || !enabled) return false;
         if (computedLayout != null && !isInViewport(mx, my)) return false;
         return super.mouseDragged(mx, my, button, dx, dy);
     }
-
     @Override
     public boolean mouseScrolled(double mx, double my, double amount) {
         if (!visible || computedLayout == null) return false;
@@ -176,9 +177,19 @@ public class ScrollContainer extends Widget {
             if (children.get(i).mouseScrolled(mx, my, amount)) return true;
         }
 
+        float prev = scrollOffset;
         scrollOffset -= (float) amount * scrollSpeed;
         scrollOffset  = Math.max(0, Math.min(maxScroll, scrollOffset));
-        invalidateLayout();
+
+        if (scrollOffset == prev) return true;
+
+        relayoutChildren();
         return true;
+    }
+
+    public void resetScroll() {
+        if (scrollOffset == 0f) return;
+        scrollOffset = 0f;
+        relayoutChildren();
     }
 }

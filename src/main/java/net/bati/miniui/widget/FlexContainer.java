@@ -143,11 +143,12 @@ public class FlexContainer extends Widget {
                 bh = childHasGrow ? natural.height() : child.getConstraints().resolveHeight(containerH, natural.height());
             }
 
-            // If child has aspectRatio, natural.height() already reflects it (from measure()).
-            // Use it directly as the cross size so the algorithm allocates the right space.
+            // aspectRatio: height always derives from width (ratio = w/h).
+            // bw is already correctly resolved (fillParent, fixed, etc.) so we
+            // can derive bh here for the FlexItem slot size. internalLayout will
+            // re-apply applyAspectRatio with the true assigned width.
             if (child.getConstraints().hasAspectRatio()) {
-                if (isRow) bh = natural.height();
-                else       bw = natural.width();
+                bh = bw / child.getConstraints().getAspectRatio();
             }
 
             EdgeInsets margin = child.getBoxModel().getMargin();

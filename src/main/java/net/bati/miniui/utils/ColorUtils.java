@@ -3,6 +3,30 @@ package net.bati.miniui.utils;
 import org.joml.Vector3d;
 
 public class ColorUtils {
+
+    public static int dimmed(int argb, float factor) {
+        int a = (int) ((argb >> 24 & 0xFF) * factor);
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >>  8) & 0xFF;
+        int b =  argb        & 0xFF;
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    public static int brightened(int argb, float factor) {
+        factor = Math.max(0f, Math.min(1f, factor));
+
+        int a = (argb >> 24) & 0xFF;
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+
+        r += (int) ((255 - r) * factor);
+        g += (int) ((255 - g) * factor);
+        b += (int) ((255 - b) * factor);
+
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
 /*
     @JvmStatic
     fun toHex(color: Int): Int {
